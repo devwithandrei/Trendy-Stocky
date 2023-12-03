@@ -1,9 +1,108 @@
+/* Tailwind CSS setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Global styles */
 html,
 body,
 :root {
   height: 100%;
 }
+
+/* Define border-border class within @layer utilities */
+@layer utilities {
+  .border-border {
+    /* Define your border styles here */
+    /* For example: */
+    border: 1px solid black;
+  }
+
+  /* Define bg-background and text-foreground classes */
+  .bg-background {
+    /* Define your background styles here */
+    /* For example: */
+    background-color: #fff; /* Replace with your background color */
+  }
+  
+  .text-foreground {
+    /* Define your text styles here */
+    /* For example: */
+    color: #000; /* Replace with your text color */
+  }
+
+  /* Typewriter effect styles */
+  .Typewriter {
+    display: inline-block;
+  }
+
+  .Typewriter__wrapper {
+    overflow: hidden;
+    border-right: 2px solid transparent;
+    white-space: nowrap;
+    animation: typing 3s steps(30, end);
+    color: #C900FE; /* Set the text color */
+  }
+
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  /* Cursor animation */
+  @keyframes blink-caret {
+    from, to {
+      border-color: transparent;
+    }
+    50% {
+      border-color: #C900FE; /* Change color of the cursor here */
+    }
+  }
+
+  .Typewriter__cursor {
+    display: inline-block;
+    width: 0;
+    animation: blink-caret 0.75s step-end infinite;
+  }
+}
+
+
+.Typewriter__wrapper {
+  overflow: hidden;
+  border-right: 2px solid transparent;
+  white-space: nowrap;
+  animation: typing 3s steps(30, end);
+  color: #C900FE; /* Set the text color */
+}
+
+/* Cursor element style */
+.Typewriter__cursor {
+  display: inline-block;
+  color: #C900FE; /* Set the same color as text */
+  animation: blink-caret 0.75s step-end infinite;
+}
+
+/* Typing animation keyframes */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Cursor animation keyframes */
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #C900FE; /* Change color of the cursor here */
+  }
+}
+

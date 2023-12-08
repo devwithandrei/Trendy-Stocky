@@ -36,7 +36,7 @@ const Billboard: React.FC<BillboardProps> = ({ data }) => {
               <span className="Typewriter__wrapper">
                 {displayText}
               </span>
-              <span className="Typewriter__cursor">|</span>
+              <span className="Typewriter__cursor"></span>
             </div>
           </div>
         </div>

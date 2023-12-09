@@ -23,4 +23,4 @@ const Navbar = async () => {
   );
 };
  
-export default Navbar; 
+export default Navbar;  

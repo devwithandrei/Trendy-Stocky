@@ -6,7 +6,7 @@ import Container from "@/components/ui/container";
 export const revalidate = 0;
 
 const PrivacyPolicy = async () => {
-  const billboard = await getBillboard("bc02fec3-88b2-4379-bd0a-0643d42ccea0");
+  const billboard = await getBillboard("85e08ca3-a8b0-4155-aa8f-4f8b516c6ed4");
 
   return (
     <Container>

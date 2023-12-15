@@ -26,11 +26,7 @@ const Footer = () => {
             Return Policies
           </a>
         </p>
-        <p className="text-center text-sm md:text-lg text-black">
-          <a href="/contact-us" className="hover:underline hover:no-underline hover:text-blue-500 transition-colors duration-300">
-            Contact Us
-          </a>
-        </p>
+        {/* Removed Contact Us link */}
       </div>
       <div className="mx-auto py-3">
         <p className="text-center text-sm md:text-lg text-black">

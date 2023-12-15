@@ -1,4 +1,3 @@
-import React from 'react';
 import getBillboard from "@/actions/get-billboard";
 import Billboard from "@/components/ui/billboard";
 import Container from "@/components/ui/container";
@@ -15,7 +14,6 @@ const ContactUs = async () => {
           data={billboard}
         />
 
-        {/* Improved Contact Form - Centered */}
         <div className="contact-form center-content" style={{ textAlign: 'center' }}>
           <form style={{ display: 'inline-block', textAlign: 'left' }}>
             <div className="form-group" style={{ display: 'flex', gap: '20px' }}> {/* Increased gap to 20px */}
@@ -32,11 +30,10 @@ const ContactUs = async () => {
               <textarea id="message" name="message" placeholder="Type your message" style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '20px', height: '300px', width: 'calc(100% - 12px)' }}></textarea>
             </div>
             <div className="center">
-              <button type="submit" style={{ background: 'blue', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', display: 'block', margin: '0 auto' }}>Submit</button>
+              <button type="submit" style={{ background: 'blue', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', display: 'block', margin: '0 auto' }}>Send Message</button>
             </div>
           </form>
         </div>
-        {/* End of Improved Contact Form */}
       </div>
     </Container>
   );

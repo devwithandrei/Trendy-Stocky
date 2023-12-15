@@ -6,7 +6,7 @@ import Container from "@/components/ui/container";
 export const revalidate = 0;
 
 const AboutPage = async () => {
-  const billboard = await getBillboard("853279ee-70be-449e-8257-6687b82463a7");
+  const billboard = await getBillboard("bc02fec3-88b2-4379-bd0a-0643d42ccea0");
 
   return (
     <Container>
@@ -35,7 +35,7 @@ const AboutPage = async () => {
             If you have any questions or concerns about our Privacy Policy or data practices, please <a href="/contact-us" style={{ color: '#0066ff', textDecoration: 'underline' }}>contact us</a>. We are committed to ensuring your privacy and addressing any queries you may have.
           </p>
         </div>
-        {/* End of Privacy Policy Content */}
+        {/* About Us Content */}
       </div>
     </Container>
   );

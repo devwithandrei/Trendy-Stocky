@@ -13,7 +13,7 @@ const font = Urbanist({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Trendy Stocky',
-  description: 'Trendy Stocky - The place for all your purchases.',
+  description: 'Pure Herbal Meds - Organic Cannabis Store.',
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {

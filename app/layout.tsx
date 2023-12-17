@@ -12,7 +12,7 @@ import './globals.css';
 const font = Urbanist({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Trendy Stocky',
+  title: 'Pure Herbal Meds',
   description: 'Pure Herbal Meds - Organic Cannabis Store.',
 };
 

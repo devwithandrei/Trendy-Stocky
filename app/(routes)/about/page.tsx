@@ -6,7 +6,7 @@ import getBillboard from "@/actions/get-billboard";
 export const revalidate = 0;
 
 const AboutPage = async () => {
-  const billboard = await getBillboard("bc02fec3-88b2-4379-bd0a-0643d42ccea0");
+  const billboard = await getBillboard("09ab1c87-a596-4462-a29b-3babad69cd5b");
 
   return (
     <Container>

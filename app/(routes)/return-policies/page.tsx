@@ -6,7 +6,7 @@ import CrispChatScript from "@/components/ui/CrispChatScript";
 export const revalidate = 0;
 
 const returnpolicies = async () => {
-  const billboard = await getBillboard("050761dc-4dd8-41bd-8235-9f5a60197533");
+  const billboard = await getBillboard("09ab1c87-a596-4462-a29b-3babad69cd5b");
 
   return (
     <Container>

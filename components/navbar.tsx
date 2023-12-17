@@ -8,17 +8,19 @@ const Navbar = async () => {
   const categories = await getCategories();
 
   return ( 
-    <div className="border-b">
+    <div className="border-b sticky top-0 z-50 bg-white">
       <Container>
-        <div className="relative px-4 sm:px-6 lg:px-8 flex h-16 items-center">
-          <Link href="/" className="ml-4 flex lg:ml-0 gap-x-2">
-            <p className="font-bold text-sm lg:text-base">
+        <div className="relative px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+          <Link href="/" className="ml-4 flex gap-x-2">
+            <p className="font-bold text-sm md:text-xl"> {/* Set different font size for mobile and larger screens */}
               <span style={{ color: '#C12800' }}>Trendy</span>{" "}
               <span style={{ color: '#0056AB' }}>Stocky</span>
             </p>
           </Link>
+          <div className="ml-auto" style={{ marginLeft: '-10px' }}>
+            <NavbarActions />
+          </div>
           <MainNav data={categories} />
-          <NavbarActions />
         </div>
       </Container>
     </div>

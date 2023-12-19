@@ -1,11 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "tailwindui.com",
-      "res.cloudinary.com"
+    // Use regular expression objects for remotePatterns
+    remotePatterns: [
+      {
+        hostname: 'tailwindui.com', // Hostname for tailwindui.com
+        // Add more properties or conditions if needed
+        // For example: path: /^\/images\//,
+        // This defines a path regex for images within the specified domain
+      },
+      {
+        hostname: 'res.cloudinary.com', // Hostname for res.cloudinary.com
+      },
+      {
+        hostname: 'th.bing.com', // Hostname for th.bing.com
+      }
+      // Add more regular expression objects as needed for other domains or paths
     ]
   }
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

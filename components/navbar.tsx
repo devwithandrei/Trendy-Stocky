@@ -17,7 +17,6 @@ const Navbar = async () => {
       <Container>
         <div className="relative px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <Link href="/" className="ml-4 flex gap-x-2">
-            {/* Render the SVG logo directly from components/logo/logo.svg */}
             <img
               src="https://th.bing.com/th/id/OIP.fUTQUCPKpQi4RI6G-KyfNgHaHa?rs=1&pid=ImgDetMain"
               alt="Logo"

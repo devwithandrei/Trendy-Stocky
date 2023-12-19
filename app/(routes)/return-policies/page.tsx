@@ -6,7 +6,7 @@ import CrispChatScript from "@/components/ui/CrispChatScript";
 export const revalidate = 0;
 
 const returnpolicies = async () => {
-  const billboard = await getBillboard("09ab1c87-a596-4462-a29b-3babad69cd5b");
+  const billboard = await getBillboard("f76d3f92-cdc7-4c39-b1d2-336377a51319");
 
   return (
     <Container>
@@ -18,7 +18,7 @@ const returnpolicies = async () => {
         {/* Updated Return Policies Content */}
         <div className="caligrafic-text" style={{ color: '#0066ff', fontFamily: 'cursive', textAlign: 'center' }}>
           <p style={{ fontSize: '1.3em' }}>
-            Welcome to the Return Policies of <strong>Trendy Stocky</strong>. This section outlines our return policies for purchases made through our website.
+            Welcome to the Return Policies of <strong>Pure Herbal Meds</strong>. This section outlines our return policies for purchases made through our website.
           </p>
           {/* Other return policies content here... */}
         </div>

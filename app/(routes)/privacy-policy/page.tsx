@@ -7,7 +7,7 @@ import CrispChatScript from "@/components/ui/CrispChatScript";
 export const revalidate = 0;
 
 const PrivacyPolicy = async () => {
-  const billboard = await getBillboard("09ab1c87-a596-4462-a29b-3babad69cd5b");
+  const billboard = await getBillboard("24fc9597-0976-4a1f-8738-bfe83a8bd4c5");
 
   return (
     <Container>
@@ -19,7 +19,7 @@ const PrivacyPolicy = async () => {
         {/* Updated Privacy Policy Content */}
         <div className="caligrafic-text" style={{ color: '#0066ff', fontFamily: 'cursive', textAlign: 'center' }}>
           <p style={{ fontSize: '1.3em' }}>
-            Welcome to the Privacy Policy of <strong>Trendy Stocky</strong>. This page outlines how we collect, use, and protect your personal information when you use our website.
+            Welcome to the Privacy Policy of <strong>Pure Herbal Meds</strong>. This page outlines how we collect, use, and protect your personal information when you use our website.
           </p>
           {/* Other privacy policy content here... */}
         </div>

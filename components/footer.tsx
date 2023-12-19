@@ -26,7 +26,6 @@ const Footer = () => {
             Return Policies
           </a>
         </p>
-        {/* Removed Contact Us link */}
       </div>
       <div className="mx-auto py-3">
         <p className="text-center text-sm md:text-lg text-black">

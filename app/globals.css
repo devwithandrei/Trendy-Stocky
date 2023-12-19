@@ -1,4 +1,3 @@
-/* Tailwind CSS setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,4 +120,3 @@ body {
   background-color: #f4f4f4;
   color: #333;
 }
-

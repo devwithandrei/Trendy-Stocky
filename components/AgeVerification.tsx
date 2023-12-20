@@ -4,13 +4,11 @@ import React, { useEffect } from 'react';
 const AgeVerification = () => {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'https://static.elfsight.com/platform/platform.js';
-    script.setAttribute('data-use-service-core', '');
+    script.src = 'https://cdn.commoninja.com/sdk/latest/commonninja.js';
     script.defer = true;
 
     const appDiv = document.createElement('div');
-    appDiv.className = 'elfsight-app-9b4f752e-bf38-4903-90f1-7d7b49239331';
-    appDiv.setAttribute('data-elfsight-app-lazy', '');
+    appDiv.className = 'commonninja_component pid-72aadd2b-e504-4bad-9c32-018e363bfe92';
 
     const body = document.querySelector('body');
     if (body) {
@@ -26,7 +24,9 @@ const AgeVerification = () => {
     };
   }, []);
 
-  return null;
+  return (
+    <div className="commonninja_component pid-72aadd2b-e504-4bad-9c32-018e363bfe92"></div>
+  );
 };
 
 export default AgeVerification;

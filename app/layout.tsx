@@ -1,6 +1,7 @@
 import { Urbanist } from 'next/font/google';
 import Head from 'next/head';
 import AgeVerification from '@/components/AgeVerification';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import ModalProvider from '@/providers/modal-provider';
 import ToastProvider from '@/providers/toast-provider';
@@ -33,6 +34,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
           <Navbar />
           {children}
           <Footer />
+          <SpeedInsights />
         </body>
       </html>
     </>

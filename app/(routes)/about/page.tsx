@@ -11,6 +11,8 @@ export const revalidate = 0;
 
 const AboutPage = async () => {
   const billboard = await getBillboard("216aaceb-4c9b-45c4-8265-fb5b0bef4240");
+  const fastDeliveryBillboard = await getBillboard("1d97c847-7ac5-4e50-89fb-42494e9f1686");
+
 
   return (
     <Container>
@@ -59,6 +61,12 @@ const AboutPage = async () => {
             </p>
                 {/* Add more FAQ content */}
           </div>
+            <div className="billboard-container"> 
+              <Billboard 
+               data={fastDeliveryBillboard}
+              
+              />
+            </div>
             <p>
               Thank you for choosing Pure Herbal Meds as your premier source for top-tier cannabis products.
             </p>

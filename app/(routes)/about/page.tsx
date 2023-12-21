@@ -1,7 +1,8 @@
-import Container from "@/components/ui/container";
-import Billboard from "@/components/ui/billboard";
-import CrispChatScript from "@/components/ui/CrispChatScript";
+import React from 'react';
 import getBillboard from "@/actions/get-billboard";
+import Billboard from "@/components/ui/billboard";
+import Container from "@/components/ui/container";
+import CrispChatScript from "@/components/ui/CrispChatScript";
 import { Metadata } from 'next'
 
 export const revalidate = 0;

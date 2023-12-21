@@ -2,6 +2,7 @@ import Container from "@/components/ui/container";
 import Billboard from "@/components/ui/billboard";
 import CrispChatScript from "@/components/ui/CrispChatScript";
 import getBillboard from "@/actions/get-billboard";
+import { Metadata } from 'next'
 
 export const revalidate = 0;
 

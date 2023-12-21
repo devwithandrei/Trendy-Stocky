@@ -3,7 +3,9 @@ import getBillboard from "@/actions/get-billboard";
 import Billboard from "@/components/ui/billboard";
 import Container from "@/components/ui/container";
 import CrispChatScript from "@/components/ui/CrispChatScript";
+import MapComponent from "@/components/GoogleMap";
 import { Metadata } from 'next'
+
 
 export const revalidate = 0;
 
@@ -22,9 +24,9 @@ const AboutPage = async () => {
           </p>
           {/* Separator */}
           <hr style={{ margin: '20px 0' }} />
-          </div>
- {/* Update About Us Content */}
- <div className="caligrafic-text" style={{ color: '#004d00', fontFamily: 'cursive', textAlign: 'center', display: 'grid', gap: '20px' }}>
+        </div>
+        {/* Update About Us Content */}
+        <div className="caligrafic-text" style={{ color: '#004d00', fontFamily: 'cursive', textAlign: 'center', display: 'grid', gap: '20px' }}>
           {/* Text in Box 1 */}
           <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '5px' }}>
             <p style={{ fontSize: '1.1em' }}>
@@ -61,7 +63,10 @@ const AboutPage = async () => {
               Thank you for choosing Pure Herbal Meds as your premier source for top-tier cannabis products.
             </p>
         </div>
-        {/* Updated About Us Content */}
+
+        {/* Include the MapComponent */}
+        <MapComponent />
+
         {/* Include the CrispChatScript component after existing content */}
         <CrispChatScript />
       </div>

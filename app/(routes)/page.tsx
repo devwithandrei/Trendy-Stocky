@@ -10,7 +10,6 @@ export const revalidate = 0;
 const HomePage = async () => {
   const products = await getProducts({ isFeatured: true });
   const billboard = await getBillboard("09ab1c87-a596-4462-a29b-3babad69cd5b");
-  const fastDeliveryBillboard = await getBillboard("1d97c847-7ac5-4e50-89fb-42494e9f1686");
 
   return (
     <Container>
@@ -25,12 +24,6 @@ const HomePage = async () => {
         {/* Include the CrispChatScript component after existing content */}
         <CrispChatScript />
       </div>
-            <div className="billboard-container"> 
-              <Billboard 
-               data={fastDeliveryBillboard}
-              
-              />
-            </div>
     </Container>
   )
 };

@@ -5,7 +5,7 @@ import Currency from '@/components/ui/currency';
 import Button from '@/components/ui/button';
 import { Product } from '@/types';
 import useCart from '@/hooks/use-cart';
-import Head from 'next/head'
+import Head from 'next/head';
 
 interface InfoProps {
   data: Product;
@@ -33,20 +33,20 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
+        <div className="flex items-center gap-x-4">
+          <h3 className="font-semibold text-black">Description:</h3>
+        </div>
         {descriptionLines && (
-          <div className="flex items-center gap-x-4">
-            <h3 className="font-semibold text-black">Description:</h3>
-            <div>
-              {descriptionLines.map((line, index) => (
-                <p
-                  key={index}
-                  className="text-green-900 font-semibold text-lg" // Updated text color and font weight
-                >
-                  {line}
-                  {index !== descriptionLines.length - 1 && <br />} {/* Add line break except for the last line */}
-                </p>
-              ))}
-            </div>
+          <div>
+            {descriptionLines.map((line, index) => (
+              <p
+                key={index}
+                className="text-green-900 font-semibold text-lg" // Updated text color and font weight
+              >
+                {line}
+                {index !== descriptionLines.length - 1 && <br />} {/* Add line break except for the last line */}
+              </p>
+            ))}
           </div>
         )}
         <div className="flex items-center gap-x-4">

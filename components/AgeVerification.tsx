@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const AgeVerification = () => {
-  const [script, setScript] = useState<HTMLScriptElement | null>(null);
-  const [appDiv, setAppDiv] = useState<HTMLDivElement | null>(null);
+  const scriptRef = useRef<HTMLScriptElement | null>(null);
+  const appDivRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const newScript = document.createElement('script');
@@ -19,15 +19,15 @@ const AgeVerification = () => {
       body.appendChild(newScript);
       body.appendChild(newAppDiv);
 
-      // Set state after appending elements to the body
-      setScript(newScript);
-      setAppDiv(newAppDiv);
+      // Update the ref values after appending elements to the body
+      scriptRef.current = newScript;
+      appDivRef.current = newAppDiv;
     }
 
     return () => {
-      if (body && script && appDiv) {
-        body.removeChild(script);
-        body.removeChild(appDiv);
+      if (body && scriptRef.current && appDivRef.current) {
+        body.removeChild(scriptRef.current);
+        body.removeChild(appDivRef.current);
       }
     };
   }, []); 

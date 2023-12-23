@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="mx-auto py-3">
         <p className="text-center text-sm md:text-lg font-bold text-green-600" style={{ color: '#228b22' }}>
           <a href="/" className="hover:underline hover:no-underline hover:text-blue-500 transition-colors duration-300">
-            Pure Herbal Meds
+            Trendy Stocky
           </a>
         </p>
       </div>

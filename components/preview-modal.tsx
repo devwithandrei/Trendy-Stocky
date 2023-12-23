@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import React, { useEffect } from 'react';
 import usePreviewModal from '@/hooks/use-preview-modal';
 import Gallery from '@/components/gallery';

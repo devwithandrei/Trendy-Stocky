@@ -1,44 +1,55 @@
 "use client";
 
-import NextImage from "next/image";
-import { Tab } from "@headlessui/react";
-
-import { Image } from "@/types";
-
-import GalleryTab from "./gallery-tab";
+// Gallery.tsx
+import React, { useState } from 'react';
+import { Tab } from '@headlessui/react';
+import NextImage from 'next/image';
+import { Image } from '@/types';
+import GalleryTab from './gallery-tab';
+import Head from 'next/head'
 
 interface GalleryProps {
   images: Image[];
 }
 
-const Gallery: React.FC<GalleryProps> = ({
-  images = []
-}) => {
-  return ( 
-    <Tab.Group as="div" className="flex flex-col-reverse">
-      <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
-        <Tab.List className="grid grid-cols-4 gap-6">
-          {images.map((image) => (
-            <GalleryTab key={image.id} image={image} />
-          ))}
-        </Tab.List>
+const Gallery: React.FC<GalleryProps> = ({ images = [] }) => {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index);
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="mt-6 w-full max-w-2xl sm:block lg:max-w-none">
+        <div
+          className="aspect-square relative h-full w-full sm:rounded-lg overflow-hidden cursor-pointer"
+          onClick={() => handleImageClick((selectedImageIndex + 1) % images.length)}
+        >
+          <NextImage
+            fill
+            src={images[selectedImageIndex].url}
+            alt="Image"
+            className="object-cover object-center"
+          />
+        </div>
       </div>
-      <Tab.Panels className="aspect-square w-full">
-        {images.map((image) => (
-          <Tab.Panel key={image.id}>
-            <div className="aspect-square relative h-full w-full sm:rounded-lg overflow-hidden">
-              <NextImage
-                fill
-                src={image.url}
-                alt="Image"
-                className="object-cover object-center"
+      <div className="mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
+        <Tab.Group>
+          <Tab.List className="grid grid-cols-4 gap-6">
+            {images.map((image, index) => (
+              <GalleryTab
+                key={image.id}
+                image={image}
+                onClick={() => handleImageClick(index)} // Pass onClick handler
+                selected={selectedImageIndex === index} // Check if image is selected
               />
-            </div>
-          </Tab.Panel>
-        ))}
-      </Tab.Panels>
-    </Tab.Group>
+            ))}
+          </Tab.List>
+        </Tab.Group>
+      </div>
+    </div>
   );
-}
- 
+};
+
 export default Gallery;

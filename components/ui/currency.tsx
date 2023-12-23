@@ -20,13 +20,16 @@ const Currency: React.FC<CurrencyProps> = ({
     setIsMounted(true);
   }, []);
 
+  // Use optional chaining to safely handle value conversion
+  const formattedValue = formatter.format(Number(value)) || '';
+
   if (!isMounted) {
     return null;
   }
 
   return ( 
     <div className="font-semibold">
-      {formatter.format(Number(value))}
+      {formattedValue}
     </div>
   );
 }

@@ -1,7 +1,5 @@
 "use client"
 
-"use client"
-
 import React, { useEffect, useState } from 'react';
 
 const AgeVerification = () => {
@@ -32,7 +30,7 @@ const AgeVerification = () => {
         body.removeChild(appDiv);
       }
     };
-  }, []); // Empty dependencies to run only once
+  }, []); 
 
   return (
     <div className="commonninja_component pid-72aadd2b-e504-4bad-9c32-018e363bfe92"></div>

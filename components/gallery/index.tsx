@@ -1,12 +1,11 @@
 "use client";
 
-// Gallery.tsx
+
 import React, { useState } from 'react';
 import { Tab } from '@headlessui/react';
 import NextImage from 'next/image';
 import { Image } from '@/types';
 import GalleryTab from './gallery-tab';
-import Head from 'next/head'
 
 interface GalleryProps {
   images: Image[];
@@ -19,6 +18,10 @@ const Gallery: React.FC<GalleryProps> = ({ images = [] }) => {
     setSelectedImageIndex(index);
   };
 
+  if (!images || images.length === 0) {
+    return <div>No images available.</div>;
+  }
+
   return (
     <div className="flex flex-col items-center">
       <div className="mt-6 w-full max-w-2xl sm:block lg:max-w-none">
@@ -26,12 +29,14 @@ const Gallery: React.FC<GalleryProps> = ({ images = [] }) => {
           className="aspect-square relative h-full w-full sm:rounded-lg overflow-hidden cursor-pointer"
           onClick={() => handleImageClick((selectedImageIndex + 1) % images.length)}
         >
-          <NextImage
-            fill
-            src={images[selectedImageIndex].url}
-            alt="Image"
-            className="object-cover object-center"
-          />
+          {images[selectedImageIndex] && images[selectedImageIndex].url && (
+            <NextImage
+              fill
+              src={images[selectedImageIndex].url}
+              alt="Image"
+              className="object-cover object-center"
+            />
+          )}
         </div>
       </div>
       <div className="mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">

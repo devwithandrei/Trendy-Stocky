@@ -14,7 +14,14 @@ const nextConfig = {
       },
       {
         hostname: 'th.bing.com', // Hostname for th.bing.com
+      },
+      {
+        hostname: 'https://i.pinimg.com', // Hostname for th.bing.com
+      },
+      {
+        hostname: 'https://media.giphy.com', // Hostname for th.bing.com
       }
+
       // Add more regular expression objects as needed for other domains or paths
     ]
   }

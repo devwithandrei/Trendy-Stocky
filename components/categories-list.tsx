@@ -30,6 +30,12 @@ const CategoriesList: React.FC = () => {
         // Other category properties
       },
       {
+        id: 'e548d1eb-1cd7-4299-95e5-fe08ff6fc488',
+        name: 'T-Shirts',
+        imageUrl: 'https://media.giphy.com/media/zbGUB1RQEOmyEVjJvK/giphy.gif',
+        // Other category properties
+      },
+      {
         id: 'a08a0da8-4538-4d0a-94bd-9bc933458d11',
         name: 'Shoes',
         imageUrl: 'https://media.giphy.com/media/14gnhUPQZpdyLe/source.gif',

@@ -1,13 +1,11 @@
-import NextLink from 'next/link'; // Import NextLink from next/link
+import React from 'react';
 import MainNav from '@/components/main-nav';
 import Container from '@/components/ui/container';
 import NavbarActions from '@/components/navbar-actions';
-import categories from '@/actions/get-categories';
 import Image from 'next/image';
+import Link from 'next/link'; // Import Link from next/link
 
-const Navbar = async () => {
-  const categoriesData = await categories();
-
+const Navbar = () => {
   const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 80;
   const isSmallDevice = screenWidth <= 640;
   const svgWidth = isSmallDevice ? 40 : 80;
@@ -17,9 +15,9 @@ const Navbar = async () => {
     <div className="border-b sticky top-0 z-50 bg-white">
       <Container>
         <div className="relative px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <NextLink href="/" passHref>
-            {/* Use NextLink and passHref */}
-            <div className="ml-4 flex gap-x-2">
+          {/* Wrap the logo in Link to make it clickable */}
+          <Link href="/" passHref>
+            <div className="ml-4 flex gap-x-2 cursor-pointer">
               <Image
                 src="https://th.bing.com/th/id/OIP.fUTQUCPKpQi4RI6G-KyfNgHaHa?rs=1&pid=ImgDetMain"
                 alt="Logo"
@@ -27,8 +25,9 @@ const Navbar = async () => {
                 height={svgHeight}
               />
             </div>
-          </NextLink>
-          <MainNav data={categoriesData} />
+          </Link>
+          {/* Render MainNav and NavbarActions */}
+          <MainNav />
           <div className="ml-auto sm:ml-0 sm:mr-4">
             <NavbarActions />
           </div>

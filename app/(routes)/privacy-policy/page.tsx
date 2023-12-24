@@ -8,7 +8,7 @@ import { Metadata } from 'next'
 export const revalidate = 0;
 
 const PrivacyPolicy = async () => {
-  const billboard = await getBillboard("dbdc3ee6-7813-4b23-b1fc-68c0ebe1bd41");
+  const billboard = await getBillboard("7e9fa4f3-3dd1-4962-a816-f71f98421b5f");
 
   return (
     <Container>

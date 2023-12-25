@@ -20,9 +20,19 @@ const nextConfig = {
       {
         hostname: 'funsubstance.com', // Add 'funsubstance.com' here
       },
+      {
+        hostname: 'https://th.bing.com', // Add 'funsubstance.com' here
+      },
+      {
+        hostname: 'https://img.buzzfeed.com', // Add 'funsubstance.com' here
+      },
       // Add more hostname configurations as needed
     ],
   },
 };
 
 module.exports = nextConfig;
+
+
+
+

@@ -41,6 +41,30 @@ const CategoriesList: React.FC = () => {
         imageUrl: 'https://media.giphy.com/media/14gnhUPQZpdyLe/source.gif',
         // Other category properties
       },
+      {
+        id: '3059d150-1bba-4f6c-ae90-763d7bd2f861',
+        name: 'Accesories',
+        imageUrl: 'https://media.giphy.com/media/vy0dVKp8BLOUxvvrj6/giphy.gif',
+        // Other category properties
+      },
+      {
+        id: '0bc32551-e4c3-4967-8ee8-a8fd786426da',
+        name: 'For Him',
+        imageUrl: 'https://th.bing.com/th/id/R.0d92d6bbbb6049a60abf58e53b1935e6?rik=%2fCwM2W0jniJAAw&riu=http%3a%2f%2f66.media.tumblr.com%2ff1a14725f46003edd4959a5d359775f5%2ftumblr_o7ezwnDuGE1tcsj92o2_r1_400.gif&ehk=JqMwmWLg2z7szLglCF8vIyjm1EeN4TzappilLWb74cI%3d&risl=&pid=ImgRaw&r=0',
+        // Other category properties
+      },
+      {
+        id: 'd001952e-0465-4ace-8189-87bf9142581d',
+        name: 'For Her',
+        imageUrl: 'https://media.giphy.com/media/yyc8oPpz22B6h0g6bm/giphy.gif',
+        // Other category properties
+      },
+      {
+        id: '0856c133-5c28-4590-af03-305b3f34cd7c',
+        name: 'For Kids',
+        imageUrl: 'https://img.buzzfeed.com/buzzfeed-static/static/2016-03/14/10/enhanced/webdr06/anigif_enhanced-19388-1457965470-2.gif',
+        // Other category properties
+      },
       // Add other categories as needed
     ];
 

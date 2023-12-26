@@ -2,77 +2,70 @@
 
 
 import Image from "next/image";
-import { MouseEventHandler } from "react";
-import { Expand, ShoppingCart } from "lucide-react";
-import { useRouter } from "next/navigation";
-
-import Currency  from "@/components/ui/currency";
-import IconButton  from "@/components/ui/icon-button";
-import usePreviewModal from "@/hooks/use-preview-modal";
-import useCart from "@/hooks/use-cart";
+import Link from "next/link";
+import Currency from "@/components/ui/currency";
 import { Product } from "@/types";
+import { MouseEventHandler, useState } from "react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import BuyNowButton from "./BuyNowButton";
 
-interface ProductCard {
-  data: Product
+interface ProductCardProps {
+  data: Product;
 }
 
-const ProductCard: React.FC<ProductCard> = ({
-  data
-}) => {
-  const previewModal = usePreviewModal();
-  const cart = useCart();
-  const router = useRouter();
+const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
+  const [isBuying, setIsBuying] = useState(false);
 
-  const handleClick = () => {
-    router.push(`/product/${data?.id}`);
-  };
-
-  const onPreview: MouseEventHandler<HTMLButtonElement> = (event) => {
+  const handleBuyNow: MouseEventHandler<HTMLButtonElement> = async (event) => {
     event.stopPropagation();
+    setIsBuying(true);
 
-    previewModal.onOpen(data);
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+        checkoutInfo: {},
+        productIds: [data.id],
+      });
+
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      toast.error("Failed to proceed to checkout. Please try again.");
+    } finally {
+      setIsBuying(false);
+    }
   };
 
-  const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.stopPropagation();
-
-    cart.addItem(data);
-  };
-  
-  return ( 
-    <div onClick={handleClick} className="bg-white group cursor-pointer rounded-xl border p-3 space-y-4">
-      {/* Image & actions */}
-      <div className="aspect-square rounded-xl bg-gray-100 relative">
-        <Image 
-          src={data.images?.[0]?.url} 
-          alt="" 
-          fill
-          className="aspect-square object-cover rounded-md"
-        />
-        <div className="opacity-0 group-hover:opacity-100 transition absolute w-full px-6 bottom-5">
-          <div className="flex gap-x-6 justify-center">
-            <IconButton 
-              onClick={onPreview} 
-              icon={<Expand size={20} className="text-gray-600" />}
-            />
-            <IconButton
-              onClick={onAddToCart} 
-              icon={<ShoppingCart size={20} className="text-gray-600" />} 
-            />
-          </div>
+  return (
+    <div className="bg-white group cursor-pointer rounded-xl border p-3 space-y-4">
+      <Link href={`/product/${data.id}`} passHref>
+        <div className="aspect-square rounded-xl bg-gray-100 relative">
+          <Image
+            src={data.images?.[0]?.url}
+            alt={data.name}
+            width={300}
+            height={300}
+            className="aspect-square object-cover rounded-md"
+            sizes="100vw"
+            style={{
+              width: "100%",
+              height: "auto",
+              objectPosition: "center"
+            }}
+          />
         </div>
+      </Link>
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="font-semibold text-lg">{data.name}</p>
+          <p className="text-sm text-gray-500">{data.category?.name}</p>
+          <Currency value={data?.price} />
+        </div>
+        <BuyNowButton onClick={handleBuyNow} isBuying={isBuying} />
       </div>
-      {/* Description */}
-      <div>
-        <p className="font-semibold text-lg">{data.name}</p>
-        <p className="text-sm text-gray-500">{data.category?.name}</p>
-      </div>
-      {/* Price & Reiew */}
-      <div className="flex items-center justify-between">
-        <Currency value={data?.price} />
-      </div>
+      {/* Other product details or additional content */}
     </div>
   );
-}
+};
 
 export default ProductCard;

@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { ShoppingCart } from 'lucide-react';
 import Currency from '@/components/ui/currency';
 import Button from '@/components/ui/button';

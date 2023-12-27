@@ -1,8 +1,8 @@
 "use client"
 
 import React from 'react';
+import NextLink from 'next/link'; 
 import Image from 'next/image'
-import NextLink from 'next/link'; // Use a different name for the Link import
 
 interface Category {
   id: string;

@@ -2,6 +2,7 @@ import Container from '@/components/ui/container';
 import Billboard from '@/components/ui/billboard';
 import ProductCard from '@/components/ui/product-card';
 import NoResults from '@/components/ui/no-results';
+import Image from 'next/image'
 import CrispChatScript from '@/components/ui/CrispChatScript'; // Import the CrispChatScript component
 
 import getProducts from "@/actions/get-products";

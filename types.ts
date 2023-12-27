@@ -5,10 +5,11 @@ export interface Product {
   price: string;
   isFeatured: boolean;
   size: Size;
+  selectedSize?: string | null; // Adding selectedSize property
   description: Description;
   color: Color;
-  images: Image[]
-};
+  images: Image[];
+}
 
 export interface Image {
   id: string;
@@ -19,28 +20,28 @@ export interface Billboard {
   id: string;
   label: string;
   imageUrl: string;
-};
+}
 
 export interface Category {
   id: string;
   name: string;
   billboard: Billboard;
-};
+}
 
 export interface Size {
   id: string;
   name: string;
   value: string;
-};
+}
 
 export interface Description {
   id: string;
   name: string;
   value: string;
-};
+}
 
 export interface Color {
   id: string;
   name: string;
   value: string;
-};
+}

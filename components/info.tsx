@@ -50,25 +50,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       </Head>
       <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
       <div className="mt-3 flex items-end justify-between">
-        <p className="text-2xl text-gray-900">
-          <Currency value={price} />
-        </p>
-      </div>
-      <hr className="my-4" />
-      <div className="flex flex-col gap-y-6">
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Description:</h3>
-        </div>
-        {descriptionLines && (
-          <div>
-            {descriptionLines.map((line, index) => (
-              <p key={index} className="text-green-900 font-semibold text-lg">
-                {line}
-                {index !== descriptionLines.length - 1 && <br />}
-              </p>
-            ))}
-          </div>
-        )}
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Size:</h3>
           <div className="relative inline-block text-left">
@@ -125,6 +106,25 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             style={{ backgroundColor: color?.value }}
           />
         </div>
+        <p className="text-2xl text-gray-900">
+          <Currency value={price} />
+        </p>
+      </div>
+      <hr className="my-4" />
+      <div className="flex flex-col gap-y-6">
+        <div className="flex items-center gap-x-4">
+          <h3 className="font-semibold text-black">Description:</h3>
+        </div>
+        {descriptionLines && (
+          <div>
+            {descriptionLines.map((line, index) => (
+              <p key={index} className="text-green-900 font-semibold text-lg">
+                {line}
+                {index !== descriptionLines.length - 1 && <br />}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
       <div className="mt-10 flex items-center gap-x-3">
         <Button

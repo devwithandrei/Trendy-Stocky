@@ -13,6 +13,8 @@ interface InfoProps {
   data: Product;
 }
 
+// ... existing imports and code ...
+
 const Info: React.FC<InfoProps> = ({ data }) => {
   const cart = useCart();
   const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
@@ -52,6 +54,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       <div className="mt-3 flex items-end justify-between">
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Size:</h3>
+          {/* Size elements */}
           <div className="relative inline-block text-left">
             <div>
               <button
@@ -76,31 +79,32 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                   />
                 </svg>
               </button>
-            </div>
-            {isSizeDropdownOpen && (
-              <div className="origin-top-right absolute left-1/2 transform -translate-x-1/2 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                <div
-                  className="py-1 flex flex-col items-center"
-                  role="menu"
-                  aria-orientation="vertical"
-                  aria-labelledby="options-menu"
-                >
-                  {sizes.map((sizeOption, index) => (
-                    <button
-                      key={index}
-                      className={`w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center`}
-                      onClick={() => selectSize(sizeOption)}
-                    >
-                      {sizeOption}
-                    </button>
-                  ))}
+              {isSizeDropdownOpen && (
+                <div className="origin-top-right absolute left-1/2 transform -translate-x-1/2 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                  <div
+                    className="py-1 flex flex-col items-center"
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="options-menu"
+                  >
+                    {sizes.map((sizeOption, index) => (
+                      <button
+                        key={index}
+                        className={`w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center`}
+                        onClick={() => selectSize(sizeOption)}
+                      >
+                        {sizeOption}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Color:</h3>
+          {/* Color element */}
           <div
             className="h-6 w-6 rounded-full border border-gray-600"
             style={{ backgroundColor: color?.value }}

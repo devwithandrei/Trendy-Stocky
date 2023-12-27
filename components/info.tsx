@@ -51,7 +51,11 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         <title>{name}</title>
       </Head>
       <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
-      <div className="mt-3 flex items-end justify-between">
+      <p className="text-2xl text-gray-900">
+        <Currency value={price} />
+      </p>
+      <hr className="my-4" />
+      <div className="flex flex-col gap-y-6">
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Size:</h3>
           {/* Size elements */}
@@ -110,9 +114,15 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             style={{ backgroundColor: color?.value }}
           />
         </div>
-        <p className="text-2xl text-gray-900">
-          <Currency value={price} />
-        </p>
+        <div className="mt-10 flex items-center gap-x-3">
+          <Button
+            onClick={onAddToCart}
+            className="flex items-center gap-x-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+          >
+            Add To Cart
+            <ShoppingCart size={20} />
+          </Button>
+        </div>
       </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
@@ -129,15 +139,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             ))}
           </div>
         )}
-      </div>
-      <div className="mt-10 flex items-center gap-x-3">
-        <Button
-          onClick={onAddToCart}
-          className="flex items-center gap-x-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
-        >
-          Add To Cart
-          <ShoppingCart size={20} />
-        </Button>
       </div>
     </div>
   );

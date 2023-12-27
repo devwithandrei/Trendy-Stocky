@@ -13,8 +13,6 @@ interface InfoProps {
   data: Product;
 }
 
-// ... existing imports and code ...
-
 const Info: React.FC<InfoProps> = ({ data }) => {
   const cart = useCart();
   const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
@@ -51,14 +49,28 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         <title>{name}</title>
       </Head>
       <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
-      <p className="text-2xl text-gray-900">
-        <Currency value={price} />
-      </p>
+      <div className="mt-3 flex items-end justify-between">
+        <p className="text-2xl text-gray-900">
+          <Currency value={price} />
+        </p>
+      </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
         <div className="flex items-center gap-x-4">
+          <h3 className="font-semibold text-black">Description:</h3>
+        </div>
+        {descriptionLines && (
+          <div>
+            {descriptionLines.map((line, index) => (
+              <p key={index} className="text-green-900 font-semibold text-lg">
+                {line}
+                {index !== descriptionLines.length - 1 && <br />}
+              </p>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Size:</h3>
-          {/* Size elements */}
           <div className="relative inline-block text-left">
             <div>
               <button
@@ -108,37 +120,21 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         </div>
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Color:</h3>
-          {/* Color element */}
           <div
             className="h-6 w-6 rounded-full border border-gray-600"
             style={{ backgroundColor: color?.value }}
           />
         </div>
-        <div className="mt-10 flex items-center gap-x-3">
-          <Button
-            onClick={onAddToCart}
-            className="flex items-center gap-x-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
-          >
-            Add To Cart
-            <ShoppingCart size={20} />
-          </Button>
-        </div>
       </div>
       <hr className="my-4" />
-      <div className="flex flex-col gap-y-6">
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Description:</h3>
-        </div>
-        {descriptionLines && (
-          <div>
-            {descriptionLines.map((line, index) => (
-              <p key={index} className="text-green-900 font-semibold text-lg">
-                {line}
-                {index !== descriptionLines.length - 1 && <br />}
-              </p>
-            ))}
-          </div>
-        )}
+      <div className="mt-10 flex items-center gap-x-3">
+        <Button
+          onClick={onAddToCart}
+          className="flex items-center gap-x-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md transition duration-300 ease-in-out"
+        >
+          Add To Cart
+          <ShoppingCart size={20} />
+        </Button>
       </div>
     </div>
   );

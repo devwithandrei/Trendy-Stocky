@@ -95,27 +95,27 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                   />
                 </svg>
               </button>
-              {isSizeDropdownOpen && (
-                <div className="origin-top-right absolute left-1/2 transform -translate-x-1/2 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                  <div
-                    className="py-1 flex flex-col items-center"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="options-menu"
-                  >
-                    {sizes.map((sizeOption, index) => (
-                      <button
-                        key={index}
-                        className={`w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center`}
-                        onClick={() => selectSize(sizeOption)}
-                      >
-                        {sizeOption}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+            {isSizeDropdownOpen && (
+              <div className="origin-top-right absolute left-1/2 transform -translate-x-1/2 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                <div
+                  className="py-1 flex flex-col items-center"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="options-menu"
+                >
+                  {sizes.map((sizeOption, index) => (
+                    <button
+                      key={index}
+                      className={`w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center`}
+                      onClick={() => selectSize(sizeOption)}
+                    >
+                      {sizeOption}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-x-4">
@@ -126,7 +126,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           />
         </div>
       </div>
-      <hr className="my-4" />
       <div className="mt-10 flex items-center gap-x-3">
         <Button
           onClick={onAddToCart}

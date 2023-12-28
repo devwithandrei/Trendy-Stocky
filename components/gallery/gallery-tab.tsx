@@ -1,4 +1,3 @@
-import Head from 'next/head'
 import React from 'react';
 import { Tab } from '@headlessui/react';
 import NextImage from 'next/image';

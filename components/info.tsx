@@ -1,5 +1,4 @@
 "use client";
-
 import { ShoppingCart } from 'lucide-react';
 import Currency from '@/components/ui/currency';
 import Button from '@/components/ui/button';
@@ -18,7 +17,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     cart.addItem(data);
   };
 
-  const { name, price, size, color, description } = data || {};
+  const { name, price, size, color, description, brand } = data || {};
 
   // Split description into an array by line breaks
   const descriptionLines = description?.value.split('\n');
@@ -33,39 +32,55 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
+        <div className="flex flex-col lg:flex-row gap-y-4 lg:gap-y-0 lg:gap-x-4">
+          <div className="flex items-center gap-x-4">
+            <div className="flex items-center gap-x-4">
+              <h3 className="font-semibold text-black">Brand:</h3>
+              <div>{brand?.value}</div>
+            </div>
+            <div className="hidden lg:flex items-center gap-x-4">
+              <h3 className="font-semibold text-black">Size:</h3>
+              <div>{size?.value}</div>
+            </div>
+            <div className="hidden lg:flex items-center gap-x-4">
+              <h3 className="font-semibold text-black">Color:</h3>
+              <div
+                className="h-6 w-6 rounded-full border border-gray-600"
+                style={{ backgroundColor: color?.value }}
+              />
+            </div>
+          </div>
+          <div className="lg:hidden flex items-center gap-x-4">
+            <h3 className="font-semibold text-black">Size:</h3>
+            <div>{size?.value}</div>
+          </div>
+          <div className="lg:hidden flex items-center gap-x-4">
+            <h3 className="font-semibold text-black">Color:</h3>
+            <div
+              className="h-6 w-6 rounded-full border border-gray-600"
+              style={{ backgroundColor: color?.value }}
+            />
+          </div>
+        </div>
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Description:</h3>
         </div>
         {descriptionLines && (
           <div>
             {descriptionLines.map((line, index) => (
-              <p
-                key={index}
-                className="text-green-900 font-semibold text-lg" // Updated text color and font weight
-              >
+              <p key={index} className="text-green-900 font-semibold text-lg">
                 {line}
-                {index !== descriptionLines.length - 1 && <br />} {/* Add line break except for the last line */}
+                {index !== descriptionLines.length - 1 && <br />}
               </p>
             ))}
           </div>
         )}
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Size:</h3>
-          <div>{size?.value}</div>
+        <div className="mt-10 flex items-center gap-x-3">
+          <Button onClick={onAddToCart} className="flex items-center gap-x-2">
+            Add To Cart
+            <ShoppingCart size={20} />
+          </Button>
         </div>
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Color:</h3>
-          <div
-            className="h-6 w-6 rounded-full border border-gray-600"
-            style={{ backgroundColor: color?.value }}
-          />
-        </div>
-      </div>
-      <div className="mt-10 flex items-center gap-x-3">
-        <Button onClick={onAddToCart} className="flex items-center gap-x-2">
-          Add To Cart
-          <ShoppingCart size={20} />
-        </Button>
       </div>
     </div>
   );

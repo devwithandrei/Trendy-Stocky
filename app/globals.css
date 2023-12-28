@@ -121,3 +121,9 @@ body {
   color: #333;
 }
 
+
+.custom-modal {
+  max-height: 80vh; /* Adjust the value as needed */
+  overflow-y: auto; /* Enable vertical scrolling if the content exceeds the height */
+  /* Other styles as needed */
+}

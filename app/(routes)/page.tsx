@@ -14,7 +14,7 @@ const HomePage = async () => {
   const products = await getProducts({ isFeatured: true });
   const categories = await getCategories({ isFeatured: true }); // Fetch categories
 
-  const billboard = await getBillboard("c2ae81d2-236f-4e00-bea2-27c2ba472ac5");
+  const billboard = await getBillboard("bdc3ae6e-993e-4280-b0ae-5ba868c0e6ed");
 
   return (
     <Container>

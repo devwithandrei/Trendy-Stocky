@@ -24,9 +24,9 @@ const Gallery: React.FC<GalleryProps> = ({ images = [] }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mt-6 w-full max-w-2xl sm:block lg:max-w-none">
+      <div className="mt-6 w-full max-w-2xl lg:max-w-none">
         <div
-          className="aspect-square relative h-full w-full sm:rounded-lg overflow-hidden cursor-pointer"
+          className="aspect-square relative h-full w-full rounded-lg overflow-hidden cursor-pointer"
           onClick={() => handleImageClick((selectedImageIndex + 1) % images.length)}
         >
           {images[selectedImageIndex] && images[selectedImageIndex].url && (
@@ -39,15 +39,15 @@ const Gallery: React.FC<GalleryProps> = ({ images = [] }) => {
           )}
         </div>
       </div>
-      <div className="mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
+      <div className="mt-6 w-full max-w-2xl lg:max-w-none">
         <Tab.Group>
           <Tab.List className="grid grid-cols-4 gap-6">
             {images.map((image, index) => (
               <GalleryTab
                 key={image.id}
                 image={image}
-                onClick={() => handleImageClick(index)} // Pass onClick handler
-                selected={selectedImageIndex === index} // Check if image is selected
+                onClick={() => handleImageClick(index)}
+                selected={selectedImageIndex === index}
               />
             ))}
           </Tab.List>

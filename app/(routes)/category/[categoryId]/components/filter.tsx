@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Color, Size, Brand } from "@/types";
 
 interface FilterProps {
-  data: (Size | Color | Brand)[];
+  data: (Size | Color | Brand )[];
   name: string;
   valueKey: string;
 };

@@ -18,8 +18,8 @@ const CategoriesList: React.FC = () => {
   useEffect(() => {
     const categoryData: Category[] = [
       {
-        id: '0a6dd1c0-4261-425c-918b-9a39b72e2818',
-        name: 'Hash',
+        id: '9e2c7068-d057-4728-8d5e-012d22f63e22',
+        name: 'Jakets',
         imageUrl: 'https://i.pinimg.com/originals/89/f5/9c/89f59c4b799edd68b28a19111421fc94.gif',
         // Other category properties
       },

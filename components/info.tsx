@@ -5,6 +5,7 @@ import Button from '@/components/ui/button';
 import { Product } from '@/types';
 import useCart from '@/hooks/use-cart';
 import Head from 'next/head';
+import { Fragment } from 'react';
 
 interface InfoProps {
   data: Product;
@@ -15,15 +16,19 @@ const Info: React.FC<InfoProps> = ({ data }) => {
 
   const onAddToCart = () => {
     cart.addItem(data);
+    window.location.href = '/cart'; // Redirects to the cart page after adding to cart
   };
 
   const { name, price, size, color, description, brand } = data || {};
-
-  // Split description into an array by line breaks
   const descriptionLines = description?.value.split('\n');
 
   return (
     <div>
+      <Head>
+        <Fragment>
+          {/* Your Head content */}
+        </Fragment>
+      </Head>
       <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
       <div className="mt-3 flex items-end justify-between">
         <p className="text-2xl text-gray-900">
@@ -44,10 +49,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             </div>
             <div className="hidden lg:flex items-center gap-x-4">
               <h3 className="font-semibold text-black">Color:</h3>
-              <div
-                className="h-6 w-6 rounded-full border border-gray-600"
-                style={{ backgroundColor: color?.value }}
-              />
+              <div className="h-6 w-6 rounded-full border border-gray-600" style={{ backgroundColor: color?.value }} />
             </div>
           </div>
           <div className="lg:hidden flex items-center gap-x-4">
@@ -56,10 +58,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           </div>
           <div className="lg:hidden flex items-center gap-x-4">
             <h3 className="font-semibold text-black">Color:</h3>
-            <div
-              className="h-6 w-6 rounded-full border border-gray-600"
-              style={{ backgroundColor: color?.value }}
-            />
+            <div className="h-6 w-6 rounded-full border border-gray-600" style={{ backgroundColor: color?.value }} />
           </div>
         </div>
         <div className="flex items-center gap-x-4">

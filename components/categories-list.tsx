@@ -24,43 +24,43 @@ const CategoriesList: React.FC = () => {
         // Other category properties
       },
       {
-        id: '7ee63657-e60d-4bab-96d2-fab6c50a0d22',
+        id: '32d4c5b3-839f-4c57-bb98-694a99ea2e4e',
         name: 'Jeans',
         imageUrl: 'https://media.giphy.com/media/Z9uId9712lo9gfJvil/giphy.gif',
         // Other category properties
       },
       {
-        id: 'e548d1eb-1cd7-4299-95e5-fe08ff6fc488',
+        id: '58636a43-e64c-44a3-ab73-4b66cdd6e173',
         name: 'T-Shirts',
         imageUrl: 'https://media.giphy.com/media/zbGUB1RQEOmyEVjJvK/giphy.gif',
         // Other category properties
       },
       {
-        id: 'a08a0da8-4538-4d0a-94bd-9bc933458d11',
+        id: 'd3163d3b-854a-4d26-a2de-b323762943e1',
         name: 'Shoes',
         imageUrl: 'https://media.giphy.com/media/14gnhUPQZpdyLe/source.gif',
         // Other category properties
       },
       {
-        id: '3059d150-1bba-4f6c-ae90-763d7bd2f861',
+        id: 'e5c096e4-00dd-4d60-b9a8-39a560612b71',
         name: 'Accesories',
         imageUrl: 'https://media.giphy.com/media/vy0dVKp8BLOUxvvrj6/giphy.gif',
         // Other category properties
       },
       {
-        id: '0bc32551-e4c3-4967-8ee8-a8fd786426da',
+        id: '21fe2c3a-f9fe-48a9-bccb-dd1c8f20be97',
         name: 'For Him',
         imageUrl: 'https://th.bing.com/th/id/R.0d92d6bbbb6049a60abf58e53b1935e6?rik=%2fCwM2W0jniJAAw&riu=http%3a%2f%2f66.media.tumblr.com%2ff1a14725f46003edd4959a5d359775f5%2ftumblr_o7ezwnDuGE1tcsj92o2_r1_400.gif&ehk=JqMwmWLg2z7szLglCF8vIyjm1EeN4TzappilLWb74cI%3d&risl=&pid=ImgRaw&r=0',
         // Other category properties
       },
       {
-        id: 'd001952e-0465-4ace-8189-87bf9142581d',
+        id: '39550a39-89ad-4f8a-9e8d-36088d57a383',
         name: 'For Her',
         imageUrl: 'https://media.giphy.com/media/yyc8oPpz22B6h0g6bm/giphy.gif',
         // Other category properties
       },
       {
-        id: '0856c133-5c28-4590-af03-305b3f34cd7c',
+        id: '0e1fda06-ea32-47b3-b4d2-0c0ac9d89e7a',
         name: 'For Kids',
         imageUrl: 'https://img.buzzfeed.com/buzzfeed-static/static/2016-03/14/10/enhanced/webdr06/anigif_enhanced-19388-1457965470-2.gif',
         // Other category properties

@@ -19,14 +19,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   return (
     <div className="category-card rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 ease-in-out">
       <NextLink href={`/category/${category.id}`} passHref>
-        <div>
-          <div className="w-full h-56">
+        <div className="flex flex-col items-center">
+          <div className="relative w-full h-56">
             <Image
               src={category.imageUrl}
               alt={category.name}
-              layout="responsive"
-              width={400} // Adjust width and height based on your design
-              height={300}
+              layout="fill"
+              objectFit="cover"
             />
           </div>
           <div className="p-4 flex flex-col justify-center items-center">

@@ -1,7 +1,8 @@
 "use client";
 import React from 'react';
-import { Product } from '@/customTypes';
-import { products } from '@/components/ProductData';
+import { Product } from '@/SearchTypes';
+import { products } from '@/components/ProductSearchData';
+import Image from 'next/image'
 
 
 interface ProductSearchResultProps {

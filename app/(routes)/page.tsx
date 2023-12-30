@@ -7,6 +7,7 @@ import Billboard from "@/components/ui/billboard";
 import Container from "@/components/ui/container";
 import CrispChatScript from "@/components/ui/CrispChatScript";
 import CategoryCard from '@/components/ui/CategoryCard';
+import Image from 'next/image'
 
 export const revalidate = 0;
 

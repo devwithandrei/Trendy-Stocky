@@ -5,8 +5,8 @@ import Link from 'next/link';
 import Container from '@/components/ui/container';
 import NavbarActions from '@/components/navbar-actions';
 import ProductSearchBar from './ProductSearchBar';
-import { Product } from '@/customTypes';
-import { products } from '@/components/ProductData';
+import { Product } from '@/SearchTypes';
+import { products } from '@/components/ProductSearchData';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Product } from '@/customTypes';
+import { Product } from '@/SearchTypes';
 import ProductSearchResult from './ProductSearchResult';
-import { products } from '@/components/ProductData';
+import { products } from '@/components/ProductSearchData';
+import Image from 'next/image'
 
 
 interface ProductSearchBarProps {

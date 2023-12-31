@@ -41,7 +41,7 @@ const Footer = () => {
       </div>
       <div className="mx-auto py-3">
         <p className="text-center text-sm md:text-lg text-[#3A5795]">
-          &copy; {new Date().getFullYear()} Pure Herbal Meds, Inc. All rights reserved.
+          &copy; {new Date().getFullYear()} Trendy Stocky, Inc. All rights reserved.
         </p>
       </div>
     </footer>

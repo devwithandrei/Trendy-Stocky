@@ -86,8 +86,8 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products }) => {
         )}
       </div>
       {showPopup && (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-blue-500 bg-opacity-25 p-4 rounded-lg max-w-md w-full border border-blue-500 border-opacity-50">
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-blue-500 bg-opacity-25 p-4 rounded-lg max-w-md w-full border border-blue-500 border-opacity-50 relative">
             <input
               type="text"
               placeholder="Search products..."

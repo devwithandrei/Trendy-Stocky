@@ -1,5 +1,7 @@
 "use client"
 
+
+
 import React, { useEffect, useState } from 'react';
 import CategoryCard from '@/components/ui/CategoryCard';
 import NoResults from '@/components/ui/no-results';

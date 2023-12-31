@@ -1,9 +1,12 @@
 "use client";
 
+
+
 import React, { useEffect, useRef, useCallback } from 'react';
 import ProductSearchBar from './ProductSearchBar';
 import NavbarActions from '@/components/navbar-actions';
 import { products } from '@/components/ProductSearchData';
+import CategoriesList from './categories-list'; // Import the CategoriesList component
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
@@ -68,6 +71,8 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: Mob
             </svg>
           </button>
         </div>
+        {/* Categories List */}
+        <CategoriesList />
       </div>
     </div>
   );

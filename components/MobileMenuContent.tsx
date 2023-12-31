@@ -33,9 +33,21 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: Mob
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 overflow-y-auto">
-      <div ref={menuRef} className="w-2/3 bg-white h-full overflow-y-auto absolute top-0 right-0">
-        {/* Close Button */}
-        <div className="flex justify-end p-4">
+      <div ref={menuRef} className="w-2/3 bg-blue-200 bg-opacity-70 h-full overflow-y-auto absolute top-0 right-0">
+        <div className="flex justify-between p-4 items-center">
+          {/* Trendy Stocky */}
+          <div className="text-[#3A5795] font-extrabold">
+            Trendy Stocky
+          </div>
+          {/* Cart Button */}
+          <div>
+            <NavbarActions />
+          </div>
+          {/* ProductSearchBar */}
+          <div>
+            <ProductSearchBar products={products} />
+          </div>
+          {/* Close Button */}
           <button
             onClick={toggleMenu}
             className="h-8 w-8 text-[#3A5795] focus:outline-none"
@@ -55,14 +67,6 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: Mob
               />
             </svg>
           </button>
-        </div>
-        {/* ProductSearchBar */}
-        <div className="flex justify-center p-4">
-          <ProductSearchBar products={products} />
-        </div>
-        {/* Cart Button */}
-        <div className="flex justify-center p-4">
-          <NavbarActions />
         </div>
       </div>
     </div>

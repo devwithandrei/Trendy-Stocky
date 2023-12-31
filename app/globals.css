@@ -127,3 +127,7 @@ body {
   overflow-y: auto; /* Enable vertical scrolling if the content exceeds the height */
   /* Other styles as needed */
 }
+
+.transparent-background {
+  background: transparent;
+}

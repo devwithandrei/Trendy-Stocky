@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Container from '@/components/ui/container';
 import NavbarActions from '@/components/navbar-actions';
 import ProductSearchBar from './ProductSearchBar';
-import MobileMenuContent from './MobileMenuContent'; // Import the MobileMenuContent component
+import MobileMenuContent from './MobileMenuContent';
 import { products } from '@/components/ProductSearchData';
 
 const Navbar = () => {
@@ -46,9 +46,13 @@ const Navbar = () => {
           {/* Hamburger Menu Icon for small devices */}
           <div className="sm:hidden flex items-center">
             <ProductSearchBar products={products} />
+            {/* Add margin to create space */}
+            <div className="ml-4">
+              <NavbarActions />
+            </div>
             <button
               onClick={toggleMenu}
-              className="h-10 w-10 text-[#3A5795] focus:outline-none ml-auto"
+              className="h-10 w-10 text-[#3A5795] focus:outline-none ml-4" // Adjust margin as needed
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +81,7 @@ const Navbar = () => {
           {/* Modal Menu */}
           {isMenuOpen && (
             <div className="sm:hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-end">
-              <MobileMenuContent toggleMenu={toggleMenu} /> {/* Use MobileMenuContent here */}
+              <MobileMenuContent toggleMenu={toggleMenu} />
             </div>
           )}
         </div>

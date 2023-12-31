@@ -4,6 +4,7 @@ import Info from '@/components/info';
 import getProduct from '@/actions/get-product';
 import getProducts from '@/actions/get-products';
 import Container from '@/components/ui/container';
+import CrispChatScript from '@/components/ui/CrispChatScript';
 
 export const revalidate = 0;
 
@@ -39,6 +40,7 @@ const ProductPage: React.FC<ProductPageProps> = async ({
           <ProductList title="Related Items" items={suggestedProducts} />
         </div>
       </Container>
+      <CrispChatScript />
     </div>  
   )
 }

@@ -1,16 +1,15 @@
 "use client"
 
+// ProductCard.tsx
+
 import Image from "next/image";
 import Currency from "@/components/ui/currency";
 import { Product } from "@/types";
 import { MouseEventHandler, useState } from "react";
+import BuyNowButton from "./BuyNowButton";
+import useCart from "@/hooks/use-cart";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import BuyNowButton from "./BuyNowButton";
-import IconButton from "@/components/ui/icon-button";
-import { Expand, ShoppingCart } from "lucide-react";
-import usePreviewModal from "@/hooks/use-preview-modal";
-import useCart from "@/hooks/use-cart";
 
 interface ProductCardProps {
   data: Product;
@@ -18,7 +17,6 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
   const [isBuying, setIsBuying] = useState(false);
-  const previewModal = usePreviewModal();
   const cart = useCart();
 
   const handleBuyNow: MouseEventHandler<HTMLButtonElement> = async (event) => {
@@ -26,28 +24,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
     setIsBuying(true);
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-        checkoutInfo: {},
-        productIds: [data.id],
-      });
+      // Add the product to the cart
+      cart.addItem(data); // Assuming there's a function in useCart hook to add items to the cart
 
-      window.location.href = response.data.url;
+      // Redirect to the cart page
+      window.location.href = '/cart'; // Change '/cart' to the actual cart page URL
     } catch (error) {
-      console.error("Checkout failed:", error);
-      toast.error("Failed to proceed to checkout. Please try again.");
+      console.error("Failed to add item to cart:", error);
+      toast.error("Failed to add item to cart. Please try again.");
     } finally {
       setIsBuying(false);
     }
-  };
-
-  const onPreview: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.stopPropagation();
-    previewModal.onOpen(data);
-  };
-
-  const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.stopPropagation();
-    cart.addItem(data);
   };
 
   const handleClickImage = () => {
@@ -70,18 +57,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
             objectPosition: "center",
           }}
         />
-        <div className="opacity-0 group-hover:opacity-100 transition absolute w-full px-6 bottom-5">
-          <div className="flex gap-x-6 justify-center">
-            <IconButton
-              onClick={onPreview}
-              icon={<Expand size={20} className="text-gray-600" />}
-            />
-            <IconButton
-              onClick={onAddToCart}
-              icon={<ShoppingCart size={20} className="text-gray-600" />}
-            />
-          </div>
-        </div>
       </div>
       <div className="flex justify-between items-center">
         <div>

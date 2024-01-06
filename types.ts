@@ -9,6 +9,8 @@ export interface Product {
   description: Description;
   color: Color;
   images: Image[]
+  selectedColor?: string;
+  selectedSize?: string;
 };
 
 export interface Image {
@@ -51,3 +53,4 @@ export interface Brand {
   name: string;
   value: string;
 };
+

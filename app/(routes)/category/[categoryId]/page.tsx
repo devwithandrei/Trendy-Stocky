@@ -10,9 +10,6 @@ import getSizes from '@/actions/get-sizes';
 import getColors from '@/actions/get-colors';
 import getBrands from '@/actions/get-brands';
 
-import Filter from './components/filter';
-import MobileFilters from './components/mobile-filters';
-
 export const revalidate = 0;
 
 interface CategoryPageProps {
@@ -49,24 +46,7 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({
         />
         <div className="px-4 sm:px-6 lg:px-8 pb-24">
           <div className="lg:grid lg:grid-cols-5 lg:gap-x-8">
-            <MobileFilters brands={brands} sizes={sizes} colors={colors} />
-            <div className="hidden lg:block">
-              <Filter
-                valueKey="sizeId" 
-                name="Sizes" 
-                data={sizes}
-              />
-              <Filter
-                valueKey="brandId" 
-                name="Brands" 
-                data={brands}
-              />
-              <Filter 
-                valueKey="colorId" 
-                name="Colors" 
-                data={colors}
-              />
-            </div>
+            {/* Removed MobileFilters and Filter components */}
             <div className="mt-6 lg:col-span-4 lg:mt-0">
               {products.length === 0 && <NoResults />}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

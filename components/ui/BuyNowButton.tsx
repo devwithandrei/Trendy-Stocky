@@ -1,8 +1,8 @@
 "use client";
 
-import { MouseEventHandler, useState } from "react";
-import axios from "axios";
-import { toast } from "react-hot-toast";
+// BuyNowButton.tsx
+
+import { MouseEventHandler } from "react";
 
 interface BuyNowButtonProps {
   onClick: MouseEventHandler<HTMLButtonElement>;

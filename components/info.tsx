@@ -1,26 +1,50 @@
 "use client";
+import React, { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import Currency from '@/components/ui/currency';
 import Button from '@/components/ui/button';
-import { Product } from '@/types';
+import { Product, Category } from '@/types';
 import useCart from '@/hooks/use-cart';
 import Head from 'next/head';
 import { Fragment } from 'react';
+import SizeSelector from '@/components/ui/SizeSelector';
+import ColorSelector from '@/components/ui/ColorSelector';
 
 interface InfoProps {
-  data: Product;
+  data: Product & { category: Category };
 }
 
 const Info: React.FC<InfoProps> = ({ data }) => {
   const cart = useCart();
+  const [showSizes, setShowSizes] = useState(false);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [showColors, setShowColors] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('');
 
-  const onAddToCart = () => {
-    cart.addItem(data);
-    window.location.href = '/cart'; // Redirects to the cart page after adding to cart
+  const onSizeSelect = (size: string) => {
+    setSelectedSize(size);
+    setShowSizes(false);
   };
 
-  const { name, price, size, color, description, brand } = data || {};
+  const onColorSelect = (color: string) => {
+    setSelectedColor(color);
+    setShowColors(false);
+  };
+
+  const onAddToCart = () => {
+    if (!selectedSize || !selectedColor) {
+      alert('Please select size and color');
+      return;
+    }
+
+    const productToAdd = { ...data, selectedSize, selectedColor };
+    cart.addItem(productToAdd);
+    window.location.href = '/cart';
+  };
+
+  const { name, price, color, description, size, brand, category } = data || {};
   const descriptionLines = description?.value.split('\n');
+  const isShoeCategory = category?.name === 'Shoes';
 
   return (
     <div>
@@ -37,29 +61,28 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
-        <div className="flex flex-col lg:flex-row gap-y-4 lg:gap-y-0 lg:gap-x-4">
-          <div className="flex items-center gap-x-4">
-            <div className="flex items-center gap-x-4">
-              <h3 className="font-semibold text-black">Brand:</h3>
-              <div>{brand?.value}</div>
-            </div>
-            <div className="hidden lg:flex items-center gap-x-4">
-              <h3 className="font-semibold text-black">Size:</h3>
-              <div>{size?.value}</div>
-            </div>
-            <div className="hidden lg:flex items-center gap-x-4">
-              <h3 className="font-semibold text-black">Color:</h3>
-              <div className="h-6 w-6 rounded-full border border-gray-600" style={{ backgroundColor: color?.value }} />
-            </div>
+        <div className="flex gap-x-4">
+          <div>
+            <SizeSelector
+              showSizes={showSizes}
+              isShoeCategory={isShoeCategory}
+              selectedSize={selectedSize}
+              onSizeSelect={onSizeSelect}
+              setShowSizes={setShowSizes}
+            />
           </div>
-          <div className="lg:hidden flex items-center gap-x-4">
-            <h3 className="font-semibold text-black">Size:</h3>
-            <div>{size?.value}</div>
+          <div>
+            <ColorSelector
+              showColors={showColors}
+              onColorSelect={onColorSelect}
+              setShowColors={setShowColors}
+              selectedColor={selectedColor}
+            />
           </div>
-          <div className="lg:hidden flex items-center gap-x-4">
-            <h3 className="font-semibold text-black">Color:</h3>
-            <div className="h-6 w-6 rounded-full border border-gray-600" style={{ backgroundColor: color?.value }} />
-          </div>
+        </div>
+        <div className="flex items-center gap-x-4">
+          <h3 className="font-semibold text-black">Brand:</h3>
+          <div>{brand?.value}</div>
         </div>
         <div className="flex items-center gap-x-4">
           <h3 className="font-semibold text-black">Description:</h3>
@@ -75,7 +98,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           </div>
         )}
         <div className="mt-10 flex items-center gap-x-3">
-          <Button onClick={onAddToCart} className="flex items-center gap-x-2">
+          <Button
+            onClick={onAddToCart}
+            className={`flex items-center gap-x-2 ${showColors ? 'bg-blue-300' : 'bg-blue-200'} bg-opacity-50 text-blue-900`}
+          >
             Add To Cart
             <ShoppingCart size={20} />
           </Button>
@@ -85,4 +111,4 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   );
 };
 
-export default Info;
+export default Info; 

@@ -24,11 +24,11 @@ const HomePage = async () => {
           data={billboard}
           textColor="#0073B2"
         />
-        <div>
-          <CategoriesList />
-        </div>
         <div >
           <ProductList title="Featured Products" items={products} />
+        </div>
+        <div>
+          <CategoriesList />
         </div>
         <CrispChatScript />
       </div>

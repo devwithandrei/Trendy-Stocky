@@ -10,7 +10,7 @@ export const revalidate = 0;
 
 const AboutPage = async () => {
   const billboard = await getBillboard("f095b9bb-5c73-4bd2-a8c5-d866117b6627");
-  const fastDeliveryBillboard = await getBillboard("f095b9bb-5c73-4bd2-a8c5-d866117b6627");
+  const fastDeliveryBillboard = await getBillboard("4f9abe32-adc3-4333-b7f6-154819711e50");
 
   return (
     <Container>

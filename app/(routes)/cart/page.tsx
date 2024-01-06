@@ -5,12 +5,13 @@ import Container from '@/components/ui/container';
 import useCart from '@/hooks/use-cart';
 import Summary from './components/summary';
 import CartItem from './components/cart-item';
-import CartItemInfo from './components/cart-item-info';
 import CrispChatScript from '@/components/ui/CrispChatScript';
 
 const CartPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const cart = useCart();
+  const [selectedColors, setSelectedColors] = useState<{ [key: string]: string }>({});
+  const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     setIsMounted(true);
@@ -18,6 +19,14 @@ const CartPage = () => {
 
   const goBack = () => {
     window.history.back(); // Use the browser's history to go back
+  };
+
+  const handleColorSelect = (itemId: string, selectedColor: string) => {
+    setSelectedColors({ ...selectedColors, [itemId]: selectedColor });
+  };
+
+  const handleSizeSelect = (itemId: string, selectedSize: string) => {
+    setSelectedSizes({ ...selectedSizes, [itemId]: selectedSize });
   };
 
   if (!isMounted) {
@@ -55,15 +64,17 @@ const CartPage = () => {
                     key={item.id}
                     data={{
                       ...item,
-                      selectedColor: item.selectedColor || 'Default Color',
-                      selectedSize: item.selectedSize || 'Default Size',
+                      selectedColor: selectedColors[item.id] || item.selectedColor || 'Default Color',
+                      selectedSize: selectedSizes[item.id] || item.selectedSize || 'Default Size',
                     }}
                     onRemove={() => cart.removeItem(item.id)}
+                    onColorSelect={(selectedColor) => handleColorSelect(item.id, selectedColor)}
+                    onSizeSelect={(selectedSize) => handleSizeSelect(item.id, selectedSize)}
                   />
                 ))}
               </ul>
             </div>
-            <Summary />
+            <Summary selectedColors={selectedColors} selectedSizes={selectedSizes} />
           </div>
           <CrispChatScript />
         </div>
@@ -73,4 +84,3 @@ const CartPage = () => {
 };
 
 export default CartPage;
-

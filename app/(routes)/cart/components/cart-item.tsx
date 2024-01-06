@@ -3,17 +3,19 @@ import Image from 'next/image';
 import { X } from 'lucide-react';
 import IconButton from '@/components/ui/icon-button';
 import Currency from '@/components/ui/currency';
-import { Product } from '@/types';
 import SizeSelector from '@/components/ui/SizeSelector';
 import ColorSelector from '@/components/ui/ColorSelector';
+import { Product } from '@/types';
 import { Category } from '@/types';
 
 interface CartItemProps {
   data: Product & { selectedColor: string; selectedSize: string; category: Category };
   onRemove: () => void;
+  onColorSelect: (selectedColor: string) => void;
+  onSizeSelect: (selectedSize: string) => void;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ data, onRemove }) => {
+const CartItem: React.FC<CartItemProps> = ({ data, onRemove, onColorSelect, onSizeSelect }) => {
   const { id, name, price, images, selectedColor, selectedSize, category } = data;
 
   const [color, setColor] = useState(selectedColor || 'Default Color');
@@ -24,11 +26,13 @@ const CartItem: React.FC<CartItemProps> = ({ data, onRemove }) => {
   const handleSizeSelect = (selected: string) => {
     setSize(selected);
     setShowSizes(false);
+    onSizeSelect(selected); // Pass the selected size up to the parent
   };
 
   const handleColorSelect = (selected: string) => {
     setColor(selected);
     setShowColors(false);
+    onColorSelect(selected); // Pass the selected color up to the parent
   };
 
   return (

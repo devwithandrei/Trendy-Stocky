@@ -11,6 +11,7 @@ export interface Product {
   images: Image[]
   selectedColor?: string;
   selectedSize?: string;
+  UpdateCartItemFunction?: string;
 };
 
 export interface Image {

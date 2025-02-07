@@ -39,7 +39,7 @@ const sendEmail = async (emailContent: EmailContent) => {
       'service_jfn2j4k', // Replace with your EmailJS service ID
       'template_1fp3ibi', // Replace with your EmailJS template ID
       emailParams,
-      'qv-AiAvCDE-RYcXgw' // Replace with your EmailJS user ID
+      'rEvkeF3_Ygg4pmLi4' // Replace with your EmailJS user ID
     );
 
     console.log('Email sent!', response);

@@ -36,8 +36,8 @@ const sendEmail = async (emailContent: EmailContent) => {
     };
 
     const response = await emailjs.send(
-      'service_rw763pe', // Replace with your EmailJS service ID
-      'template_e9evc9q', // Replace with your EmailJS template ID
+      'service_jfn2j4k', // Replace with your EmailJS service ID
+      'template_1fp3ibi', // Replace with your EmailJS template ID
       emailParams,
       'qv-AiAvCDE-RYcXgw' // Replace with your EmailJS user ID
     );

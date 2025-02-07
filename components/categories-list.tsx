@@ -18,39 +18,15 @@ const CategoriesList: React.FC = () => {
   useEffect(() => {
     const categoryData: Category[] = [
       {
-        id: '9e2c7068-d057-4728-8d5e-012d22f63e22',
-        name: 'Man Jakets',
-        imageUrl: 'https://i.pinimg.com/originals/89/f5/9c/89f59c4b799edd68b28a19111421fc94.gif',
-        // Other category properties
-      },
-      {
-        id: '80c65c2c-e3e4-43ec-b118-c6f161ffe6a4',
-        name: 'Women Jakets',
-        imageUrl: 'https://media.giphy.com/media/8LXZJw9REOSLS/giphy.gif',
-        // Other category properties
-      },
-      {
-        id: '8503f9ee-50fa-4fb2-9440-1b0f1779d1b2',
-        name: 'Jeans',
+        id: '83d4f6c3-b0f7-4661-bca7-16d083be1c28',
+        name: 'Fashion',
         imageUrl: 'https://media.giphy.com/media/Z9uId9712lo9gfJvil/giphy.gif',
         // Other category properties
       },
       {
-        id: 'f1fc66bb-c0da-4de5-b788-5ae970c1378e',
-        name: 'T-Shirts',
-        imageUrl: 'https://media.giphy.com/media/zbGUB1RQEOmyEVjJvK/giphy.gif',
-        // Other category properties
-      },
-      {
-        id: '8642ffbb-a635-4c36-b3a7-fbc1800f0058',
+        id: '81fbf69f-db89-49ea-a274-e09a872bacbe',
         name: 'Shoes',
         imageUrl: 'https://media.giphy.com/media/14gnhUPQZpdyLe/source.gif',
-        // Other category properties
-      },
-      {
-        id: '411385ba-cf30-4cb5-a91a-e91214eb2147',
-        name: 'Accesories',
-        imageUrl: 'https://media.giphy.com/media/vy0dVKp8BLOUxvvrj6/giphy.gif',
         // Other category properties
       },
       // Add other categories as needed

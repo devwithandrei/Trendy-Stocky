@@ -39,68 +39,89 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
       return;
     }
 
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-      productIds: items.map((item) => item.id),
-    });
+    if (items.length === 0) {
+      toast.error("Your cart is empty!");
+      return;
+    }
 
-    window.location.href = response.data.url;
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+        formData, // Send user details
+        items, // Send cart items
+        totalPrice, // Send total price
+      });
+
+      if (response.status === 200) {
+        toast.success("Order placed successfully!");
+        removeAll();
+      } else {
+        toast.error("Failed to place order. Try again.");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Something went wrong.");
+    }
   };
 
   return (
-    <div className="mt-16 rounded-lg bg-white shadow-lg px-6 py-8 sm:p-8 lg:col-span-5 lg:mt-0 lg:p-10">
-      <h2 className="text-xl font-semibold text-gray-900 border-b pb-4">Order Summary</h2>
+    <>
+      {items.length > 0 && (
+        <div className="mt-16 rounded-lg bg-white shadow-lg px-6 py-8 sm:p-8 lg:col-span-5 lg:mt-0 lg:p-10">
+          <h2 className="text-xl font-semibold text-gray-900 border-b pb-4">Order Summary</h2>
 
-      {/* Cart Items - Smaller with Remove Button */}
-      <ul className="mt-6 space-y-3 max-h-[300px] overflow-y-auto">
-        {items.map((item) => (
-          <li key={item.id} className="flex items-center gap-3 p-2 border rounded-lg shadow-sm bg-gray-50 relative">
-            
-            {/* Smaller Image */}
-            <div className="relative h-10 w-10 sm:h-16 sm:w-16 rounded-md overflow-hidden">
-              <img
-                src={item.images[0].url}
-                alt={item.name}
-                className="object-cover object-center w-full h-full"
-              />
-            </div>
+          {/* Cart Items - Smaller with Remove Button */}
+          <ul className="mt-6 space-y-3 max-h-[300px] overflow-y-auto">
+            {items.map((item) => (
+              <li key={item.id} className="flex items-center gap-3 p-2 border rounded-lg shadow-sm bg-gray-50 relative">
+                
+                {/* Smaller Image */}
+                <div className="relative h-10 w-10 sm:h-16 sm:w-16 rounded-md overflow-hidden">
+                  <img
+                    src={item.images[0].url}
+                    alt={item.name}
+                    className="object-cover object-center w-full h-full"
+                  />
+                </div>
 
-            {/* Compact Product Details */}
-            <div className="flex-1">
-              <p className="text-xs sm:text-sm font-semibold text-gray-900">{item.name}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500">
-                {item.color.name} • {item.size.name}
-              </p>
-              <span className="text-xs sm:text-sm font-medium text-gray-900">
-                <Currency value={item.price} />
-              </span>
-            </div>
+                {/* Compact Product Details */}
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900">{item.name}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">
+                    {item.color.name} • {item.size.name}
+                  </p>
+                  <span className="text-xs sm:text-sm font-medium text-gray-900">
+                    <Currency value={item.price} />
+                  </span>
+                </div>
 
-            {/* X Button to Remove Item */}
-            <button
-              onClick={() => cart.removeItem(item.id)}
-              className="absolute top-1 right-1 p-1 rounded-full bg-gray-200 hover:bg-gray-300 transition"
-            >
-              <X size={12} className="text-gray-600" />
-            </button>
-          </li>
-        ))}
-      </ul>
+                {/* X Button to Remove Item */}
+                <button
+                  onClick={() => cart.removeItem(item.id)}
+                  className="absolute top-1 right-1 p-1 rounded-full bg-gray-200 hover:bg-gray-300 transition"
+                >
+                  <X size={12} className="text-gray-600" />
+                </button>
+              </li>
+            ))}
+          </ul>
 
-      {/* Order Total */}
-      <div className="flex items-center justify-between border-t border-gray-200 pt-4 mt-4 text-base font-medium">
-        <span className="text-gray-900">Total:</span>
-        <Currency value={totalPrice} />
-      </div>
+          {/* Order Total */}
+          <div className="flex items-center justify-between border-t border-gray-200 pt-4 mt-4 text-base font-medium">
+            <span className="text-gray-900">Total:</span>
+            <Currency value={totalPrice} />
+          </div>
 
-      {/* Checkout Button */}
-      <Button 
-        onClick={onCheckout} 
-        disabled={!isFormValid || items.length === 0} 
-        className="w-full mt-6 py-3 text-lg font-semibold"
-      >
-        Checkout
-      </Button>
-    </div>
+          {/* Checkout Button */}
+          <Button 
+            onClick={onCheckout} 
+            disabled={!isFormValid || items.length === 0} 
+            className="w-full mt-6 py-3 text-lg font-semibold"
+          >
+            Checkout
+          </Button>
+        </div>
+      )}
+    </>
   );
 };
 

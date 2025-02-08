@@ -1,33 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import Container from '@/components/ui/container';
-import useCart from '@/hooks/use-cart';
-import Summary from './components/summary';
-import CartItem from './components/cart-item';
-import CrispChatScript from '@/components/ui/CrispChatScript';
+import { useEffect, useState } from "react";
+import Container from "@/components/ui/container";
+import useCart from "@/hooks/use-cart";
+import CrispChatScript from "@/components/ui/CrispChatScript";
+import Summary from "./components/summary";
+import CheckoutForm from "./components/checkout-form";
 
 const CartPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const cart = useCart();
-  const [selectedColors, setSelectedColors] = useState<{ [key: string]: string }>({});
-  const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: string }>({});
+
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  const goBack = () => {
-    window.history.back(); // Use the browser's history to go back
-  };
-
-  const handleColorSelect = (itemId: string, selectedColor: string) => {
-    setSelectedColors({ ...selectedColors, [itemId]: selectedColor });
-  };
-
-  const handleSizeSelect = (itemId: string, selectedSize: string) => {
-    setSelectedSizes({ ...selectedSizes, [itemId]: selectedSize });
-  };
 
   if (!isMounted) {
     return null;
@@ -36,45 +25,20 @@ const CartPage = () => {
   return (
     <div className="bg-white">
       <Container>
-        <div className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mb-6 flex items-center">
-            <button className="bg-transparent border-none cursor-pointer flex items-center" onClick={goBack}>
-              {/* Add your arrow icon here */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="text-sm">Go Back</span>
-            </button>
-          </div>
-          <div className="flex items-center mb-4">
-            <h1 className="text-3xl font-bold text-black">Shopping Cart</h1>
-          </div>
-          <div className="mt-6 lg:grid lg:grid-cols-12 lg:items-start gap-x-12">
+        <div className="px-4 py-16 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-black">Thank you for purchasing with us</h1>
+
+          <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start gap-x-12">
+            {/* LEFT: Checkout Form */}
             <div className="lg:col-span-7">
-              {cart.items.length === 0 && <p className="text-neutral-500">No items added to cart.</p>}
-              <ul>
-                {cart.items.map((item) => (
-                  <CartItem
-                    key={item.id}
-                    data={{
-                      ...item,
-                      selectedColor: selectedColors[item.id] || item.selectedColor || 'Default Color',
-                      selectedSize: selectedSizes[item.id] || item.selectedSize || 'Default Size',
-                    }}
-                    onRemove={() => cart.removeItem(item.id)}
-                    onColorSelect={(selectedColor) => handleColorSelect(item.id, selectedColor)}
-                    onSizeSelect={(selectedSize) => handleSizeSelect(item.id, selectedSize)}
-                  />
-                ))}
-              </ul>
+              <CheckoutForm onFormValid={(isValid, data) => {
+                setIsFormValid(isValid);
+                setFormData(data);
+              }} />
             </div>
-            <Summary selectedColors={selectedColors} selectedSizes={selectedSizes} />
+
+            {/* RIGHT: Order Summary */}
+            <Summary items={cart.items} isFormValid={isFormValid} formData={formData} />
           </div>
           <CrispChatScript />
         </div>

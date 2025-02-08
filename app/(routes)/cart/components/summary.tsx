@@ -1,84 +1,104 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import useCart from '@/hooks/use-cart';
-import Button from '@/components/ui/button';
-import Currency from '@/components/ui/currency';
-import SendEmail from '@/actions/SendEmail';
-import { Product } from '@/types'; 
+import axios from "axios";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+
+import Button from "@/components/ui/button";
+import Currency from "@/components/ui/currency";
+import useCart from "@/hooks/use-cart";
+import { toast } from "react-hot-toast";
+import { X } from "lucide-react"; // Import the X icon
 
 interface SummaryProps {
-  selectedColors: { [key: string]: string }; 
-  selectedSizes: { [key: string]: string }; 
+  items: any[];
+  isFormValid: boolean;
+  formData?: any; // Add formData as an optional prop
 }
 
-const Summary: React.FC<SummaryProps> = ({ selectedColors, selectedSizes }) => {
+const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
   const searchParams = useSearchParams();
-  const items = useCart((state) => state.items);
+  const cart = useCart();
   const removeAll = useCart((state) => state.removeAll);
 
   useEffect(() => {
-    if (searchParams.get('success')) {
-      toast.success('Payment completed.');
+    if (searchParams.get("success")) {
+      toast.success("Payment completed.");
       removeAll();
     }
-
-    if (searchParams.get('canceled')) {
-      toast.error('Something went wrong.');
+    if (searchParams.get("canceled")) {
+      toast.error("Something went wrong.");
     }
   }, [searchParams, removeAll]);
 
+  const totalPrice = items.reduce((total, item) => total + Number(item.price), 0);
+
   const onCheckout = async () => {
-    try {
-      const productIds = items.map((item) => item.id);
-
-      const emailContent = {
-        productDetails: items.map((item) => ({
-          name: item.name,
-          price: item.price,
-          selectedColor: selectedColors[item.id] || item.selectedColor || 'Default Color',
-          selectedSize: selectedSizes[item.id] || item.selectedSize || 'Default Size',
-        })),
-        totalPrice: items.reduce((total, item) => total + Number(item.price), 0).toFixed(2),
-        productIds: productIds,
-      };
-
-      await SendEmail(emailContent);
-
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-        productIds: productIds,
-      });
-
-      window.location = response.data.url;
-    } catch (error) {
-      console.error('Error during checkout:', error);
+    if (!isFormValid) {
+      toast.error("Please fill in the required details before proceeding.");
+      return;
     }
+
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
+      productIds: items.map((item) => item.id),
+    });
+
+    window.location.href = response.data.url;
   };
 
-  const totalPrice = items.reduce((total, item) => total + Number(item.price), 0).toFixed(2);
-
   return (
-    <div className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
-      <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
-      <div className="mt-6 space-y-4">
-        {items.map((item, index) => (
-          <div key={index}>
-            <p>{item.name}</p>
-            <Currency value={item.price} />
-            <p>Color: {selectedColors[item.id] || item.selectedColor || 'Default Color'}</p>
-            <p>Size: {selectedSizes[item.id] || item.selectedSize || 'Default Size'}</p>
-          </div>
+    <div className="mt-16 rounded-lg bg-white shadow-lg px-6 py-8 sm:p-8 lg:col-span-5 lg:mt-0 lg:p-10">
+      <h2 className="text-xl font-semibold text-gray-900 border-b pb-4">Order Summary</h2>
+
+      {/* Cart Items - Smaller with Remove Button */}
+      <ul className="mt-6 space-y-3 max-h-[300px] overflow-y-auto">
+        {items.map((item) => (
+          <li key={item.id} className="flex items-center gap-3 p-2 border rounded-lg shadow-sm bg-gray-50 relative">
+            
+            {/* Smaller Image */}
+            <div className="relative h-10 w-10 sm:h-16 sm:w-16 rounded-md overflow-hidden">
+              <img
+                src={item.images[0].url}
+                alt={item.name}
+                className="object-cover object-center w-full h-full"
+              />
+            </div>
+
+            {/* Compact Product Details */}
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm font-semibold text-gray-900">{item.name}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">
+                {item.color.name} • {item.size.name}
+              </p>
+              <span className="text-xs sm:text-sm font-medium text-gray-900">
+                <Currency value={item.price} />
+              </span>
+            </div>
+
+            {/* X Button to Remove Item */}
+            <button
+              onClick={() => cart.removeItem(item.id)}
+              className="absolute top-1 right-1 p-1 rounded-full bg-gray-200 hover:bg-gray-300 transition"
+            >
+              <X size={12} className="text-gray-600" />
+            </button>
+          </li>
         ))}
-        <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-          <div className="text-base font-medium text-gray-900">Order total</div>
-          <Currency value={totalPrice} />
-        </div>
+      </ul>
+
+      {/* Order Total */}
+      <div className="flex items-center justify-between border-t border-gray-200 pt-4 mt-4 text-base font-medium">
+        <span className="text-gray-900">Total:</span>
+        <Currency value={totalPrice} />
       </div>
-      <Button onClick={onCheckout} disabled={items.length === 0} className="w-full mt-6" style={{ backgroundColor: 'rgba(173, 216, 230, 0.5)', color: 'blue' }}>
-        Pay Now
+
+      {/* Checkout Button */}
+      <Button 
+        onClick={onCheckout} 
+        disabled={!isFormValid || items.length === 0} 
+        className="w-full mt-6 py-3 text-lg font-semibold"
+      >
+        Checkout
       </Button>
     </div>
   );

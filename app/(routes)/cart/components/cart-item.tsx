@@ -1,44 +1,33 @@
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { X } from 'lucide-react';
-import IconButton from '@/components/ui/icon-button';
-import Currency from '@/components/ui/currency';
-import SizeSelector from '@/components/ui/SizeSelector';
-import ColorSelector from '@/components/ui/ColorSelector';
-import { Product } from '@/types';
-import { Category } from '@/types';
+import Image from "next/image";
+import { toast } from "react-hot-toast";
+import { X } from "lucide-react";
+
+import IconButton from "@/components/ui/icon-button";
+import Currency from "@/components/ui/currency";
+import useCart from "@/hooks/use-cart";
+import { Product } from "@/types";
 
 interface CartItemProps {
-  data: Product & { selectedColor: string; selectedSize: string; category: Category };
-  onRemove: () => void;
-  onColorSelect: (selectedColor: string) => void;
-  onSizeSelect: (selectedSize: string) => void;
+  data: Product;
 }
 
-const CartItem: React.FC<CartItemProps> = ({ data, onRemove, onColorSelect, onSizeSelect }) => {
-  const { id, name, price, images, selectedColor, selectedSize, category } = data;
+const CartItem: React.FC<CartItemProps> = ({ data }) => {
+  const cart = useCart();
 
-  const [color, setColor] = useState(selectedColor || 'Default Color');
-  const [size, setSize] = useState(selectedSize || 'Default Size');
-  const [showColors, setShowColors] = useState(false);
-  const [showSizes, setShowSizes] = useState(false);
-
-  const handleSizeSelect = (selected: string) => {
-    setSize(selected);
-    setShowSizes(false);
-    onSizeSelect(selected); // Pass the selected size up to the parent
+  const onRemove = () => {
+    cart.removeItem(data.id);
+    toast.success("Item removed from cart.");
   };
 
-  const handleColorSelect = (selected: string) => {
-    setColor(selected);
-    setShowColors(false);
-    onColorSelect(selected); // Pass the selected color up to the parent
-  };
-
-  return (
-    <div className="flex py-6 border-b">
+  return ( 
+    <li className="flex py-6 border-b">
       <div className="relative h-24 w-24 rounded-md overflow-hidden sm:h-48 sm:w-48">
-        <Image fill src={images[0].url} alt={name} className="object-cover object-center" />
+        <Image
+          fill
+          src={data.images[0].url}
+          alt={data.name}
+          className="object-cover object-center"
+        />
       </div>
       <div className="relative ml-4 flex flex-1 flex-col justify-between sm:ml-6">
         <div className="absolute z-10 right-0 top-0">
@@ -46,33 +35,16 @@ const CartItem: React.FC<CartItemProps> = ({ data, onRemove, onColorSelect, onSi
         </div>
         <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
           <div className="flex justify-between">
-            <p className="text-lg font-semibold text-black">{name}</p>
+            <p className="text-lg font-semibold text-black">{data.name}</p>
           </div>
           <div className="mt-1 flex text-sm">
-            <p className="text-gray-500 sm:ml-0 md:ml-0 lg:ml-0 xl:ml-0 2xl:ml-0">
-              <ColorSelector
-                showColors={showColors}
-                onColorSelect={handleColorSelect}
-                setShowColors={setShowColors}
-                selectedColor={color}
-              />
-            </p>
-            <p className="ml-2 md:ml-2 lg:ml-2 xl:ml-2 2xl:ml-2">
-              <SizeSelector
-                showSizes={showSizes}
-                selectedSize={size}
-                onSizeSelect={handleSizeSelect}
-                setShowSizes={setShowSizes}
-                isShoeCategory={category?.name === 'Shoes'}
-              />
-            </p>
+            <p className="text-gray-500">{data.color.name}</p>
+            <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{data.size.name}</p>
           </div>
-          <div className="text-gray-500 text-sm mt-2"> {/* Slightly move it down */}
-            Price: <Currency value={price} />
-          </div>
+          <Currency value={data.price} />
         </div>
       </div>
-    </div>
+    </li>
   );
 };
 

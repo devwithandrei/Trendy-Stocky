@@ -27,10 +27,7 @@ const CartPage = () => {
   return (
     <div className="bg-white">
       <Container>
-        <div className="px-4 py-16 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-black">Thank you for purchasing with us</h1>
-
-          {/* If cart is empty, show empty cart message */}
+        <div className="px-4 py-16 sm:px-6 lg:px-8"> 
           {cart.items.length === 0 ? (
             <div className="mt-12 flex flex-col items-center justify-center">
               <p className="text-lg font-semibold text-gray-600">Your Cart is Empty</p>

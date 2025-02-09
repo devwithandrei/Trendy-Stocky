@@ -18,13 +18,13 @@ const CategoriesList: React.FC = () => {
   useEffect(() => {
     const categoryData: Category[] = [
       {
-        id: '83d4f6c3-b0f7-4661-bca7-16d083be1c28',
+        id: '3e6a8bc6-1129-471d-bdff-fb6c389716b9',
         name: 'Fashion',
         imageUrl: 'https://media.giphy.com/media/Z9uId9712lo9gfJvil/giphy.gif',
         // Other category properties
       },
       {
-        id: '81fbf69f-db89-49ea-a274-e09a872bacbe',
+        id: 'a5e78714-b6db-43ff-8eb8-e896a6ce7ae6',
         name: 'Shoes',
         imageUrl: 'https://media.giphy.com/media/14gnhUPQZpdyLe/source.gif',
         // Other category properties

@@ -23,12 +23,14 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
   const removeAll = useCart((state) => state.removeAll);
 
   useEffect(() => {
-    if (searchParams.get("success")) {
-      toast.success("Payment completed.");
-      removeAll();
-    }
-    if (searchParams.get("canceled")) {
-      toast.error("Something went wrong.");
+    if (searchParams) {
+      if (searchParams.get("success")) {
+        toast.success("Payment completed.");
+        removeAll();
+      }
+      if (searchParams.get("canceled")) {
+        toast.error("Something went wrong.");
+      }
     }
   }, [searchParams, removeAll]);
 

@@ -1,17 +1,19 @@
 "use client";
 
-
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import Container from '@/components/ui/container';
-import NavbarActions from '@/components/navbar-actions';
-import ProductSearchBar from './ProductSearchBar';
-import MobileMenuContent from './MobileMenuContent';
-import { products } from '@/components/ProductSearchData';
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import Container from "@/components/ui/container";
+import NavbarActions from "@/components/navbar-actions";
+import ProductSearchBar from "./ProductSearchBar";
+import MobileMenuContent from "./MobileMenuContent";
+import { products } from "@/components/ProductSearchData";
+import { useClerk, useUser, UserButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { openSignIn } = useClerk();
+  const { user } = useUser();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -23,16 +25,15 @@ const Navbar = () => {
         <div className="relative px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            {/* Logo image */}
             <div className="mx-auto cursor-pointer">
               <Image
                 src="https://funsubstance.com/uploads/gif/215/215926.gif"
                 alt="Logo"
-                width={80} // Adjust width as needed
-                height={80} // Adjust height as needed
+                width={80}
+                height={80}
+                unoptimized
               />
             </div>
-            {/* Brand name */}
             <div className="ml-2 text-center">
               <span className="text-[#3A5795] font-extrabold text-lg sm:text-xl">
                 Trendy
@@ -43,16 +44,16 @@ const Navbar = () => {
               </span>
             </div>
           </Link>
-          {/* Hamburger Menu Icon for small devices */}
+
+          {/* Mobile Menu */}
           <div className="sm:hidden flex items-center">
             <ProductSearchBar products={products} />
-            {/* Add margin to create space */}
             <div className="ml-4">
               <NavbarActions />
             </div>
             <button
               onClick={toggleMenu}
-              className="h-10 w-10 text-[#3A5795] focus:outline-none ml-4" // Adjust margin as needed
+              className="h-10 w-10 text-[#3A5795] focus:outline-none ml-4"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -70,15 +71,34 @@ const Navbar = () => {
               </svg>
             </button>
           </div>
-          {/* ProductSearchBar (visible on larger devices) */}
+
+          {/* Search Bar and User Profile (Desktop) */}
           <div className="hidden sm:flex justify-center flex-grow">
             <ProductSearchBar products={products} />
           </div>
-          {/* Cart Button (visible on larger devices) */}
-          <div className="ml-auto sm:ml-0 sm:mr-4 hidden sm:flex">
+          <div className="ml-auto sm:ml-0 sm:mr-4 hidden sm:flex items-center gap-x-4">
             <NavbarActions />
+            {user ? (
+              <UserButton
+                userProfileMode="modal"
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "rounded-full",
+                  },
+                }}
+              />
+            ) : (
+              <button
+                onClick={() => openSignIn()}
+                className="bg-blue-500 text-white px-4 py-2 rounded-full"
+              >
+                Sign In
+              </button>
+            )}
           </div>
-          {/* Modal Menu */}
+
+          {/* Mobile Menu Content */}
           {isMenuOpen && (
             <div className="sm:hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-end">
               <MobileMenuContent toggleMenu={toggleMenu} />

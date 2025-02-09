@@ -3,10 +3,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'tailwindui.com',
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/dvssbllct/image/upload/**',
       },
       {
-        hostname: 'res.cloudinary.com',
+        hostname: 'tailwindui.com',
       },
       {
         hostname: 'trendy.pt',
@@ -18,16 +20,23 @@ const nextConfig = {
         hostname: 'media.giphy.com',
       },
       {
-        hostname: 'funsubstance.com', // Add 'funsubstance.com' here
+        hostname: 'funsubstance.com',
       },
       {
-        hostname: 'th.bing.com', // Add 'th.bing.com' here
+        hostname: 'th.bing.com',
       },
       {
-        hostname: 'img.buzzfeed.com', // Add 'img.buzzfeed.com' here
+        hostname: 'img.buzzfeed.com',
       },
-      // Add more hostname configurations as needed
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:3000/api/:path*", // Proxy to backend
+      },
+    ];
   },
 };
 

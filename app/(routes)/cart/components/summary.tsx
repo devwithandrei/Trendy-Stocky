@@ -9,6 +9,7 @@ import Currency from "@/components/ui/currency";
 import useCart from "@/hooks/use-cart";
 import { toast } from "react-hot-toast";
 import { X } from "lucide-react"; // Import the X icon
+import Image from "next/image";
 
 interface SummaryProps {
   items: any[];
@@ -33,35 +34,63 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
 
   const totalPrice = items.reduce((total, item) => total + Number(item.price), 0);
 
-  const onCheckout = async () => {
-    if (!isFormValid) {
-      toast.error("Please fill in the required details before proceeding.");
-      return;
-    }
+  // ... existing code ...
 
-    if (items.length === 0) {
-      toast.error("Your cart is empty!");
-      return;
-    }
+const onCheckout = async () => {
+  if (!isFormValid) {
+    toast.error("Please fill in the required details before proceeding.");
+    return;
+  }
 
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-        formData, // Send user details
-        items, // Send cart items
-        totalPrice, // Send total price
-      });
+  if (items.length === 0) {
+    toast.error("Your cart is empty!");
+    return;
+  }
 
-      if (response.status === 200) {
-        toast.success("Order placed successfully!");
-        removeAll();
-      } else {
-        toast.error("Failed to place order. Try again.");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Something went wrong.");
+  try {
+    const payload = {
+      productIds: items.map(item => item.id),
+      customerInfo: {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        postalCode: formData.postalCode
+      },
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        size: item.size.name,
+        color: item.color.name,
+        quantity: 1
+      })),
+      totalPrice,
+      successUrl: `${window.location.origin}/cart?success=1`,
+      cancelUrl: `${window.location.origin}/cart?canceled=1`
+    };
+    
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, payload);
+
+    if (response.status === 200) {
+      window.location = response.data.url;
     }
-  };
+  } catch (error: any) {
+    console.error("Checkout error details:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message);
+    } else {
+      toast.error("Failed to process checkout. Please try again.");
+    }
+  }
+};
 
   return (
     <>
@@ -76,10 +105,12 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
                 
                 {/* Smaller Image */}
                 <div className="relative h-10 w-10 sm:h-16 sm:w-16 rounded-md overflow-hidden">
-                  <img
+                  <Image
                     src={item.images[0].url}
                     alt={item.name}
-                    className="object-cover object-center w-full h-full"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
                   />
                 </div>
 

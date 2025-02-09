@@ -1,18 +1,20 @@
 "use client";
 
-
-
 import React, { useEffect, useRef, useCallback } from 'react';
 import ProductSearchBar from './ProductSearchBar';
 import NavbarActions from '@/components/navbar-actions';
 import { products } from '@/components/ProductSearchData';
 import CategoriesList from './categories-list'; // Import the CategoriesList component
+import { useUser, UserButton, useClerk } from "@clerk/nextjs"; // Import Clerk's user hook and UserButton
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
 }
 
 const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: MobileMenuContentProps) => {
+  const { user } = useUser(); // Get the current user
+  const { openSignIn } = useClerk(); // Get the openSignIn function
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
@@ -38,18 +40,6 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: Mob
     <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 overflow-y-auto">
       <div ref={menuRef} className="w-2/3 bg-blue-200 bg-opacity-70 h-full overflow-y-auto absolute top-0 right-0">
         <div className="flex justify-between p-4 items-center">
-          {/* Trendy Stocky */}
-          <div className="text-[#3A5795] font-extrabold">
-            Trendy Stocky
-          </div>
-          {/* Cart Button */}
-          <div>
-            <NavbarActions />
-          </div>
-          {/* ProductSearchBar */}
-          <div>
-            <ProductSearchBar products={products} />
-          </div>
           {/* Close Button */}
           <button
             onClick={toggleMenu}
@@ -70,39 +60,71 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: Mob
               />
             </svg>
           </button>
+
+          {/* ProductSearchBar */}
+          <div>
+            <ProductSearchBar products={products} />
+          </div>
+
+          {/* Cart Button */}
+          <div>
+            <NavbarActions />
+          </div>
+
+          {/* User Button */}
+          {user ? (
+            <UserButton
+              userProfileMode="modal"
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "rounded-full",
+                },
+              }}
+            />
+          ) : (
+            <button
+              onClick={() => openSignIn()}
+              className="bg-blue-500 text-white px-4 py-2 rounded-full"
+            >
+              Sign In
+            </button>
+          )}
         </div>
+
         {/* Categories List */}
         <CategoriesList />
         <div className="mx-auto py-4 flex flex-wrap justify-center">
           <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
             <a
-             href="/about"
-             className="text-[#3A5795] hover:text-green-600 hover:underline hover:no-underline transition-colors duration-300"
+              href="/about"
+              className="text-[#3A5795] hover:underline transition-colors duration-300"
             >
-             About Us
+              About Us
             </a>
           </p>
           <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
             <a
-             href="/privacy-policy"
-             className="text-[#3A5795] hover:text-green-600 hover:underline hover:no-underline transition-colors duration-300"
+              href="/privacy-policy"
+              className="text-[#3A5795] hover:underline transition-colors duration-300"
             >
-             Privacy & Policy
+              Privacy & Policy
             </a>
           </p>
           <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
             <a
-             href="/return-policies"
-             className="text-[#3A5795] hover:text-green-600 hover:underline hover:no-underline transition-colors duration-300"
+              href="/return-policies"
+              className="text-[#3A5795] hover:underline transition-colors duration-300"
             >
-             Return Policies
+              Return Policies
             </a>
           </p>
         </div>
         <div className="mx-auto py-3">
-         <p className="text-center text-sm md:text-lg text-[#3A5795]">
-          &copy; {new Date().getFullYear()} Trendy Stocky, Inc. All rights reserved.
-         </p>
+          <p className="text-center text-sm md:text-lg text-[#3A5795]">
+            &copy; {new Date().getFullYear()} Trendy Stocky, Inc. All rights
+            reserved.
+          </p>
         </div>
       </div>
     </div>

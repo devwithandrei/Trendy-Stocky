@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
@@ -29,6 +30,7 @@ const nextConfig = {
         hostname: 'img.buzzfeed.com',
       },
     ],
+    domains: ['res.cloudinary.com'],
   },
   async rewrites() {
     return [

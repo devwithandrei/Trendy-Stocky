@@ -1,9 +1,8 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Product } from '@/SearchTypes';
+import { Product } from '@/types';
 import ProductSearchResult from './ProductSearchResult';
-import { products } from '@/components/ProductSearchData';
 import Image from 'next/image';
 
 interface ProductSearchBarProps {
@@ -19,8 +18,8 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products }) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setSearchResults([]); // Clear search results when clicking outside the search bar or search results
-        setSearchTerm(''); // Clear search input when clicking outside the search bar or search results
+        setSearchResults([]);
+        setSearchTerm('');
       }
     };
 
@@ -38,8 +37,8 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products }) => {
     const filteredProducts = products.filter(
       product =>
         product.name.toLowerCase().includes(searchText) ||
-        product.brandId.toLowerCase().includes(searchText) ||
-        product.descriptionId.toLowerCase().includes(searchText)
+        product.brand.name.toLowerCase().includes(searchText) ||
+        product.description.value.toLowerCase().includes(searchText)
     );
     setSearchResults(filteredProducts);
   };

@@ -1,19 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Container from "@/components/ui/container";
 import NavbarActions from "@/components/navbar-actions";
 import ProductSearchBar from "./ProductSearchBar";
 import MobileMenuContent from "./MobileMenuContent";
-import { products } from "@/components/ProductSearchData";
 import { useClerk, useUser, UserButton } from "@clerk/nextjs";
+import { Product } from '@/types';
+import getProducts from "@/actions/get-products";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { openSignIn } = useClerk();
   const { user } = useUser();
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const featuredProducts = await getProducts({ isFeatured: true });
+      setProducts(featuredProducts);
+    };
+    fetchProducts();
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -101,7 +111,7 @@ const Navbar = () => {
           {/* Mobile Menu Content */}
           {isMenuOpen && (
             <div className="sm:hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-end">
-              <MobileMenuContent toggleMenu={toggleMenu} />
+              <MobileMenuContent toggleMenu={toggleMenu} products={products} />
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { Product } from '@/SearchTypes';
+import React from 'react';
+import { Product } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
 

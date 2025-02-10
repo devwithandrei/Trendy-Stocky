@@ -3,15 +3,16 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import ProductSearchBar from './ProductSearchBar';
 import NavbarActions from '@/components/navbar-actions';
-import { products } from '@/components/ProductSearchData';
 import CategoriesList from './categories-list'; // Import the CategoriesList component
 import { useUser, UserButton, useClerk } from "@clerk/nextjs"; // Import Clerk's user hook and UserButton
+import { Product } from '@/types'; // Import the Product type
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
+  products: Product[];
 }
 
-const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }: MobileMenuContentProps) => {
+const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }: MobileMenuContentProps) => {
   const { user } = useUser(); // Get the current user
   const { openSignIn } = useClerk(); // Get the openSignIn function
 

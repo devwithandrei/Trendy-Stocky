@@ -28,7 +28,7 @@ export interface Billboard {
 export interface Category {
   id: string;
   name: string;
-  billboard: Billboard;
+  billboard?: Billboard;
 };
 
 export interface Size {

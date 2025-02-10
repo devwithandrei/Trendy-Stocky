@@ -1,19 +1,19 @@
 import getBillboard from "@/actions/get-billboard";
 import getProducts from "@/actions/get-products";
-import getCategories from "@/actions/get-categories"; // Import getCategories function
+import getCategories from "@/actions/get-categories";
 import ProductList from "@/components/product-list";
 import CategoriesList from "@/components/categories-list";
 import Billboard from "@/components/ui/billboard";
 import Container from "@/components/ui/container";
 import CrispChatScript from "@/components/ui/CrispChatScript";
-import CategoryCard from '@/components/ui/CategoryCard';
-import Image from 'next/image'
+import ProductSearchBar from "@/components/ProductSearchBar";
+import Image from 'next/image';
 
 export const revalidate = 0;
 
 const HomePage = async () => {
-  const products = await getProducts({ isFeatured: true });
-  const categories = await getCategories({ isFeatured: true }); // Fetch categories
+  const products = await getProducts({ isFeatured: true }); // Fetch featured products
+  const categories = await getCategories({ isFeatured: true });
 
   const billboard = await getBillboard("592f25d7-4316-48d6-a2de-7f99bdd466bd");
 
@@ -24,7 +24,7 @@ const HomePage = async () => {
           data={billboard}
           textColor="#0073B2"
         />
-        <div >
+        <div>
           <ProductList title="Featured Products" items={products} />
         </div>
         <div>

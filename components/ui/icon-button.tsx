@@ -6,18 +6,22 @@ interface IconButtonProps {
   onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
   icon: React.ReactElement;
   className?: string;
+  disabled?: boolean;
 }
 
 const IconButton: React.FC<IconButtonProps> = ({
   onClick,
   icon,
-  className
+  className,
+  disabled = false
 }) => {
   return ( 
     <button 
-      onClick={onClick} 
+      onClick={onClick}
+      disabled={disabled}
       className={cn(
-        'rounded-full flex items-center justify-center bg-white border shadow-md p-2 hover:scale-110 transition',
+        'rounded-full flex items-center justify-center bg-white border shadow-md p-2 transition',
+        disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110',
         className
       )}
     >

@@ -13,13 +13,24 @@ interface Category {
 
 interface CategoryCardProps {
   category: Category;
+  toggleMenu?: () => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, toggleMenu }) => {
+  const handleClick = () => {
+    // Call toggleMenu if it exists
+    if (toggleMenu) {
+      toggleMenu();
+    }
+  };
+
   return (
     <div className="category-card rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 ease-in-out">
       <NextLink href={`/category/${category.id}`} passHref>
-        <div className="flex flex-col items-center">
+        <div 
+          className="flex flex-col items-center"
+          onClick={handleClick}
+        >
           <div className="relative w-full h-56">
             <Image
               src={category.imageUrl}

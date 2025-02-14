@@ -1,11 +1,14 @@
 "use client";
 
-import { ShoppingCart } from 'lucide-react';
-import Currency from '@/components/ui/currency';
-import Button from '@/components/ui/button';
-import { Product } from '@/types';
-import useCart from '@/hooks/use-cart';
-import Head from 'next/head';
+import { MouseEventHandler } from "react";
+import { Button } from "@/components/ui/button";
+import { Product, Size, Color } from "@/types";
+import Currency from "@/components/ui/currency";
+import { ShoppingCart } from "lucide-react";
+import useCart from "@/hooks/use-cart";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import ProductVariations from "./product-variations";
 
 interface InfoProps {
   data: Product;
@@ -13,56 +16,92 @@ interface InfoProps {
 
 const Info: React.FC<InfoProps> = ({ data }) => {
   const cart = useCart();
+  const [selectedSize, setSelectedSize] = useState<Size | undefined>(undefined);
+  const [selectedColor, setSelectedColor] = useState<Color | undefined>(undefined);
 
-  const onAddToCart = () => {
-    cart.addItem(data);
+  const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
+    event.stopPropagation();
+
+    if (data.sizes.length > 0 && !selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+
+    if (data.colors.length > 0 && !selectedColor) {
+      toast.error("Please select a color");
+      return;
+    }
+
+    if (selectedSize && selectedSize.stock <= 0) {
+      toast.error("Selected size is out of stock");
+      return;
+    }
+
+    if (selectedColor && selectedColor.stock <= 0) {
+      toast.error("Selected color is out of stock");
+      return;
+    }
+
+    cart.addItem({
+      ...data,
+      selectedSize,
+      selectedColor,
+      quantity: 1
+    });
+
+    toast.success("Item added to cart");
   };
 
-  const { name, price, size, color, description } = data || {};
-
-  // Split description into an array by line breaks
-  const descriptionLines = description?.value.split('\n');
+  const handleVariationSelectAction = (sizeId: string, colorId: string, stock: number) => {
+    const size = data.sizes.find(s => s.id === sizeId);
+    const color = data.colors.find(c => c.id === colorId);
+    
+    setSelectedSize(size);
+    setSelectedColor(color);
+  };
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900">{name}</h1>
+      <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
       <div className="mt-3 flex items-end justify-between">
-        <p className="text-2xl text-gray-900">
-          <Currency value={price} />
-        </p>
+        <div className="text-2xl text-gray-900">
+          <Currency value={data.price} />
+        </div>
       </div>
       <hr className="my-4" />
       <div className="flex flex-col gap-y-6">
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Description:</h3>
-        </div>
-        {descriptionLines && (
-          <div>
-            {descriptionLines.map((line, index) => (
-              <p
-                key={index}
-                className="text-green-900 font-semibold text-lg" // Updated text color and font weight
-              >
-                {line}
-                {index !== descriptionLines.length - 1 && <br />} {/* Add line break except for the last line */}
-              </p>
-            ))}
+        {data.description && (
+          <div className="flex items-center gap-x-4">
+            <h3 className="font-semibold text-black">Description:</h3>
+            <div>{data.description.value}</div>
           </div>
         )}
         <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Size:</h3>
-          <div>{size?.value}</div>
+          <h3 className="font-semibold text-black">Brand:</h3>
+          <div>{data.brand.name}</div>
         </div>
         <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Color:</h3>
-          <div
-            className="h-6 w-6 rounded-full border border-gray-600"
-            style={{ backgroundColor: color?.value }}
-          />
+          <h3 className="font-semibold text-black">Category:</h3>
+          <div>{data.category.name}</div>
         </div>
       </div>
+      <div className="mt-6">
+        <ProductVariations
+          product={data}
+          onVariationSelectAction={handleVariationSelectAction}
+        />
+      </div>
       <div className="mt-10 flex items-center gap-x-3">
-        <Button onClick={onAddToCart} className="flex items-center gap-x-2">
+        <Button 
+          onClick={onAddToCart}
+          className="flex items-center gap-x-2"
+          disabled={
+            (data.sizes.length > 0 && !selectedSize) || 
+            (data.colors.length > 0 && !selectedColor) ||
+            (selectedSize && selectedSize.stock <= 0) ||
+            (selectedColor && selectedColor.stock <= 0)
+          }
+        >
           Add To Cart
           <ShoppingCart size={20} />
         </Button>

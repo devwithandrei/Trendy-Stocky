@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { X } from "lucide-react";
@@ -5,10 +7,15 @@ import { X } from "lucide-react";
 import IconButton from "@/components/ui/icon-button";
 import Currency from "@/components/ui/currency";
 import useCart from "@/hooks/use-cart";
-import { Product } from "@/types";
+import { Product, Size, Color } from "@/types";
+
+interface CartProduct extends Product {
+  selectedSize?: Size;
+  selectedColor?: Color;
+}
 
 interface CartItemProps {
-  data: Product;
+  data: CartProduct;
 }
 
 const CartItem: React.FC<CartItemProps> = ({ data }) => {
@@ -24,7 +31,7 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
       <div className="relative h-24 w-24 rounded-md overflow-hidden sm:h-48 sm:w-48">
         <Image
           fill
-          src={data.images[0].url}
+          src={data.images?.[0]?.url || '/placeholder.png'}
           alt={data.name}
           className="object-cover object-center"
         />
@@ -37,11 +44,35 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
           <div className="flex justify-between">
             <p className="text-lg font-semibold text-black">{data.name}</p>
           </div>
+
+          {/* Category and Brand */}
           <div className="mt-1 flex text-sm">
-            <p className="text-gray-500">{data.color.name}</p>
-            <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{data.size.name}</p>
+            <p className="text-gray-500">{data.category?.name}</p>
+            <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{data.brand?.name}</p>
           </div>
-          <Currency value={data.price} />
+
+          {/* Size and Color */}
+          {(data.selectedSize || data.selectedColor) && (
+            <div className="mt-1 flex text-sm">
+              {[
+                data.selectedColor?.name && (
+                  <p key="color" className="text-gray-500">
+                    Color: {data.selectedColor.name}
+                  </p>
+                ),
+                data.selectedSize?.name && (
+                  <p key="size" className="ml-4 border-l border-gray-200 pl-4 text-gray-500">
+                    Size: {data.selectedSize.name}
+                  </p>
+                )
+              ].filter(Boolean)}
+            </div>
+          )}
+
+          {/* Price */}
+          <div className="mt-1">
+            <Currency value={data.price} />
+          </div>
         </div>
       </div>
     </li>

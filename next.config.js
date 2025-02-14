@@ -6,7 +6,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        pathname: '/dvssbllct/image/upload/**',
+        pathname: '/dvssbllct/**',
       },
       {
         hostname: 'tailwindui.com',

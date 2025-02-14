@@ -12,7 +12,11 @@ interface Category {
   // Other category properties
 }
 
-const CategoriesList: React.FC = () => {
+interface CategoriesListProps {
+  toggleMenu?: () => void;
+}
+
+const CategoriesList: React.FC<CategoriesListProps> = ({ toggleMenu }) => {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -43,7 +47,11 @@ const CategoriesList: React.FC = () => {
       {categories.length === 0 && <NoResults />}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {categories.map((category) => (
-          <CategoryCard key={category.id} category={category} />
+          <CategoryCard 
+            key={category.id} 
+            category={category} 
+            toggleMenu={toggleMenu} 
+          />
         ))}
       </div>
     </div>

@@ -1,39 +1,64 @@
-import { create } from 'zustand';
-import { toast } from 'react-hot-toast';
-import { persist, createJSONStorage } from "zustand/middleware"; 
+"use client";
 
-import { Product } from '@/types';
-import { AlertTriangle } from 'lucide-react';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { toast } from "react-hot-toast";
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: string;
+  images: Array<{
+    url: string;
+  }>;
+  colorId?: string;
+  sizeId?: string;
+}
 
 interface CartStore {
-  items: Product[];
-  addItem: (data: Product) => void;
+  items: CartItem[];
+  addItem: (data: CartItem, colorId?: string, sizeId?: string) => void;
   removeItem: (id: string) => void;
   removeAll: () => void;
 }
 
 const useCart = create(
-  persist<CartStore>((set, get) => ({
-  items: [],
-  addItem: (data: Product) => {
-    const currentItems = get().items;
-    const existingItem = currentItems.find((item) => item.id === data.id);
-    
-    if (existingItem) {
-      return toast('Item already in cart.');
-    }
+  persist<CartStore>(
+    (set, get) => ({
+      items: [],
+      addItem: (data: CartItem, colorId?: string, sizeId?: string) => {
+        const currentItems = get().items;
+        const existingItem = currentItems.find((item) => 
+          item.id === data.id && 
+          item.colorId === colorId && 
+          item.sizeId === sizeId
+        );
 
-    set({ items: [...get().items, data] });
-    toast.success('Item added to cart.');
-  },
-  removeItem: (id: string) => {
-    set({ items: [...get().items.filter((item) => item.id !== id)] });
-    toast.success('Item removed from cart.');
-  },
-  removeAll: () => set({ items: [] }),
-}), {
-  name: 'cart-storage',
-  storage: createJSONStorage(() => localStorage)
-}));
+        if (existingItem) {
+          toast.error("Item already in cart.");
+          return;
+        }
+
+        const newItem = {
+          ...data,
+          colorId,
+          sizeId,
+        };
+
+        set({ items: [...currentItems, newItem] });
+        toast.success("Item added to cart.");
+      },
+      removeItem: (id: string) => {
+        set({ items: [...get().items.filter((item) => item.id !== id)] });
+        toast.success("Item removed from cart.");
+      },
+      removeAll: () => set({ items: [] }),
+    }),
+    {
+      name: "cart-storage",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
 
 export default useCart;

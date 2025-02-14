@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback } from 'react';
+import { X, User } from "lucide-react";
 import ProductSearchBar from './ProductSearchBar';
 import NavbarActions from '@/components/navbar-actions';
-import CategoriesList from './categories-list'; // Import the CategoriesList component
-import { useUser, UserButton, useClerk } from "@clerk/nextjs"; // Import Clerk's user hook and UserButton
-import { Product } from '@/types'; // Import the Product type
+import CategoriesList from './categories-list';
+import { useUser, UserButton, useClerk } from "@clerk/nextjs";
+import { Product } from '@/types';
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
@@ -13,14 +14,13 @@ interface MobileMenuContentProps {
 }
 
 const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }: MobileMenuContentProps) => {
-  const { user } = useUser(); // Get the current user
-  const { openSignIn } = useClerk(); // Get the openSignIn function
+  const { user } = useUser();
+  const { openSignIn } = useClerk();
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-      // Clicked outside the menu, close it
       toggleMenu();
     }
   }, [toggleMenu]);
@@ -28,10 +28,8 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => handleClickOutside(event);
 
-    // Add event listener when the component mounts
     document.addEventListener('mousedown', handleOutsideClick);
 
-    // Clean up the event listener when the component unmounts
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
@@ -44,32 +42,20 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           {/* Close Button */}
           <button
             onClick={toggleMenu}
-            className="h-8 w-8 text-[#3A5795] focus:outline-none"
+            className="h-8 w-8 text-[#3A5795] focus:outline-none p-1 rounded-full hover:bg-gray-100 transition-colors duration-300"
+            aria-label="Close Menu"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X size={24} className="text-[#3A5795]" />
           </button>
 
           {/* ProductSearchBar */}
-          <div>
+          <div className="flex-grow mx-2">
             <ProductSearchBar products={products} />
           </div>
 
           {/* Cart Button */}
-          <div>
-            <NavbarActions />
+          <div className="ml-2">
+            <NavbarActions toggleMenu={toggleMenu} />
           </div>
 
           {/* User Button */}
@@ -79,22 +65,23 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  userButtonAvatarBox: "rounded-full",
+                  userButtonAvatarBox: "rounded-full w-8 h-8 ml-2",
                 },
               }}
             />
           ) : (
             <button
               onClick={() => openSignIn()}
-              className="bg-blue-500 text-white px-4 py-2 rounded-full"
+              className="text-[#3A5795] hover:bg-gray-100 p-2 rounded-full transition-colors duration-300 ml-2"
+              aria-label="Sign In"
             >
-              Sign In
+              <User size={20} />
             </button>
           )}
         </div>
 
         {/* Categories List */}
-        <CategoriesList />
+        <CategoriesList toggleMenu={toggleMenu} />
         <div className="mx-auto py-4 flex flex-wrap justify-center">
           <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
             <a

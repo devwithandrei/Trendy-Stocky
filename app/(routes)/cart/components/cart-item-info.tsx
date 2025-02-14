@@ -1,5 +1,7 @@
+import { CartProduct } from "@/types";
+
 interface CartItemInfoProps {
-  product: Record<string, any>;
+  product: CartProduct;
 }
 
 const CartItemInfo: React.FC<CartItemInfoProps> = ({ product }) => {
@@ -10,8 +12,8 @@ const CartItemInfo: React.FC<CartItemInfoProps> = ({ product }) => {
       </div>
 
       <div className="mt-1 flex text-sm">
-        <p className="text-gray-500">{product.color?.name}</p> {/* Ensure correct access */}
-        <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{product.size?.name}</p>
+        <p className="text-gray-500">{product.selectedColor?.name}</p>
+        <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{product.selectedSize?.name}</p>
       </div>
 
       <p className="mt-1 text-sm font-medium text-gray-900">{product.price}</p>

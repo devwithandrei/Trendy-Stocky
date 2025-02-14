@@ -1,14 +1,17 @@
 "use client";
 
-
 import { ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import Button from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import useCart from "@/hooks/use-cart";
 
-const NavbarActions = () => {
+interface NavbarActionsProps {
+  toggleMenu?: () => void;
+}
+
+const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -22,18 +25,43 @@ const NavbarActions = () => {
     return null;
   }
 
+  const handleCartClick = () => {
+    if (toggleMenu) {
+      toggleMenu();
+    }
+    router.push('/cart');
+  };
+
   return (
     <div className="ml-auto flex items-center gap-x-4">
-      <Button
-        onClick={() => router.push('/cart')}
-        className="flex items-center rounded-full bg-blue-500 px-3 py-1 sm:px-4 sm:py-2" // Set different sizes for mobile and larger screens
-        style={{ color: 'white' }} // Set text color to white
+      <button
+        onClick={handleCartClick}
+        className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
-        <ShoppingBag size={20} color="white" />
-        <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium text-white"> {/* Set different font size for mobile and larger screens */}
-          {cart.items.length}
-        </span>
-      </Button>
+        <ShoppingBag
+          size={22}
+          className="text-gray-600 transition-colors"
+        />
+        {cart.items.length > 0 && (
+          <span className="
+            absolute -top-1 -right-1
+            flex items-center justify-center
+            w-5 h-5
+            text-[11px]
+            font-medium
+            text-white
+            bg-red-500
+            rounded-full
+            shadow-sm
+            transition-all
+            animate-in
+            fade-in
+            duration-200
+          ">
+            {cart.items.length}
+          </span>
+        )}
+      </button>
     </div>
   );
 };

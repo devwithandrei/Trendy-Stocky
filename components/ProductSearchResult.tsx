@@ -4,26 +4,38 @@ import React from 'react';
 import { Product } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
+import Currency from '@/components/ui/currency';
 
 interface ProductSearchResultProps {
   product: Product;
+  onProductSelect?: () => void;
 }
 
-const ProductSearchResult: React.FC<ProductSearchResultProps> = ({ product }) => {
+const ProductSearchResult: React.FC<ProductSearchResultProps> = ({ product, onProductSelect }) => {
+  const productUrl = `/product/${product.id}`;
 
-  const productUrl = `/product/${product.id}`; // Replace 'product.id' with the actual ID property
+  const handleClick = () => {
+    onProductSelect && onProductSelect();
+  };
 
   return (
-    <Link href={productUrl}>
+    <Link href={productUrl} onClick={handleClick}>
       <div className="block p-2 border-b hover:bg-gray-100 cursor-pointer bg-opacity-75" style={{ backgroundColor: 'rgba(0, 0, 255, 0.2)' }}>
-        <h3 className="font-semibold text-black mb-2">{product.name}</h3> {/* Adjusted margin to position title */}
-        <div className="flex items-start"> {/* Changed to 'items-start' to align content at the start */}
-          <div className="w-20 h-20 rounded-md overflow-hidden" style={{ marginTop: '0.5rem', marginRight: '1rem' }}> {/* Adjusted marginTop and marginRight */}
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-semibold text-black">{product.name}</h3>
+          <p className="text-sm text-gray-600">{product.brand.name}</p>
+        </div>
+        <div className="flex items-start">
+          <div className="w-20 h-20 rounded-md overflow-hidden" style={{ marginTop: '0.5rem', marginRight: '1rem' }}>
             <Image src={product.images[0]?.url} alt={product.name} layout="responsive" width={80} height={80} />
           </div>
-          <div className="ml-4">
-            <p className="text-sm text-black">{product.description.value}</p>
-            <p className="text-sm font-semibold text-black">{product.price}</p>
+          <div className="ml-4 flex-grow">
+            {product.description && (
+              <p className="text-sm text-black line-clamp-2">{product.description.value}</p>
+            )}
+            <div className="flex justify-between items-center mt-2">
+              <Currency value={product.price} />
+            </div>
           </div>
         </div>
       </div>

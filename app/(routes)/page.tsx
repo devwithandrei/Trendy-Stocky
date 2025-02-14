@@ -1,36 +1,36 @@
-import getBillboard from "@/actions/get-billboard";
 import getProducts from "@/actions/get-products";
-import getCategories from "@/actions/get-categories";
 import ProductList from "@/components/product-list";
-import CategoriesList from "@/components/categories-list";
-import Billboard from "@/components/ui/billboard";
 import Container from "@/components/ui/container";
-import CrispChatScript from "@/components/ui/CrispChatScript";
-import ProductSearchBar from "@/components/ProductSearchBar";
-import Image from 'next/image';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
-const HomePage = async () => {
-  const products = await getProducts({ isFeatured: true }); // Fetch featured products
-  const categories = await getCategories({ isFeatured: true });
+interface HomePageProps {
+  searchParams: {
+    categoryId?: string;
+    brandId?: string;
+    colorId?: string;
+    sizeId?: string;
+  }
+}
 
-  const billboard = await getBillboard("592f25d7-4316-48d6-a2de-7f99bdd466bd");
+const HomePage = async ({ searchParams }: HomePageProps) => {
+  const { categoryId, brandId, colorId, sizeId } = searchParams;
+
+  const query = {
+    ...(categoryId && { categoryId }),
+    ...(brandId && { brandId }),
+    ...(colorId && { colorId }),
+    ...(sizeId && { sizeId }),
+  };
+
+  const products = await getProducts(query);
 
   return (
     <Container>
       <div className="space-y-10 pb-10">
-        <Billboard 
-          data={billboard}
-          textColor="#0073B2"
-        />
-        <div>
-          <ProductList title="Featured Products" items={products} />
+        <div className="flex flex-col gap-y-8 px-4 sm:px-6 lg:px-8">
+          <ProductList items={products} />
         </div>
-        <div>
-          <CategoriesList />
-        </div>
-        <CrispChatScript />
       </div>
     </Container>
   );

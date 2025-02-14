@@ -10,15 +10,21 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    address: "",
     phone: "",
+    address: "",
+    city: "",
+    country: "",
+    postalCode: ""
   });
 
   const [errors, setErrors] = useState({
     name: false,
     email: false,
-    address: false,
     phone: false,
+    address: false,
+    city: false,
+    country: false,
+    postalCode: false
   });
 
   // Handle input change
@@ -32,8 +38,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
     const newErrors = {
       name: formData.name.trim() === "",
       email: formData.email.trim() === "" || !/\S+@\S+\.\S+/.test(formData.email),
-      address: formData.address.trim() === "",
       phone: formData.phone.trim() === "" || !/^\d+$/.test(formData.phone),
+      address: formData.address.trim() === "",
+      city: formData.city.trim() === "",
+      country: formData.country.trim() === "",
+      postalCode: formData.postalCode.trim() === ""
     };
 
     setErrors(newErrors);
@@ -80,23 +89,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
         {errors.email && <p className="text-red-500 text-sm mt-1">Valid email is required.</p>}
       </div>
 
-      {/* Address Field */}
-      <div className="mb-4">
-        <label className="block text-gray-700 font-medium">Address</label>
-        <input
-          type="text"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          onBlur={validateForm}
-          className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
-            errors.address ? "border-red-500" : "border-gray-300"
-          }`}
-          placeholder="Enter your address"
-        />
-        {errors.address && <p className="text-red-500 text-sm mt-1">Address is required.</p>}
-      </div>
-
       {/* Phone Number Field */}
       <div className="mb-4">
         <label className="block text-gray-700 font-medium">Phone Number</label>
@@ -112,6 +104,74 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           placeholder="Enter your phone number"
         />
         {errors.phone && <p className="text-red-500 text-sm mt-1">Valid phone number is required.</p>}
+      </div>
+
+      {/* Address Field */}
+      <div className="mb-4">
+        <label className="block text-gray-700 font-medium">Address</label>
+        <input
+          type="text"
+          name="address"
+          value={formData.address}
+          onChange={handleChange}
+          onBlur={validateForm}
+          className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
+            errors.address ? "border-red-500" : "border-gray-300"
+          }`}
+          placeholder="Enter your street address"
+        />
+        {errors.address && <p className="text-red-500 text-sm mt-1">Address is required.</p>}
+      </div>
+
+      {/* City Field */}
+      <div className="mb-4">
+        <label className="block text-gray-700 font-medium">City</label>
+        <input
+          type="text"
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          onBlur={validateForm}
+          className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
+            errors.city ? "border-red-500" : "border-gray-300"
+          }`}
+          placeholder="Enter your city"
+        />
+        {errors.city && <p className="text-red-500 text-sm mt-1">City is required.</p>}
+      </div>
+
+      {/* Country Field */}
+      <div className="mb-4">
+        <label className="block text-gray-700 font-medium">Country</label>
+        <input
+          type="text"
+          name="country"
+          value={formData.country}
+          onChange={handleChange}
+          onBlur={validateForm}
+          className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
+            errors.country ? "border-red-500" : "border-gray-300"
+          }`}
+          placeholder="Enter your country"
+        />
+        {errors.country && <p className="text-red-500 text-sm mt-1">Country is required.</p>}
+      </div>
+
+      {/* Postal Code Field */}
+      <div className="mb-4">
+        <label className="block text-gray-700 font-medium">Postal Code</label>
+        <input
+          type="text"
+          name="postalCode"
+          value={formData.postalCode}
+          onChange={handleChange}
+          onBlur={validateForm}
+          className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
+            errors.postalCode ? "border-red-500" : "border-gray-300"
+          }`}
+          placeholder="Enter your postal code"
+        />
+        {errors.postalCode && <p className="text-red-500 text-sm mt-1">Postal code is required.</p>}
       </div>
     </div>
   );

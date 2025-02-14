@@ -2,34 +2,41 @@
 
 import React, { useEffect, useState } from 'react';
 
-const formatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'EUR',
-});
-
-interface CurrencyProps {
+export interface CurrencyProps {
   value?: string | number;
+  className?: string;
 }
 
-const Currency: React.FC<CurrencyProps> = ({ value = 0 }) => {
+const Currency: React.FC<CurrencyProps> = ({ 
+  value = 0,
+  className = ''
+}) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Use optional chaining to safely handle value conversion
-  const formattedValue = formatter.format(Number(value)) || '';
-
-  if (!isMounted || !formattedValue) {
+  if (!isMounted) {
     return null;
   }
 
+  // Ensure value is a number
+  const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+
+  // Format the currency using EUR and European formatting
+  const formatter = new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
   return (
-    <span className="font-semibold">
-      {formattedValue}
-    </span>
+    <div className={`font-semibold ${className}`}>
+      {formatter.format(numericValue)}
+    </div>
   );
-}
+};
 
 export default Currency;

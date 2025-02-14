@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 import Container from "@/components/ui/container";
 import useCart from "@/hooks/use-cart";
 import CrispChatScript from "@/components/ui/CrispChatScript";
@@ -11,7 +11,7 @@ import CheckoutForm from "./components/checkout-form";
 const CartPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const cart = useCart();
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   const [isFormValid, setIsFormValid] = useState(false);
   const [formData, setFormData] = useState<any>(null);
@@ -27,19 +27,18 @@ const CartPage = () => {
   return (
     <div className="bg-white">
       <Container>
-        <div className="px-4 py-16 sm:px-6 lg:px-8"> 
+        <div className="px-4 py-16 sm:px-6 lg:px-8">
           {cart.items.length === 0 ? (
             <div className="mt-12 flex flex-col items-center justify-center">
               <p className="text-lg font-semibold text-gray-600">Your Cart is Empty</p>
               <button
-                onClick={() => router.push("/")} // Redirects to homepage
+                onClick={() => router.push("/")}
                 className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition"
               >
                 Go To Store
               </button>
             </div>
           ) : (
-            // Otherwise, show checkout form & order summary
             <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start gap-x-12">
               {/* LEFT: Checkout Form */}
               <div className="lg:col-span-7">

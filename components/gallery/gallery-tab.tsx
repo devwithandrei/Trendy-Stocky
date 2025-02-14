@@ -15,23 +15,21 @@ const GalleryTab: React.FC<GalleryTabProps> = ({ image, onClick, selected }) => 
       className="relative flex aspect-square cursor-pointer items-center justify-center rounded-md bg-white"
       onClick={onClick}
     >
-      {({ selected: tabSelected }) => (
-        <div>
-          <span className="absolute h-full w-full aspect-square inset-0 overflow-hidden rounded-md">
-            <NextImage
-              fill
-              src={image.url}
-              alt=""
-              className="object-cover object-center"
-            />
-          </span>
-          <span
-            className={`absolute inset-0 rounded-md ring-2 ring-offset-2 ${
-              tabSelected ? 'ring-black' : 'ring-transparent'
-            }`}
+      <div>
+        <span className="absolute h-full w-full aspect-square inset-0 overflow-hidden rounded-md">
+          <NextImage
+            fill
+            src={image.url}
+            alt=""
+            className="object-cover object-center"
           />
-        </div>
-      )}
+        </span>
+        <span
+          className={`absolute inset-0 rounded-md ring-2 ring-offset-2 ${
+            selected ? 'ring-black' : 'ring-transparent'
+          }`}
+        />
+      </div>
     </Tab>
   );
 };

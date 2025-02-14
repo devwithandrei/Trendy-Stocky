@@ -3,16 +3,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '@/types';
 import ProductSearchResult from './ProductSearchResult';
-import Image from 'next/image';
+import { Search, X } from 'lucide-react';
 
 interface ProductSearchBarProps {
   products: Product[];
+  onProductSelect?: () => void;
 }
 
-const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products }) => {
+const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products, onProductSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [showPopup, setShowPopup] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,6 +21,7 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products }) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setSearchResults([]);
         setSearchTerm('');
+        setIsFocused(false);
       }
     };
 
@@ -34,78 +36,100 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products }) => {
     const searchText = e.target.value.toLowerCase();
     setSearchTerm(searchText);
 
-    const filteredProducts = products.filter(
-      product =>
-        product.name.toLowerCase().includes(searchText) ||
-        product.brand.name.toLowerCase().includes(searchText) ||
-        product.description.value.toLowerCase().includes(searchText)
+    const filteredProducts = products.filter(product =>
+      product.name.toLowerCase().includes(searchText) ||
+      product.brand.name.toLowerCase().includes(searchText) ||
+      (product.description?.value?.toLowerCase().includes(searchText) ?? false)
     );
     setSearchResults(filteredProducts);
   };
 
-  const openPopup = () => {
-    setShowPopup(true);
-  };
-
-  const closePopup = () => {
-    setShowPopup(false);
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults([]);
   };
 
   return (
-    <div className="relative flex justify-center items-center" ref={searchContainerRef}>
-      <div className="block sm:hidden ml-auto mr-4">
-        <button onClick={openPopup} className="flex items-center p-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-gray-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a4 4 0 11-8 0 4 4 0 018 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35" />
-          </svg>
-        </button>
-      </div>
-      <div className="hidden sm:flex relative justify-center items-center">
+    <div className="relative w-full max-w-md" ref={searchContainerRef}>
+      <div 
+        className={`
+          flex items-center gap-3 px-4 py-2 
+          bg-white rounded-full
+          border border-gray-200
+          transition-all duration-200
+          ${isFocused ? 'shadow-md border-gray-300' : 'hover:border-gray-300'}
+        `}
+      >
+        <Search 
+          size={18} 
+          className={`
+            transition-colors duration-200
+            ${isFocused ? 'text-gray-800' : 'text-gray-400'}
+          `}
+        />
         <input
           type="text"
-          placeholder="Search products..."
           value={searchTerm}
           onChange={handleSearch}
-          className="pl-8 rounded-md py-2 px-3 outline-none border border-gray-300 focus:border-blue-500 transition-all hover:bg-gray-100 text-black"
-          style={{ backgroundColor: 'rgba(0, 0, 255, 0.2)' }}
+          onFocus={() => setIsFocused(true)}
+          placeholder="Search products..."
+          className="
+            flex-1 
+            text-sm 
+            bg-transparent 
+            outline-none 
+            placeholder:text-gray-400
+            text-gray-800
+          "
         />
-        {(searchTerm && searchResults.length > 0) && (
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-80 bg-white bg-opacity-75 shadow-md rounded-lg py-2 overflow-y-auto max-h-60">
-            {searchResults.map(product => (
-              <ProductSearchResult key={product.id} product={product} />
-            ))}
-          </div>
+        {searchTerm && (
+          <button
+            onClick={clearSearch}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X size={16} className="text-gray-400" />
+          </button>
         )}
       </div>
-      {showPopup && (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-blue-500 bg-opacity-25 p-4 rounded-lg max-w-md w-full border border-blue-500 border-opacity-50 relative">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full rounded-md py-2 px-3 outline-none border border-gray-300 focus:border-blue-500 transition-all bg-opacity-50 text-black"
-              style={{ backgroundColor: 'rgba(0, 0, 255, 0.2)' }}
+
+      {/* Search Results Dropdown */}
+      {searchTerm && searchResults.length > 0 && (
+        <div className="
+          absolute z-50 w-full mt-2
+          bg-white rounded-lg
+          shadow-lg
+          border border-gray-100
+          overflow-hidden
+          max-h-[calc(100vh-200px)]
+          overflow-y-auto
+          scrollbar-thin
+          scrollbar-thumb-gray-200
+          scrollbar-track-transparent
+        ">
+          {searchResults.map((product) => (
+            <ProductSearchResult
+              key={product.id}
+              product={product}
+              onProductSelect={() => {
+                setSearchTerm('');
+                setSearchResults([]);
+                onProductSelect?.();
+              }}
             />
-            {searchTerm && searchResults.length > 0 && (
-              <div className="mt-2 max-h-60 overflow-y-auto">
-                {searchResults.map(product => (
-                  <ProductSearchResult key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-            <button onClick={closePopup} className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md">
-              Close
-            </button>
-          </div>
+          ))}
+        </div>
+      )}
+
+      {/* No Results Message */}
+      {searchTerm && searchResults.length === 0 && (
+        <div className="
+          absolute z-50 w-full mt-2
+          bg-white rounded-lg
+          shadow-lg
+          border border-gray-100
+          p-4
+        ">
+          <p className="text-gray-500 text-center text-sm">No products found</p>
         </div>
       )}
     </div>

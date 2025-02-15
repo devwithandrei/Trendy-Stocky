@@ -4,6 +4,11 @@ import Info from '@/components/info';
 import getProducts from '@/actions/get-products';
 import Container from '@/components/ui/container';
 import CrispChatScript from '@/components/ui/CrispChatScript';
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Trendy Stocky Product Page',
+}
 
 // Force dynamic rendering and revalidation
 export const dynamic = 'force-dynamic';

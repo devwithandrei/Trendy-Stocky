@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import { X, User } from "lucide-react";
-import ProductSearchBar from './ProductSearchBar';
 import NavbarActions from '@/components/navbar-actions';
 import CategoriesList from './categories-list';
 import { useUser, UserButton, useClerk } from "@clerk/nextjs";
@@ -48,10 +47,6 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
             <X size={24} className="text-[#3A5795]" />
           </button>
 
-          {/* ProductSearchBar */}
-          <div className="flex-grow mx-2">
-            <ProductSearchBar products={products} />
-          </div>
 
           {/* Cart Button */}
           <div className="ml-2">

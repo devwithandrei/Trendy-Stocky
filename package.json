@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.22.11",
-    "@clerk/nextjs": "^4.29.7",
+    "@clerk/nextjs": "^6.11.3",
     "@formspree/react": "^2.5.1",
     "@headlessui/react": "^1.7.15",
     "@prisma/client": "^6.3.1",

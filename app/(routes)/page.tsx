@@ -4,7 +4,7 @@ import Container from "@/components/ui/container";
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Trendy Stocky Home',
+  title: 'Outly.Shop',
 }
 
 export const dynamic = 'force-dynamic';

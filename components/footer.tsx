@@ -9,7 +9,7 @@ const Footer = () => {
             href="/"
             className="text-[#3A5795] hover:text-green-600 hover:underline transition-colors duration-300"
           >
-            Trendy Stocky
+            Outly.Shop
           </a>
         </p>
       </div>

@@ -74,12 +74,9 @@ const Navbar = () => {
             </div>
             <div className="ml-2 text-center">
               <span className="text-[#3A5795] font-extrabold text-lg sm:text-xl">
-                Trendy
+                Outly.Shop
               </span>
               <br />
-              <span className="text-[#3A5795] font-extrabold text-lg sm:text-xl">
-                Stocky
-              </span>
             </div>
           </Link>
 

@@ -7,7 +7,7 @@ import CrispChatScript from '@/components/ui/CrispChatScript';
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Trendy Stocky Product Page',
+  title: 'Outly.Shop',
 }
 
 // Force dynamic rendering and revalidation

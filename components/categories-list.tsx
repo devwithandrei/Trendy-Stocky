@@ -22,13 +22,13 @@ const CategoriesList: React.FC<CategoriesListProps> = ({ toggleMenu }) => {
   useEffect(() => {
     const categoryData: Category[] = [
       {
-        id: '3e6a8bc6-1129-471d-bdff-fb6c389716b9',
+        id: '8f74124b-f5d9-41c3-b080-1d3345f96b6f',
         name: 'Fashion',
         imageUrl: 'https://media.giphy.com/media/Z9uId9712lo9gfJvil/giphy.gif',
         // Other category properties
       },
       {
-        id: 'a5e78714-b6db-43ff-8eb8-e896a6ce7ae6',
+        id: '27eb4147-3021-4cda-b873-c1ec793f9210',
         name: 'Shoes',
         imageUrl: 'https://media.giphy.com/media/14gnhUPQZpdyLe/source.gif',
         // Other category properties

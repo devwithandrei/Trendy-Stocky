@@ -35,8 +35,12 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({
     return null;
   }
 
+  console.log("Category:", category);
+
   // Fetch the billboard data
   const billboard = await getBillboard(category.billboardId);
+
+  console.log("Billboard:", billboard);
 
   return (
     <div className="bg-white">

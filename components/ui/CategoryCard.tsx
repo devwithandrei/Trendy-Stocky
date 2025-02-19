@@ -3,16 +3,10 @@
 import React from 'react';
 import NextLink from 'next/link';
 import Image from 'next/image';
-
-interface Category {
-  id: string;
-  name: string;
-  imageUrl: string;
-  // Other category properties
-}
+import { Category, Billboard } from '@/types';
 
 interface CategoryCardProps {
-  category: Category;
+  category: Category & { billboard: Billboard };
   toggleMenu?: () => void;
 }
 
@@ -26,16 +20,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, toggleMenu }) => 
 
   return (
     <div className="category-card rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 ease-in-out">
-      <NextLink href={`/category/${category.id}`} passHref>
-        <div 
+      <NextLink href={`/category/${category.id}?storeId=${category.billboard.storeId}`} passHref>
+        <div
           className="flex flex-col items-center"
           onClick={handleClick}
         >
           <div className="relative w-full h-56">
             <Image
-              src={category.imageUrl}
+              src={category.billboard.imageUrl} 
               alt={category.name}
-              layout="fill"
+              fill
               objectFit="cover"
             />
           </div>

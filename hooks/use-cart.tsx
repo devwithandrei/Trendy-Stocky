@@ -11,13 +11,27 @@ interface CartItem {
   images: Array<{
     url: string;
   }>;
+  stock?: number;
   colorId?: string;
   sizeId?: string;
+  selectedColor?: {
+    id: string;
+    name: string;
+    value: string;
+    stock: number;
+  };
+  selectedSize?: {
+    id: string;
+    name: string;
+    value: string;
+    stock: number;
+  };
+  quantity: number;
 }
 
 interface CartStore {
   items: CartItem[];
-  addItem: (data: CartItem, colorId?: string, sizeId?: string) => void;
+  addItem: (data: CartItem) => void;
   removeItem: (id: string) => void;
   removeAll: () => void;
 }
@@ -26,26 +40,41 @@ const useCart = create(
   persist<CartStore>(
     (set, get) => ({
       items: [],
-      addItem: (data: CartItem, colorId?: string, sizeId?: string) => {
+      addItem: (data: CartItem) => {
         const currentItems = get().items;
         const existingItem = currentItems.find((item) => 
           item.id === data.id && 
-          item.colorId === colorId && 
-          item.sizeId === sizeId
+          item.selectedColor?.id === data.selectedColor?.id && 
+          item.selectedSize?.id === data.selectedSize?.id
         );
 
-        if (existingItem) {
-          toast.error("Item already in cart.");
+        const availableStock = data.selectedSize?.stock ?? 
+                               data.selectedColor?.stock ?? 
+                               data.stock ?? 
+                               0;
+
+        if (data.quantity > availableStock) {
+          toast.error("Not enough stock available.");
           return;
         }
 
-        const newItem = {
-          ...data,
-          colorId,
-          sizeId,
-        };
+        if (existingItem) {
+          const updatedItems = currentItems.map(item => {
+            if (item === existingItem) {
+              return {
+                ...item,
+                quantity: data.quantity
+              };
+            }
+            return item;
+          });
 
-        set({ items: [...currentItems, newItem] });
+          set({ items: updatedItems });
+          toast.success("Item quantity updated in cart.");
+          return;
+        }
+
+        set({ items: [...currentItems, data] });
         toast.success("Item added to cart.");
       },
       removeItem: (id: string) => {

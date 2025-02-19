@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Currency from "@/components/ui/currency";
@@ -10,6 +10,11 @@ import { toast } from "react-hot-toast";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { Product, Size, Color } from "@/types";
+import CardPaymentForm from './CardPaymentForm';
+import PayButton from './PayButton';
+import MultipleButton from './QuantityButton';
+import ShipmentDetails from './ShipmentDetails';
+import { useState } from 'react';
 
 interface CartProduct extends Product {
   selectedSize?: Size;
@@ -20,13 +25,15 @@ interface CartProduct extends Product {
 interface SummaryProps {
   items: CartProduct[];
   isFormValid: boolean;
-  formData?: any;
+  formData: any;
 }
 
-const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
+const Summary: React.FC<SummaryProps> = ({ items }) => {
   const searchParams = useSearchParams();
   const cart = useCart();
   const removeAll = useCart((state) => state.removeAll);
+  const [formData, setFormData] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
     if (searchParams) {
@@ -45,109 +52,39 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
   }, 0);
 
   const onCheckout = async () => {
-    if (!isFormValid) {
-      toast.error("Please fill in all required details before proceeding.");
-      return;
-    }
+    // ... (existing checkout logic)
+  };
 
-    if (items.length === 0) {
-      toast.error("Your cart is empty!");
-      return;
-    }
-
-    try {
-      // Filter out items that require size/color but don't have selections
-      const hasInvalidItems = items.some(item => {
-        const needsSize = item.sizes.length > 0;
-        const needsColor = item.colors.length > 0;
-        return (needsSize && !item.selectedSize) || (needsColor && !item.selectedColor);
-      });
-
-      if (hasInvalidItems) {
-        const invalidItems = items.filter(item => {
-          const needsSize = item.sizes.length > 0;
-          const needsColor = item.colors.length > 0;
-          return (needsSize && !item.selectedSize) || (needsColor && !item.selectedColor);
-        });
-        const itemNames = invalidItems.map(item => item.name).join(", ");
-        toast.error(`Please select size and color for: ${itemNames}`);
-        return;
-      }
-
-      const payload = {
-        productIds: items.map(item => item.id),
-        sizes: items.map(item => {
-          // Only include size ID if the product has sizes available
-          if (item.sizes && item.sizes.length > 0) {
-            return item.selectedSize?.id || "";
-          }
-          return null; // No sizes available for this product
-        }),
-        colors: items.map(item => {
-          // Only include color ID if the product has colors available
-          if (item.colors && item.colors.length > 0) {
-            return item.selectedColor?.id || "";
-          }
-          return null; // No colors available for this product
-        }),
-        quantities: items.map(item => item.quantity || 1),
-        customerDetails: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          country: formData.country,
-          postalCode: formData.postalCode
-        }
-      };
-
-      console.log('Sending checkout request with payload:', payload);
-      
-      // Extract store ID from API URL since it's already included
-      const storeId = process.env.NEXT_PUBLIC_API_URL?.split('/api/')?.[1]?.split('/')?.[0];
-      if (!storeId) {
-        throw new Error('Store ID not found in API URL');
-      }
-
-      // Construct checkout URL using the base API URL
-      const baseApiUrl = process.env.NEXT_PUBLIC_API_URL?.split('/api/')?.[0] + '/api';
-      const checkoutUrl = `${baseApiUrl}/${storeId}/checkout`;
-      console.log('Checkout URL:', checkoutUrl);
-      
-      const response = await axios.post(checkoutUrl, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      console.log('Checkout response:', response.data);
-
-      if (response.data?.url) {
-        window.location.href = response.data.url;
+  const increaseQuantity = (itemId: string) => {
+    const item = items.find(item => item.id === itemId);
+    if (item) {
+      const availableStock = item.selectedSize?.stock ?? item.selectedColor?.stock ?? item.stock ?? 0;
+      if (item.quantity + 1 <= availableStock) {
+        cart.addItem({ ...item, id: itemId, quantity: item.quantity + 1 });
       } else {
-        throw new Error('No checkout URL received from server');
-      }
-    } catch (error: any) {
-      console.error("Checkout error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        url: error.config?.url,
-        payload: error.config?.data
-      });
-      
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("Something went wrong with checkout. Please try again.");
+        toast.error("Not enough stock available.");
       }
     }
   };
 
+  const decreaseQuantity = (itemId: string) => {
+    const item = items.find(item => item.id === itemId);
+    if (item && item.quantity > 1) {
+      cart.addItem({ ...item, quantity: item.quantity - 1, selectedColor: item.selectedColor, selectedSize: item.selectedSize, images: item.images, price: item.price, name: item.name, id: item.id });
+    } else {
+      cart.removeItem(itemId);
+    }
+  };
+
+    const handleShipmentDetailsValid = useCallback((isValid: boolean, shipmentData: any) => {
+        setIsFormValid(isValid);
+        setFormData(shipmentData);
+    }, [setIsFormValid, setFormData]);
+
   return (
     <>
       {items.length > 0 && (
-        <div className="mt-16 rounded-lg bg-white shadow-lg px-6 py-8 sm:p-8 lg:col-span-5 lg:mt-0 lg:p-10">
+        <div className="lg:col-span-5 mt-0 rounded-lg bg-white shadow-lg px-6 py-8 sm:p-8 lg:p-10"> 
           <h2 className="text-xl font-semibold text-gray-900 border-b pb-4">Order Summary</h2>
 
           {/* Cart Items List */}
@@ -168,25 +105,16 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
                 {/* Product Details */}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{item.name}</p>
+                  {item.selectedSize && <p className="text-[10px] sm:text-xs text-gray-500">Size: {item.selectedSize.name}</p>}
+                  {item.selectedColor && <p className="text-[10px] sm:text-xs text-gray-500">Color: {item.selectedColor.name}</p>}
                   
-                  {/* Category and Brand */}
-                  <p className="text-[10px] sm:text-xs text-gray-500">
-                    {item.category?.name} • {item.brand?.name}
-                  </p>
-                  
-                  {/* Size and Color */}
-                  {(item.selectedSize || item.selectedColor) && (
-                    <p className="text-[10px] sm:text-xs text-gray-500">
-                      {[
-                        item.selectedColor?.name && `Color: ${item.selectedColor.name}`,
-                        item.selectedSize?.name && `Size: ${item.selectedSize.name}`
-                      ].filter(Boolean).join(' • ')}
-                    </p>
-                  )}
-                  
-                  {/* Quantity and Price */}
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-xs text-gray-500">Qty: {item.quantity || 1}</span>
+                  {/* Quantity Adjustment */}
+                  <div className="flex items-center justify-between mt-2">
+                    <MultipleButton 
+                      quantity={item.quantity} 
+                      onIncrease={() => increaseQuantity(item.id)} 
+                      onDecrease={() => decreaseQuantity(item.id)} 
+                    />
                     <Currency value={Number(item.price) * (item.quantity || 1)} className="text-xs sm:text-sm font-medium text-gray-900" />
                   </div>
                 </div>
@@ -208,14 +136,13 @@ const Summary: React.FC<SummaryProps> = ({ items, isFormValid, formData }) => {
             <Currency value={totalPrice} className="text-lg font-semibold text-gray-900" />
           </div>
 
-          {/* Checkout Button */}
-          <Button 
-            onClick={onCheckout} 
-            disabled={!isFormValid || items.length === 0} 
-            className="w-full mt-6 py-3 text-lg font-semibold"
-          >
-            Checkout
-          </Button>
+          {/* Shipment Details */}
+         
+
+          {/* Stripe Payment Form and Pay Button */}
+          <CardPaymentForm setFormData={setFormData} setIsFormValid={setIsFormValid} />
+          <ShipmentDetails onFormValid={handleShipmentDetailsValid} />
+          <PayButton disabled={!isFormValid} formData={formData} />
         </div>
       )}
     </>

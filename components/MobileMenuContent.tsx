@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { X, User } from "lucide-react";
 import NavbarActions from '@/components/navbar-actions';
-import CategoriesList from './categories-list';
 import { useUser, UserButton, useClerk } from "@clerk/nextjs";
 import { Product } from '@/types';
 
@@ -47,7 +46,6 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
             <X size={24} className="text-[#3A5795]" />
           </button>
 
-
           {/* Cart Button */}
           <div className="ml-2">
             <NavbarActions toggleMenu={toggleMenu} />
@@ -75,8 +73,6 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           )}
         </div>
 
-        {/* Categories List */}
-        <CategoriesList toggleMenu={toggleMenu} />
         <div className="mx-auto py-4 flex flex-wrap justify-center">
           <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
             <a

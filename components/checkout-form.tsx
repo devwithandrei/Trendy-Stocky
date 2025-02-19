@@ -34,13 +34,29 @@ const CheckoutForm = () => {
       setLoading(true);
 
       // Prepare order items
-      const orderItems = cart.items.map(item => ({
-        productId: item.id,
-        sizeId: item.selectedSize?.id,
-        colorId: item.selectedColor?.id,
-        quantity: item.quantity,
-        price: item.price
-      }));
+      const orderItems = cart.items.map(item => {
+        const orderItem: {
+          productId: string;
+          sizeId?: string;
+          colorId?: string;
+          quantity: number;
+          price: string;
+        } = {
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        };
+
+        if (item.selectedSize) {
+          orderItem.sizeId = item.selectedSize.id;
+        }
+
+        if (item.selectedColor) {
+          orderItem.colorId = item.selectedColor.id;
+        }
+
+        return orderItem;
+      });
 
       // Create order
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
@@ -85,7 +101,8 @@ const CheckoutForm = () => {
                           <Currency value={item.price} />
                         </div>
                         <p className="mt-1 text-sm text-gray-500">
-                          Size: {item.selectedSize?.value} | Color: {item.selectedColor?.name}
+                          {item.selectedSize ? `Size: ${item.selectedSize?.value} | ` : ''}
+                          {item.selectedColor ? `Color: ${item.selectedColor?.name}` : ''}
                         </p>
                       </div>
                       <div className="flex flex-1 items-end justify-between text-sm">

@@ -117,7 +117,7 @@ const OrderPage = () => {
                         <Currency value={item.price} />
                       </div>
                       <p className="mt-1 text-sm text-gray-500">
-                        Size: {item.size.value} | Color: {item.color.name}
+                        Size: {item.size?.value || 'N/A'} | Color: {item.color?.name || 'N/A'}
                       </p>
                       <p className="mt-1 text-sm text-gray-500">
                         Quantity: {item.quantity}

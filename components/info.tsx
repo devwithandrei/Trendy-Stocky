@@ -22,22 +22,38 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
 
-    if (data.sizes.length > 0 && !selectedSize) {
+    // Check if product has no variations
+    if ((!data.sizes || !data.sizes.length) && (!data.colors || !data.colors.length)) {
+      if (!data.stock || data.stock <= 0) {
+        toast.error("Product is out of stock");
+        return;
+      }
+      cart.addItem({
+        ...data,
+        quantity: 1
+      });
+      toast.success("Item added to cart");
+      return;
+    }
+
+    // Handle products with variations
+    if (data.sizes?.length > 0 && !selectedSize) {
       toast.error("Please select a size");
       return;
     }
 
-    if (data.colors.length > 0 && !selectedColor) {
+    if (data.colors?.length > 0 && !selectedColor) {
       toast.error("Please select a color");
       return;
     }
 
-    if (selectedSize && selectedSize.stock <= 0) {
+    // Check stock based on variations
+    if (data.sizes.length > 0 && selectedSize && selectedSize.stock <= 0) {
       toast.error("Selected size is out of stock");
       return;
     }
 
-    if (selectedColor && selectedColor.stock <= 0) {
+    if (data.colors.length > 0 && selectedColor && selectedColor.stock <= 0) {
       toast.error("Selected color is out of stock");
       return;
     }
@@ -92,16 +108,15 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         />
       </div>
       <div className="mt-10 flex items-center gap-x-3">
-        <Button 
-          onClick={onAddToCart}
-          className="flex items-center gap-x-2"
-          disabled={
-            (data.sizes.length > 0 && !selectedSize) || 
-            (data.colors.length > 0 && !selectedColor) ||
-            (selectedSize && selectedSize.stock <= 0) ||
-            (selectedColor && selectedColor.stock <= 0)
-          }
-        >
+          <Button 
+            onClick={onAddToCart}
+            className="flex items-center gap-x-2"
+            disabled={
+      (!data.sizes?.length && !data.colors?.length && (!data.stock || data.stock <= 0)) ||
+      (data.sizes?.length > 0 && (!selectedSize || selectedSize.stock <= 0)) || 
+      (data.colors?.length > 0 && (!selectedColor || selectedColor.stock <= 0))
+            }
+          >
           Add To Cart
           <ShoppingCart size={20} />
         </Button>

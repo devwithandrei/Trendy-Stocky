@@ -29,12 +29,12 @@ const ProductCard: React.FC<ProductCard> = ({
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
 
-    if (data.sizes.length > 0 && !selectedSize) {
+    if (data.sizes?.length > 0 && !selectedSize) {
       toast.error("Please select a size");
       return;
     }
 
-    if (data.colors.length > 0 && !selectedColor) {
+    if (data.colors?.length > 0 && !selectedColor) {
       toast.error("Please select a color");
       return;
     }
@@ -99,7 +99,7 @@ const ProductCard: React.FC<ProductCard> = ({
         </div>
 
         {/* Size Selection */}
-        {data.sizes.length > 0 && (
+        {data.sizes?.length > 0 && (
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
               {data.sizes.map((size) => (
@@ -127,7 +127,7 @@ const ProductCard: React.FC<ProductCard> = ({
         )}
 
         {/* Color Selection */}
-        {data.colors.length > 0 && (
+        {data.colors?.length > 0 && (
           <div className="flex flex-wrap gap-3">
             {data.colors.map((color) => (
               <button

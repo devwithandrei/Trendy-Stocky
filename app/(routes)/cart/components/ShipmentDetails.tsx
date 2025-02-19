@@ -1,12 +1,18 @@
 "use client";
+import React, { FC, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import Currency from '@/components/ui/currency';
+import useCart from '@/hooks/use-cart';
+import { Product } from '@/types';
 
-import { useState } from "react";
-
-interface CheckoutFormProps {
+interface ShipmentDetailsProps {
   onFormValid: (isValid: boolean, formData: any) => void;
 }
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
+const ShipmentDetails: React.FC<ShipmentDetailsProps> = ({ onFormValid }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -26,6 +32,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
     country: false,
     postalCode: false
   });
+
+  const { addItem, removeItem } = useCart();
 
   // Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +59,37 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
     onFormValid(isValid, isValid ? formData : null);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validate form data
+    const isValid = validateFormData(formData);
+    if (isValid) {
+      onFormValid(true, formData);
+    } else {
+      onFormValid(false, formData);
+      toast.error('Please fill out all fields correctly.');
+    }
+  };
+
+  const generateId = () => {
+    return Math.floor(Math.random() * 1000000).toString();
+  };
+
+  const validateFormData = (data: any) => {
+    const newErrors = {
+      name: data.name.trim() === "",
+      email: data.email.trim() === "" || !/\S+@\S+\.\S+/.test(data.email),
+      phone: data.phone.trim() === "" || !/^\d+$/.test(data.phone),
+      address: data.address.trim() === "",
+      city: data.city.trim() === "",
+      country: data.country.trim() === "",
+      postalCode: data.postalCode.trim() === ""
+    };
+
+    const isValid = !Object.values(newErrors).includes(true);
+    return isValid;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipping Details</h2>
@@ -64,6 +103,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.name}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.name ? "border-red-500" : "border-gray-300"
           }`}
@@ -81,6 +121,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.email}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.email ? "border-red-500" : "border-gray-300"
           }`}
@@ -98,6 +139,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.phone}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.phone ? "border-red-500" : "border-gray-300"
           }`}
@@ -115,6 +157,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.address}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.address ? "border-red-500" : "border-gray-300"
           }`}
@@ -132,6 +175,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.city}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.city ? "border-red-500" : "border-gray-300"
           }`}
@@ -149,6 +193,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.country}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.country ? "border-red-500" : "border-gray-300"
           }`}
@@ -166,6 +211,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
           value={formData.postalCode}
           onChange={handleChange}
           onBlur={validateForm}
+          required
           className={`w-full p-2 border rounded-md focus:ring focus:ring-blue-200 ${
             errors.postalCode ? "border-red-500" : "border-gray-300"
           }`}
@@ -177,4 +223,4 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onFormValid }) => {
   );
 };
 
-export default CheckoutForm;
+export default ShipmentDetails;

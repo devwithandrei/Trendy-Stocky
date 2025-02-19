@@ -73,6 +73,7 @@ export interface Product {
   images: Image[];
   sizes: Size[];
   colors: Color[];
+  stock?: number;  // Base stock for products without variations
   createdAt: string;
   updatedAt: string;
 }
@@ -91,6 +92,7 @@ export interface ProductQuery {
   isFeatured?: boolean;
   limit?: number;
   search?: string;
+  storeId?: string;
 }
 
 export interface Order {
@@ -116,11 +118,11 @@ export interface OrderItem {
   id: string;
   orderId: string;
   productId: string;
-  sizeId: string;
-  colorId: string;
+  sizeId?: string;
+  colorId?: string;
   quantity: number;
   price: string;
   product: Product;
-  size: Size;
-  color: Color;
+  size?: Size;
+  color?: Color;
 }

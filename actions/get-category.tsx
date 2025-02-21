@@ -33,7 +33,7 @@ interface CartProduct extends ProductInterface {
   quantity: number;
 }
 
-const URL=`http://localhost:3000/api/84eeb702-de97-4f9d-a56b-a1050254c564/categories`;
+const URL=`${process.env.NEXT_PUBLIC_API_URL}/categories`;
 
 const getCategory = async (id: string): Promise<Category> => {
   try {

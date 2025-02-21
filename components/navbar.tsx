@@ -9,26 +9,51 @@ import NavbarActions from "@/components/navbar-actions";
 import ProductSearchBar from "./ProductSearchBar";
 import ProductSearchResult from "./ProductSearchResult";
 import MobileMenuContent from "./MobileMenuContent";
+import MainNav from "@/components/main-nav"; // New import
 import { useClerk, useUser, UserButton } from "@clerk/nextjs";
-import { Product } from '@/types';
+import { Product, Category } from '@/types'; // Updated import
+import { useStore } from "@/contexts/store-context"; // New import
 import getProducts from "@/actions/get-products";
+import axios from "axios"; // New import
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { openSignIn } = useClerk();
   const { user } = useUser();
+  const { storeId } = useStore(); // New state
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // New state
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const featuredProducts = await getProducts({ isFeatured: true });
-      setProducts(featuredProducts);
+    const fetchData = async () => {
+      if (!storeId) {
+        console.error('Store ID is not available');
+        return;
+      }
+
+      try {
+        const [featuredProducts, categoriesRes] = await Promise.all([
+          getProducts({ isFeatured: true, storeId }),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/categories?storeId=${storeId}`)
+        ]);
+        
+        setProducts(featuredProducts);
+        if (categoriesRes.data) {
+          console.log('Categories loaded:', categoriesRes.data.length);
+          setCategories(categoriesRes.data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Don't set categories if there's an error
+        setCategories([]);
+      }
     };
-    fetchProducts();
-  }, []);
+    
+    fetchData();
+  }, [storeId]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -147,6 +172,7 @@ const Navbar = () => {
           </div>
           
           <div className="ml-auto sm:ml-0 sm:mr-4 hidden sm:flex items-center gap-x-4">
+            <MainNav storeId={storeId} categories={categories} />
             <NavbarActions />
             
             {/* User/Sign In Button */}

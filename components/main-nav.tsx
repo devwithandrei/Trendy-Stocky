@@ -4,12 +4,14 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Category } from '@/types';
+import Link from 'next/link';
 
 interface MainNavProps {
-  data?: Category[]; // Make the 'data' prop optional
+  categories?: Category[];
+  storeId: string;
 }
 
-const MainNav: React.FC<MainNavProps> = ({ data }) => {
+const MainNav: React.FC<MainNavProps> = ({ categories, storeId }) => {
   const pathname = usePathname();
 
   const linkColors = [
@@ -20,17 +22,17 @@ const MainNav: React.FC<MainNavProps> = ({ data }) => {
     // Add more colors as needed
   ];
 
-  const routes = data?.map((route, index) => ({
-    href: `/category/${route.id}`,
-    label: route.name,
-    active: pathname === `/category/${route.id}`,
+  const routes = categories?.map((category, index) => ({
+    href: `/category/${category.name.toLowerCase()}?storeId=${storeId}`,
+    label: category.name,
+    active: pathname === `/category/${category.name.toLowerCase()}?storeId=${storeId}`,
     colorClass: linkColors[index % linkColors.length],
   })) || [];
 
   return (
     <nav className="mx-6 flex items-center space-x-4 lg:space-x-6">
       {routes.map((route) => (
-        <a
+        <Link
           key={route.href}
           href={route.href}
           className={cn(
@@ -41,7 +43,7 @@ const MainNav: React.FC<MainNavProps> = ({ data }) => {
           )}
         >
           {route.label}
-        </a>
+        </Link>
       ))}
     </nav>
   );

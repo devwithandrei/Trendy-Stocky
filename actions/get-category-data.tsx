@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Category } from "@/types";
 
-const baseUrl = process.env.BACKEND_API_URL;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const getCategoryData = async (categoryId: string, storeId: string): Promise<Category> => {
   try {

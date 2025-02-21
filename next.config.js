@@ -6,42 +6,61 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        pathname: '/dvssbllct/**',
       },
       {
+        protocol: 'https',
         hostname: 'tailwindui.com',
       },
       {
+        protocol: 'https',
         hostname: 'trendy.pt',
       },
       {
+        protocol: 'https',
         hostname: 'i.pinimg.com',
       },
       {
+        protocol: 'https',
         hostname: 'media.giphy.com',
       },
       {
+        protocol: 'https',
         hostname: 'funsubstance.com',
       },
       {
+        protocol: 'https',
         hostname: 'th.bing.com',
       },
       {
+        protocol: 'https',
         hostname: 'img.buzzfeed.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.clerk.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'clerk.app',
+      },
     ],
-    domains: ['res.cloudinary.com'],
   },
   // Enable HTTP in development
   async rewrites() {
     return [
       {
-        source: '/:path*',
-        destination: process.env.NODE_ENV === 'development' 
-          ? `http://localhost:44394/:path*`
-          : `http://localhost:${process.env.HTTPS_PORT || '44394'}/:path*`,
+        source: '/api/:storeId/:path*',
+        destination: 'http://localhost:3000/api/:storeId/:path*',
         basePath: false,
-      },
+      }
     ];
   },
   // Add security headers

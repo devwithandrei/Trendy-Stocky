@@ -5,14 +5,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getProduct = async (id: string): Promise<Product | null> => {
   try {
-    // Remove {Product} from the API URL if present and construct the proper endpoint
-    const baseUrl = API_URL?.replace('/{Product}', '');
-    const url = `${baseUrl}/products/${id}`;
+    if (!API_URL) {
+      throw new Error("API_URL is not defined");
+    }
+
+    // The API_URL should already include the store ID, so we just need to append the product endpoint
+    const url = `${API_URL}/products/${id}`;
     
     console.log("🔍 Fetching product:", {
-      baseUrl,
-      finalUrl: url,
-      originalUrl: API_URL,
+      url,
       id
     });
 
@@ -43,81 +44,23 @@ const getProduct = async (id: string): Promise<Product | null> => {
       return null;
     }
 
-    // Validate and create category object
-    if (!item.category?.id || !item.category?.name) {
-      console.error("❌ Invalid category data:", item.category);
-      return null;
-    }
-
-    const category: Category = {
-      id: item.category.id,
-      name: item.category.name,
-      billboardId: item.category.billboardId || '',
-      createdAt: item.category.createdAt || new Date().toISOString(),
-      updatedAt: item.category.updatedAt || new Date().toISOString()
-    };
-
-    // Validate and create brand object
-    if (!item.brand?.id || !item.brand?.name) {
-      console.error("❌ Invalid brand data:", item.brand);
-      return null;
-    }
-
-    const brand: Brand = {
-      id: item.brand.id,
-      name: item.brand.name,
-      value: item.brand.value || '',
-      createdAt: item.brand.createdAt || new Date().toISOString(),
-      updatedAt: item.brand.updatedAt || new Date().toISOString()
-    };
-
-    // Transform the product data with proper type checking
+    // Transform the response into the expected Product type
     const product: Product = {
       id: item.id,
+      category: item.category,
       name: item.name,
       price: item.price,
-      isFeatured: Boolean(item.isFeatured),
-      isArchived: Boolean(item.isArchived),
-      category,
-      brand,
-      description: item.description ? {
-        id: item.description.id || '',
-        name: item.description.name || '',
-        value: item.description.value || '',
-        createdAt: item.description.createdAt || new Date().toISOString(),
-        updatedAt: item.description.updatedAt || new Date().toISOString()
-      } : null,
-      sizes: Array.isArray(item.sizes) ? item.sizes.map((size: { id: string; name: string; value: string; stock?: number }) => ({
-        id: size.id,
-        name: size.name,
-        value: size.value,
-        stock: typeof size.stock === 'number' ? size.stock : 0
-      })) : [],
-      colors: Array.isArray(item.colors) ? item.colors.map((color: { id: string; name: string; value: string; stock?: number }) => ({
-        id: color.id,
-        name: color.name,
-        value: color.value,
-        stock: typeof color.stock === 'number' ? color.stock : 0
-      })) : [],
+      brand: item.brand,
+      description: item.description,
+      isFeatured: item.isFeatured,
+      isArchived: item.isArchived,
+      sizes: item.sizes || [],
+      colors: item.colors || [],
+      images: item.images || [],
       stock: item.stock || 0,
-      images: Array.isArray(item.images) ? item.images.map((image: { id: string; url: string; createdAt?: string; updatedAt?: string }) => ({
-        id: image.id,
-        url: image.url,
-        createdAt: image.createdAt || new Date().toISOString(),
-        updatedAt: image.updatedAt || new Date().toISOString()
-      })) : [],
-      createdAt: item.createdAt || new Date().toISOString(),
-      updatedAt: item.updatedAt || new Date().toISOString()
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
     };
-
-    console.log("✅ Product transformed successfully:", {
-      id: product.id,
-      name: product.name,
-      sizesCount: product.sizes.length,
-      colorsCount: product.colors.length,
-      hasDescription: !!product.description,
-      imagesCount: product.images.length
-    });
 
     return product;
   } catch (error) {

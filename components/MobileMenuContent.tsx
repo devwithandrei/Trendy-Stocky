@@ -1,21 +1,30 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from 'react';
-import { X, User } from "lucide-react";
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { X, User, Search, ShoppingBag, Heart, Settings } from "lucide-react";
 import NavbarActions from '@/components/navbar-actions';
 import { useUser, UserButton, useClerk } from "@clerk/nextjs";
 import { Product } from '@/types';
+import { useRouter } from 'next/navigation';
+import getProducts from '@/actions/get-products';
+import Link from 'next/link';
+import SearchResults from '@/components/ui/search-results';
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
   products: Product[];
 }
 
-const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }: MobileMenuContentProps) => {
+const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }) => {
   const { user } = useUser();
   const { openSignIn } = useClerk();
-
+  const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -24,88 +33,192 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
   }, [toggleMenu]);
 
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => handleClickOutside(event);
-
-    document.addEventListener('mousedown', handleOutsideClick);
-
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [handleClickOutside]);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 overflow-y-auto">
-      <div ref={menuRef} className="w-2/3 bg-blue-200 bg-opacity-70 h-full overflow-y-auto absolute top-0 right-0">
-        <div className="flex justify-between p-4 items-center">
-          {/* Close Button */}
-          <button
-            onClick={toggleMenu}
-            className="h-8 w-8 text-[#3A5795] focus:outline-none p-1 rounded-full hover:bg-gray-100 transition-colors duration-300"
-            aria-label="Close Menu"
-          >
-            <X size={24} className="text-[#3A5795]" />
-          </button>
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-          {/* Cart Button */}
-          <div className="ml-2">
-            <NavbarActions toggleMenu={toggleMenu} />
+    if (searchTerm.length >= 2) {
+      setIsLoading(true);
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const results = await getProducts({
+            categoryId: '',
+            colorId: '',
+            sizeId: '',
+            search: searchTerm
+          });
+          setSearchResults(results);
+        } catch (error) {
+          console.error('Search error:', error);
+          setSearchResults([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300);
+    } else {
+      setSearchResults([]);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  const handleNavigate = (url: string) => {
+    router.push(url);
+    toggleMenu();
+  };
+
+  const userMenuItems = [
+    { href: '/orders', label: 'My Orders', icon: ShoppingBag },
+    { href: '/wishlist', label: 'Wishlist', icon: Heart },
+    { href: '/settings', label: 'Settings', icon: Settings },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm">
+      <div 
+        ref={menuRef} 
+        className="w-[85%] max-w-md h-full overflow-y-auto absolute top-0 right-0 bg-white shadow-2xl"
+        style={{ 
+          animation: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        {/* Header with Search */}
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md shadow-sm">
+          <div className="flex justify-between items-center p-4">
+            <button
+              onClick={toggleMenu}
+              className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Close Menu"
+            >
+              <X size={24} className="text-gray-600" />
+            </button>
+
+            <div className="flex items-center gap-4">
+              <NavbarActions toggleMenu={toggleMenu} />
+              {user ? (
+                <div className="relative">
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: "w-10 h-10",
+                        userButtonTrigger: "focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full",
+                        userButtonPopoverCard: "!z-[60] !mt-2 !absolute !right-0 !w-[280px]",
+                        userButtonPopoverActions: "!z-[60]",
+                        userButtonPopoverFooter: "!z-[60]"
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => openSignIn()}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200"
+                >
+                  <User size={20} />
+                  <span>Sign In</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* User Button */}
-          {user ? (
-            <UserButton
-              userProfileMode="modal"
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: "rounded-full w-8 h-8 ml-2",
-                },
-              }}
-            />
-          ) : (
-            <button
-              onClick={() => openSignIn()}
-              className="text-[#3A5795] hover:bg-gray-100 p-2 rounded-full transition-colors duration-300 ml-2"
-              aria-label="Sign In"
-            >
-              <User size={20} />
-            </button>
-          )}
+          {/* Search Bar */}
+          <div className="px-4 pb-4">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search products..."
+                className="w-full px-4 py-2.5 pl-10 rounded-xl border border-gray-200 
+                         bg-gray-50 focus:bg-white focus:outline-none focus:border-blue-400 
+                         focus:ring-2 focus:ring-blue-100 transition-all duration-200"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            </div>
+
+            {/* Search Results Dropdown */}
+            {(isLoading || searchResults.length > 0 || searchTerm.length >= 2) && (
+              <div className="absolute left-0 right-0 top-full mt-2 mx-4 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto">
+                <SearchResults
+                  results={searchResults}
+                  isLoading={isLoading}
+                  searchTerm={searchTerm}
+                  onProductSelect={(productId) => handleNavigate(`/product/${productId}`)}
+                  className="p-2"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="mx-auto py-4 flex flex-wrap justify-center">
-          <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
-            <a
-              href="/about"
-              className="text-[#3A5795] hover:underline transition-colors duration-300"
-            >
-              About Us
-            </a>
-          </p>
-          <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
-            <a
-              href="/privacy-policy"
-              className="text-[#3A5795] hover:underline transition-colors duration-300"
-            >
-              Privacy & Policy
-            </a>
-          </p>
-          <p className="text-center text-sm md:text-lg text-[#3A5795] mr-8">
-            <a
-              href="/return-policies"
-              className="text-[#3A5795] hover:underline transition-colors duration-300"
-            >
-              Return Policies
-            </a>
-          </p>
+        {/* Quick Actions */}
+        <div className="px-4 py-2 border-b">
+          {userMenuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                onClick={() => handleNavigate(item.href)}
+              >
+                <Icon size={20} className="text-gray-500" />
+                <span className="text-gray-700">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
-        <div className="mx-auto py-3">
-          <p className="text-center text-sm md:text-lg text-[#3A5795]">
-            &copy; {new Date().getFullYear()} Trendy Stocky, Inc. All rights
-            reserved.
-          </p>
+
+        {/* Navigation Links */}
+        <nav className="mt-4 px-4">
+          <div className="space-y-2">
+            {[
+              { href: '/about', label: 'About Us' },
+              { href: '/privacy-policy', label: 'Privacy Policy' },
+              { href: '/terms', label: 'Terms of Service' },
+              { href: '/contact', label: 'Contact Us' },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                onClick={() => handleNavigate(link.href)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+
+        {/* Footer */}
+        <div className="mt-8 px-4 py-6 text-center text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} Outly.Shop. All rights reserved.
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

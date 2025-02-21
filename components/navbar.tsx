@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Menu, X, User } from "lucide-react"; // Modern icons
@@ -15,17 +15,24 @@ import { Product, Category } from '@/types'; // Updated import
 import { useStore } from "@/contexts/store-context"; // New import
 import getProducts from "@/actions/get-products";
 import axios from "axios"; // New import
+import SearchResults from "@/components/ui/search-results"; // New import
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { openSignIn } = useClerk();
   const { user } = useUser();
   const { storeId } = useStore(); // New state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]); // New state
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [mobileSearchTerm, setMobileSearchTerm] = useState("");
+  const [mobileSearchResults, setMobileSearchResults] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +43,7 @@ const Navbar = () => {
 
       try {
         const [featuredProducts, categoriesRes] = await Promise.all([
-          getProducts({ isFeatured: true, storeId }),
+          getProducts({ isFeatured: true }),
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/categories?storeId=${storeId}`)
         ]);
         
@@ -55,12 +62,56 @@ const Navbar = () => {
     fetchData();
   }, [storeId]);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowMobileSearch(false);
+      }
+    };
 
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (mobileSearchTerm.length >= 2) {
+      setIsLoading(true);
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const results = await getProducts({
+            categoryId: '',
+            colorId: '',
+            sizeId: '',
+            search: mobileSearchTerm
+          });
+          setMobileSearchResults(results);
+        } catch (error) {
+          console.error('Search error:', error);
+          setMobileSearchResults([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300);
+    } else {
+      setMobileSearchResults([]);
+      setIsLoading(false);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [mobileSearchTerm]);
+
+  const handleNavigate = (productId: string) => {
+    // router.push(`/product/${productId}`);
+    setShowMobileSearch(false);
+    setMobileSearchTerm("");
   };
 
   const closeSearch = () => {
@@ -80,6 +131,16 @@ const Navbar = () => {
         (product.description?.value?.toLowerCase().includes(searchText) ?? false)
     );
     setSearchResults(filteredProducts);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMobileSearch = () => {
+    setShowMobileSearch(false);
+    setMobileSearchTerm("");
+    setMobileSearchResults([]);
   };
 
   return (
@@ -109,42 +170,59 @@ const Navbar = () => {
           <div className="sm:hidden flex items-center">
             {/* Search Icon */}
             <button
-              onClick={toggleSearch}
+              onClick={() => setShowMobileSearch(true)}
               className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 mr-2"
               aria-label="Toggle Search"
             >
               <Search size={20} className="text-[#3A5795]" />
             </button>
 
-            {/* Search Popup */}
-            {isSearchOpen && (
-              <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-                <div className="bg-blue-500 bg-opacity-25 p-4 rounded-lg max-w-md w-full border border-blue-500 border-opacity-50 relative">
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    className="w-full rounded-md py-2 px-3 outline-none border border-gray-300 focus:border-blue-500 transition-all bg-opacity-50 text-black"
-                    style={{ backgroundColor: 'rgba(0, 0, 255, 0.2)' }}
-                  />
-                  {searchTerm && searchResults.length > 0 && (
-                    <div className="mt-2 max-h-60 overflow-y-auto">
-                      {searchResults.map(product => (
-                        <ProductSearchResult 
-                          key={product.id} 
-                          product={product} 
-                          onProductSelect={closeSearch} 
-                        />
-                      ))}
+            {/* Mobile Search Popup */}
+            {showMobileSearch && (
+              <div 
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
+              >
+                <div 
+                  ref={searchRef}
+                  className="absolute top-0 left-0 right-0 bg-white shadow-lg"
+                  style={{ animation: 'slideDown 0.2s ease-out' }}
+                >
+                  {/* Search Header */}
+                  <div className="flex items-center gap-4 p-4 border-b">
+                    <button
+                      onClick={closeMobileSearch}
+                      className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      <X size={24} className="text-gray-600" />
+                    </button>
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={mobileSearchTerm}
+                        onChange={(e) => setMobileSearchTerm(e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full px-4 py-2.5 pl-10 rounded-xl border border-gray-200 
+                                 bg-gray-50 focus:bg-white focus:outline-none focus:border-blue-400 
+                                 focus:ring-2 focus:ring-blue-100 transition-all duration-200"
+                        autoFocus
+                      />
+                      <Search 
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                        size={20} 
+                      />
                     </div>
-                  )}
-                  <button 
-                    onClick={closeSearch} 
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md"
-                  >
-                    Close
-                  </button>
+                  </div>
+
+                  {/* Search Results Container */}
+                  <div className="max-h-[60vh] overflow-y-auto">
+                    <SearchResults
+                      results={mobileSearchResults}
+                      isLoading={isLoading}
+                      searchTerm={mobileSearchTerm}
+                      onProductSelect={handleNavigate}
+                      className="p-4"
+                    />
+                  </div>
                 </div>
               </div>
             )}

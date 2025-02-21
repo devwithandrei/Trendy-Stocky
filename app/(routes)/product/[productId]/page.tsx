@@ -1,10 +1,11 @@
 import ProductList from '@/components/product-list'
 import Gallery from '@/components/gallery';
 import Info from '@/components/info';
-import getProducts from '@/actions/get-products';
+import getProduct from '@/actions/get-product';
 import Container from '@/components/ui/container';
 import CrispChatScript from '@/components/ui/CrispChatScript';
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Outly.Shop',
@@ -22,31 +23,12 @@ interface ProductPageProps {
 
 const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
   try {
-    // Fetch all products
-    const products = await getProducts();
-    
-    // Find the specific product
-    const product = products.find(p => p.id === params.productId);
+    // Fetch the specific product
+    const product = await getProduct(params.productId);
 
     if (!product) {
-      return (
-        <Container>
-          <div className="px-4 py-10 sm:px-6 lg:px-8">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong className="font-bold">Error: Product not found</strong>
-              <p className="mt-2 text-sm">
-                The product you&apos;re looking for could not be found. It may have been removed or is temporarily unavailable.
-              </p>
-            </div>
-          </div>
-        </Container>
-      );
+      return notFound();
     }
-
-    // Get related products from the same category
-    const suggestedProducts = products
-      .filter(p => p.category?.id === product.category?.id && p.id !== product.id)
-      .slice(0, 4);
 
     return (
       <div className="bg-white">
@@ -59,26 +41,15 @@ const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
               </div>
             </div>
             <hr className="my-10" />
-            <ProductList title="Related Items" items={suggestedProducts} />
+            <ProductList title="Related Items" items={[]} />
           </div>
         </Container>
         <CrispChatScript />
       </div>
-    );
+    )
   } catch (error) {
-    console.error('[ProductPage]', error);
-    return (
-      <Container>
-        <div className="px-4 py-10 sm:px-6 lg:px-8">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Error loading product</strong>
-            <p className="mt-2 text-sm">
-              There was an error loading this product. Please try again later.
-            </p>
-          </div>
-        </div>
-      </Container>
-    );
+    console.error('Error in ProductPage:', error);
+    return notFound();
   }
 };
 

@@ -4,44 +4,74 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '@/types';
 import ProductSearchResult from './ProductSearchResult';
 import { Search, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import getProducts from '@/actions/get-products';
 
 interface ProductSearchBarProps {
-  products: Product[];
   onProductSelect?: () => void;
+  products: Product[];
 }
 
-const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products, onProductSelect }) => {
+const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect, products }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setSearchResults([]);
-        setSearchTerm('');
         setIsFocused(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const searchText = e.target.value.toLowerCase();
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchText = e.target.value;
     setSearchTerm(searchText);
+    setIsLoading(true);
 
-    const filteredProducts = products.filter(product =>
-      product.name.toLowerCase().includes(searchText) ||
-      product.brand.name.toLowerCase().includes(searchText) ||
-      (product.description?.value?.toLowerCase().includes(searchText) ?? false)
-    );
-    setSearchResults(filteredProducts);
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Don't search if the search term is too short
+    if (searchText.length < 2) {
+      setSearchResults([]);
+      setIsLoading(false);
+      return;
+    }
+
+    // Debounce the search
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const results = await getProducts({ search: searchText });
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchResults([]);
+      setIsFocused(false);
+      onProductSelect?.();
+    }
   };
 
   const clearSearch = () => {
@@ -50,86 +80,41 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ products, onProduct
   };
 
   return (
-    <div className="relative w-full max-w-md" ref={searchContainerRef}>
-      <div 
-        className={`
-          flex items-center gap-3 px-4 py-2 
-          bg-white rounded-full
-          border border-gray-200
-          transition-all duration-200
-          ${isFocused ? 'shadow-md border-gray-300' : 'hover:border-gray-300'}
-        `}
-      >
-        <Search 
-          size={18} 
-          className={`
-            transition-colors duration-200
-            ${isFocused ? 'text-gray-800' : 'text-gray-400'}
-          `}
-        />
+    <div className="relative w-full max-w-xl mx-auto" ref={searchContainerRef}>
+      <form onSubmit={handleSubmit} className="relative">
         <input
           type="text"
           value={searchTerm}
           onChange={handleSearch}
           onFocus={() => setIsFocused(true)}
           placeholder="Search products..."
-          className="
-            flex-1 
-            text-sm 
-            bg-transparent 
-            outline-none 
-            placeholder:text-gray-400
-            text-gray-800
-          "
+          className="w-full px-4 py-2 pl-10 pr-10 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500"
         />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
         {searchTerm && (
           <button
+            type="button"
             onClick={clearSearch}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            <X size={16} className="text-gray-400" />
+            <X className="h-5 w-5" />
           </button>
         )}
-      </div>
+      </form>
 
-      {/* Search Results Dropdown */}
-      {searchTerm && searchResults.length > 0 && (
-        <div className="
-          absolute z-50 w-full mt-2
-          bg-white rounded-lg
-          shadow-lg
-          border border-gray-100
-          overflow-hidden
-          max-h-[calc(100vh-200px)]
-          overflow-y-auto
-          scrollbar-thin
-          scrollbar-thumb-gray-200
-          scrollbar-track-transparent
-        ">
-          {searchResults.map((product) => (
-            <ProductSearchResult
-              key={product.id}
-              product={product}
-              onProductSelect={() => {
-                setSearchTerm('');
-                setSearchResults([]);
-                onProductSelect?.();
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* No Results Message */}
-      {searchTerm && searchResults.length === 0 && (
-        <div className="
-          absolute z-50 w-full mt-2
-          bg-white rounded-lg
-          shadow-lg
-          border border-gray-100
-          p-4
-        ">
-          <p className="text-gray-500 text-center text-sm">No products found</p>
+      {isFocused && (searchResults.length > 0 || isLoading) && (
+        <div className="absolute z-50 w-full mt-2 bg-white rounded-lg shadow-lg max-h-96 overflow-y-auto">
+          {isLoading ? (
+            <div className="p-4 text-center text-gray-500">Loading...</div>
+          ) : (
+            searchResults.map((product) => (
+              <ProductSearchResult
+                key={product.id}
+                product={product}
+                onProductSelect={onProductSelect}
+              />
+            ))
+          )}
         </div>
       )}
     </div>

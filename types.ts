@@ -51,14 +51,12 @@ export interface Size {
   id: string;
   name: string;
   value: string;
-  stock: number;
 }
 
 export interface Color {
   id: string;
   name: string;
   value: string;
-  stock: number;
 }
 
 export interface Product {
@@ -73,7 +71,7 @@ export interface Product {
   images: Image[];
   sizes: Size[];
   colors: Color[];
-  stock?: number;  // Base stock for products without variations
+  stock: number;  // Total product stock
   createdAt: string;
   updatedAt: string;
 }

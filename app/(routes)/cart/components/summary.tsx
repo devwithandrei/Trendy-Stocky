@@ -51,35 +51,49 @@ const Summary: React.FC<SummaryProps> = ({ items }) => {
     return total + (Number(item.price) * (item.quantity || 1));
   }, 0);
 
-  const onCheckout = async () => {
-    // ... (existing checkout logic)
+  const getItemVariationKey = (item: CartProduct) => {
+    return `${item.id}-${item.selectedSize?.id || 'no-size'}-${item.selectedColor?.id || 'no-color'}`;
   };
 
-  const increaseQuantity = (itemId: string) => {
-    const item = items.find(item => item.id === itemId);
+  const findMatchingItem = (itemId: string, targetItem: CartProduct) => {
+    return items.find(item => {
+      const sameId = item.id === itemId;
+      const sameSize = (!targetItem.selectedSize && !item.selectedSize) || 
+                      (targetItem.selectedSize?.id === item.selectedSize?.id);
+      const sameColor = (!targetItem.selectedColor && !item.selectedColor) || 
+                      (targetItem.selectedColor?.id === item.selectedColor?.id);
+      return sameId && sameSize && sameColor;
+    });
+  };
+
+  const increaseQuantity = (itemId: string, targetItem: CartProduct) => {
+    const item = findMatchingItem(itemId, targetItem);
     if (item) {
-      const availableStock = item.selectedSize?.stock ?? item.selectedColor?.stock ?? item.stock ?? 0;
-      if (item.quantity + 1 <= availableStock) {
-        cart.addItem({ ...item, id: itemId, quantity: item.quantity + 1 });
+      if (item.quantity + 1 <= item.stock) {
+        cart.addItem({ ...item, quantity: item.quantity + 1 });
       } else {
         toast.error("Not enough stock available.");
       }
     }
   };
 
-  const decreaseQuantity = (itemId: string) => {
-    const item = items.find(item => item.id === itemId);
+  const decreaseQuantity = (itemId: string, targetItem: CartProduct) => {
+    const item = findMatchingItem(itemId, targetItem);
     if (item && item.quantity > 1) {
-      cart.addItem({ ...item, quantity: item.quantity - 1, selectedColor: item.selectedColor, selectedSize: item.selectedSize, images: item.images, price: item.price, name: item.name, id: item.id });
+      cart.addItem({ ...item, quantity: item.quantity - 1 });
     } else {
       cart.removeItem(itemId);
     }
   };
 
-    const handleShipmentDetailsValid = useCallback((isValid: boolean, shipmentData: any) => {
-        setIsFormValid(isValid);
-        setFormData(shipmentData);
-    }, [setIsFormValid, setFormData]);
+  const onCheckout = async () => {
+    // ... (existing checkout logic)
+  };
+
+  const handleShipmentDetailsValid = useCallback((isValid: boolean, shipmentData: any) => {
+    setIsFormValid(isValid);
+    setFormData(shipmentData);
+  }, [setIsFormValid, setFormData]);
 
   return (
     <>
@@ -90,7 +104,7 @@ const Summary: React.FC<SummaryProps> = ({ items }) => {
           {/* Cart Items List */}
           <ul className="mt-6 space-y-3 max-h-[300px] overflow-y-auto">
             {items.map((item) => (
-              <li key={item.id} className="flex items-center gap-3 p-2 border rounded-lg shadow-sm bg-gray-50 relative">
+              <li key={getItemVariationKey(item)} className="flex items-center gap-3 p-2 border rounded-lg shadow-sm bg-gray-50 relative">
                 {/* Product Image */}
                 <div className="relative h-10 w-10 sm:h-16 sm:w-16 rounded-md overflow-hidden">
                   <Image
@@ -112,8 +126,8 @@ const Summary: React.FC<SummaryProps> = ({ items }) => {
                   <div className="flex items-center justify-between mt-2">
                     <MultipleButton 
                       quantity={item.quantity} 
-                      onIncrease={() => increaseQuantity(item.id)} 
-                      onDecrease={() => decreaseQuantity(item.id)} 
+                      onIncrease={() => increaseQuantity(item.id, item)} 
+                      onDecrease={() => decreaseQuantity(item.id, item)} 
                     />
                     <Currency value={Number(item.price) * (item.quantity || 1)} className="text-xs sm:text-sm font-medium text-gray-900" />
                   </div>
@@ -121,7 +135,18 @@ const Summary: React.FC<SummaryProps> = ({ items }) => {
 
                 {/* Remove Button */}
                 <button
-                  onClick={() => cart.removeItem(item.id)}
+                  onClick={() => {
+                    console.log('Removing item with:', {
+                      id: item.id,
+                      size: item.selectedSize,
+                      color: item.selectedColor
+                    });
+                    cart.removeItem(
+                      item.id,
+                      item.selectedSize || undefined,
+                      item.selectedColor || undefined
+                    );
+                  }}
                   className="absolute top-1 right-1 p-1 rounded-full bg-gray-200 hover:bg-gray-300 transition"
                 >
                   <X size={12} className="text-gray-600" />

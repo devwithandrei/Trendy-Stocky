@@ -8,7 +8,6 @@ import { ShoppingCart } from "lucide-react";
 import useCart from "@/hooks/use-cart";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import ProductVariations from "./product-variations";
 
 interface InfoProps {
   data: Product;
@@ -18,25 +17,11 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const cart = useCart();
   const [selectedSize, setSelectedSize] = useState<Size | undefined>(undefined);
   const [selectedColor, setSelectedColor] = useState<Color | undefined>(undefined);
+  const [quantity, setQuantity] = useState(1);
 
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
 
-    // Check if product has no variations
-    if ((!data.sizes || !data.sizes.length) && (!data.colors || !data.colors.length)) {
-      if (!data.stock || data.stock <= 0) {
-        toast.error("Product is out of stock");
-        return;
-      }
-      cart.addItem({
-        ...data,
-        quantity: 1
-      });
-      toast.success("Item added to cart");
-      return;
-    }
-
-    // Handle products with variations
     if (data.sizes?.length > 0 && !selectedSize) {
       toast.error("Please select a size");
       return;
@@ -47,14 +32,8 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       return;
     }
 
-    // Check stock based on variations
-    if (data.sizes.length > 0 && selectedSize && selectedSize.stock <= 0) {
-      toast.error("Selected size is out of stock");
-      return;
-    }
-
-    if (data.colors.length > 0 && selectedColor && selectedColor.stock <= 0) {
-      toast.error("Selected color is out of stock");
+    if (quantity > data.stock) {
+      toast.error("Not enough stock available");
       return;
     }
 
@@ -62,18 +41,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       ...data,
       selectedSize,
       selectedColor,
-      quantity: 1
+      quantity
     });
 
     toast.success("Item added to cart");
-  };
-
-  const handleVariationSelectAction = (sizeId: string, colorId: string, stock: number) => {
-    const size = data.sizes.find(s => s.id === sizeId);
-    const color = data.colors.find(c => c.id === colorId);
-    
-    setSelectedSize(size);
-    setSelectedColor(color);
   };
 
   return (
@@ -100,23 +71,86 @@ const Info: React.FC<InfoProps> = ({ data }) => {
           <h3 className="font-semibold text-black">Category:</h3>
           <div>{data.category.name}</div>
         </div>
-      </div>
-      <div className="mt-6">
-        <ProductVariations
-          product={data}
-          onVariationSelectAction={handleVariationSelectAction}
-        />
-      </div>
-      <div className="mt-10 flex items-center gap-x-3">
-          <Button 
-            onClick={onAddToCart}
-            className="flex items-center gap-x-2"
-            disabled={
-      (!data.sizes?.length && !data.colors?.length && (!data.stock || data.stock <= 0)) ||
-      (data.sizes?.length > 0 && (!selectedSize || selectedSize.stock <= 0)) || 
-      (data.colors?.length > 0 && (!selectedColor || selectedColor.stock <= 0))
-            }
-          >
+
+        {/* Size Selection */}
+        {data.sizes?.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-semibold text-black">Select Size:</h3>
+            <div className="flex flex-wrap gap-2">
+              {data.sizes.map((size) => (
+                <button
+                  key={size.id}
+                  onClick={() => setSelectedSize(size)}
+                  className={`
+                    min-w-[3rem] h-[3rem] rounded-lg
+                    flex items-center justify-center
+                    text-sm font-medium transition-all
+                    ${selectedSize?.id === size.id
+                      ? 'bg-black text-white scale-105'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }
+                  `}
+                >
+                  {size.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Color Selection */}
+        {data.colors?.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-semibold text-black">Select Color:</h3>
+            <div className="flex flex-wrap gap-3">
+              {data.colors.map((color) => (
+                <button
+                  key={color.id}
+                  onClick={() => setSelectedColor(color)}
+                  title={color.name}
+                  className={`
+                    w-10 h-10 rounded-full transition-all
+                    ${selectedColor?.id === color.id
+                      ? 'ring-2 ring-black ring-offset-2 scale-110'
+                      : 'ring-1 ring-gray-300 hover:scale-110'
+                    }
+                  `}
+                  style={{ backgroundColor: color.value }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 space-y-2">
+          <h3 className="font-semibold text-black">Quantity:</h3>
+          <div className="flex items-center gap-x-3">
+            <button
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl font-medium hover:bg-gray-200 transition"
+            >
+              -
+            </button>
+            <span className="text-xl font-medium min-w-[2rem] text-center">
+              {quantity}
+            </span>
+            <button
+              onClick={() => setQuantity(Math.min(data.stock || 1, quantity + 1))}
+              className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl font-medium hover:bg-gray-200 transition"
+            >
+              +
+            </button>
+          </div>
+          <p className="text-sm text-gray-600">
+            Available Stock: {data.stock}
+          </p>
+        </div>
+
+        <Button 
+          onClick={onAddToCart}
+          className="flex items-center gap-x-2"
+          disabled={!data.stock || data.stock <= 0}
+        >
           Add To Cart
           <ShoppingCart size={20} />
         </Button>

@@ -15,36 +15,15 @@ export const ProductVariations: React.FC<ProductVariationsProps> = ({
   const [selectedSizeId, setSelectedSizeId] = useState<string>('');
   const [selectedColorId, setSelectedColorId] = useState<string>('');
 
-  // Get available stock for current selection
-  const getAvailableStock = (sizeId: string | undefined, colorId: string | undefined) => {
-    if ((!product.sizes || !product.sizes.length) && (!product.colors || !product.colors.length)) {
-      // If product has no variations, return base stock
-      return product.stock || 0;
-    }
-
-    if (product.sizes?.length && !product.colors?.length) {
-      // If product only has sizes
-      const size = product.sizes.find(s => s.id === sizeId);
-      return size?.stock || 0;
-    }
-
-    if (!product.sizes?.length && product.colors?.length) {
-      // If product only has colors
-      const color = product.colors.find(c => c.id === colorId);
-      return color?.stock || 0;
-    }
-
-    // If product has both sizes and colors
-    const size = product.sizes.find(s => s.id === sizeId);
-    const color = product.colors.find(c => c.id === colorId);
-    if (!size || !color) return 0;
-    return Math.min(size.stock, color.stock);
+  // Get available stock for the product
+  const getAvailableStock = () => {
+    return product.stock;
   };
 
   const handleSizeSelect = (sizeId: string) => {
     setSelectedSizeId(sizeId);
     if (selectedColorId) {
-      const stock = getAvailableStock(sizeId, selectedColorId);
+      const stock = getAvailableStock();
       onVariationSelectAction(sizeId, selectedColorId, stock);
     }
   };
@@ -52,7 +31,7 @@ export const ProductVariations: React.FC<ProductVariationsProps> = ({
   const handleColorSelect = (colorId: string) => {
     setSelectedColorId(colorId);
     if (selectedSizeId) {
-      const stock = getAvailableStock(selectedSizeId, colorId);
+      const stock = getAvailableStock();
       onVariationSelectAction(selectedSizeId, colorId, stock);
     }
   };
@@ -74,12 +53,12 @@ export const ProductVariations: React.FC<ProductVariationsProps> = ({
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-100'
                   }
-                  ${size.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
-                disabled={size.stock === 0}
+                disabled={product.stock === 0}
               >
                 {size.name}
-                {size.stock === 0 && ' (Out of Stock)'}
+                {product.stock === 0 && ' (Out of Stock)'}
               </button>
             ))}
           </div>
@@ -101,9 +80,9 @@ export const ProductVariations: React.FC<ProductVariationsProps> = ({
                     ? 'bg-black text-white'
                     : 'bg-white text-black hover:bg-gray-100'
                   }
-                  ${color.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
-                disabled={color.stock === 0}
+                disabled={product.stock === 0}
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -111,7 +90,7 @@ export const ProductVariations: React.FC<ProductVariationsProps> = ({
                     style={{ backgroundColor: color.value }}
                   />
                   {color.name}
-                  {color.stock === 0 && ' (Out of Stock)'}
+                  {product.stock === 0 && ' (Out of Stock)'}
                 </div>
               </button>
             ))}
@@ -131,7 +110,7 @@ export const ProductVariations: React.FC<ProductVariationsProps> = ({
         (product.colors?.length === 0 || selectedColorId) && (
           <div className="mt-4">
             <p className="text-sm text-gray-600">
-              Available Stock: {getAvailableStock(selectedSizeId, selectedColorId)}
+              Available Stock: {getAvailableStock()}
             </p>
           </div>
         )

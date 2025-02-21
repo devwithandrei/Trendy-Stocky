@@ -12,6 +12,7 @@ import { Product, Size, Color } from "@/types";
 interface CartProduct extends Product {
   selectedSize?: Size;
   selectedColor?: Color;
+  quantity: number;
 }
 
 interface CartItemProps {
@@ -24,6 +25,21 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
   const onRemove = () => {
     cart.removeItem(data.id);
     toast.success("Item removed from cart.");
+  };
+
+  const onUpdateQuantity = (newQuantity: number) => {
+    if (newQuantity < 1) {
+      cart.removeItem(data.id);
+      toast.success("Item removed from cart.");
+      return;
+    }
+
+    if (newQuantity > (data.stock || 0)) {
+      toast.error("Not enough stock available");
+      return;
+    }
+
+    cart.updateQuantity(data.id, newQuantity);
   };
 
   return ( 
@@ -56,9 +72,14 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
             <div className="mt-1 flex text-sm">
               {[
                 data.selectedColor?.name && (
-                  <p key="color" className="text-gray-500">
-                    Color: {data.selectedColor.name}
-                  </p>
+                  <div key="color" className="flex items-center text-gray-500">
+                    <span>Color: </span>
+                    <div 
+                      className="ml-2 w-4 h-4 rounded-full ring-1 ring-gray-200" 
+                      style={{ backgroundColor: data.selectedColor.value }}
+                      title={data.selectedColor.name}
+                    />
+                  </div>
                 ),
                 data.selectedSize?.name && (
                   <p key="size" className="ml-4 border-l border-gray-200 pl-4 text-gray-500">
@@ -69,9 +90,34 @@ const CartItem: React.FC<CartItemProps> = ({ data }) => {
             </div>
           )}
 
+          {/* Quantity Controls */}
+          <div className="mt-2 flex items-center gap-x-3">
+            <button
+              onClick={() => onUpdateQuantity(data.quantity - 1)}
+              className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-lg font-medium hover:bg-gray-200 transition"
+            >
+              -
+            </button>
+            <span className="text-lg font-medium min-w-[2rem] text-center">
+              {data.quantity}
+            </span>
+            <button
+              onClick={() => onUpdateQuantity(data.quantity + 1)}
+              className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-lg font-medium hover:bg-gray-200 transition"
+            >
+              +
+            </button>
+          </div>
+
           {/* Price */}
-          <div className="mt-1">
-            <Currency value={data.price} />
+          <div className="mt-2">
+            <div className="flex items-center gap-x-2">
+              <Currency value={data.price} />
+              <span className="text-gray-500">×</span>
+              <span>{data.quantity}</span>
+              <span className="text-gray-500">=</span>
+              <Currency value={parseFloat(data.price) * data.quantity} />
+            </div>
           </div>
         </div>
       </div>

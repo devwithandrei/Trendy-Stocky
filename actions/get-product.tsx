@@ -99,6 +99,7 @@ const getProduct = async (id: string): Promise<Product | null> => {
         value: color.value,
         stock: typeof color.stock === 'number' ? color.stock : 0
       })) : [],
+      stock: item.stock || 0,
       images: Array.isArray(item.images) ? item.images.map((image: { id: string; url: string; createdAt?: string; updatedAt?: string }) => ({
         id: image.id,
         url: image.url,

@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import useCart from '@/hooks/use-cart';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
 
 interface PayButtonProps {
   disabled: boolean;
@@ -25,61 +28,67 @@ const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
         return;
       }
 
-      const productIds = cart.items.map((item) => item.id);
-      const sizes = cart.items.map((item) => item.selectedSize?.id || null);
-      const colors = cart.items.map((item) => item.selectedColor?.id || null);
-      const quantities = cart.items.map((item) => item.quantity || 1);
-
+      // Create payment intent
       const response = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          productIds: productIds,
-          sizes: sizes,
-          colors: colors,
-          quantities: quantities,
-          customerDetails: formData,
+          productIds: cart.items.map(item => item.id),
+          sizes: cart.items.map(item => item.selectedSize?.id || null),
+          colors: cart.items.map(item => item.selectedColor?.id || null),
+          quantities: cart.items.map(item => item.quantity || 1),
+          customerDetails: {
+            name: formData.cardholderName,
+            email: formData.email || '',
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            country: formData.country,
+            postalCode: formData.zip
+          }
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create payment intent');
       }
 
-      const { clientSecret, orderId } = data;
+      const { clientSecret, orderId } = await response.json();
+
+      if (!clientSecret || !orderId) {
+        throw new Error('Invalid response from server');
+      }
 
       let paymentResult;
 
       // Handle payment based on payment method type
       if (formData.paymentMethodId) {
         // For Google Pay / Apple Pay
-        paymentResult = await stripe.confirmCardPayment(String(clientSecret), {
+        paymentResult = await stripe.confirmCardPayment(clientSecret, {
           payment_method: formData.paymentMethodId,
         });
       } else {
         // For regular card payments
         const cardElement = elements.getElement(CardElement);
         if (!cardElement) {
-          toast.error('Card element not found');
-          return;
+          throw new Error('Card element not found');
         }
 
-        paymentResult = await stripe.confirmCardPayment(String(clientSecret), {
+        paymentResult = await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
             card: cardElement,
             billing_details: {
               name: formData.cardholderName,
+              email: formData.email,
               phone: formData.phone,
               address: {
-                country: formData.country,
-                postal_code: formData.zip,
                 line1: formData.address,
                 city: formData.city,
-                state: formData.state,
+                country: formData.country,
+                postal_code: formData.zip,
               },
             },
           },
@@ -96,27 +105,21 @@ const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
       router.push(`/orders/${orderId}`);
 
     } catch (error: any) {
-      toast.error(error.message || 'Something went wrong');
+      console.error('[PAYMENT_ERROR]', error);
+      toast.error(error.message || 'Something went wrong with the payment');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="mt-6">
-      <button 
-        onClick={handlePayment} 
-        disabled={disabled || loading} 
-        className={`w-full bg-green-600 text-white px-6 py-3 rounded-md text-sm font-medium transition ${
-          disabled || loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
-        }`}
-      >
-        {loading ? 'Processing...' : 'Pay Now'}
-      </button>
-      <p className="mt-4 text-xs text-gray-500 text-center">
-        By clicking Pay Now, you agree to our Terms and Privacy Policy.
-      </p>
-    </div>
+    <Button
+      onClick={handlePayment}
+      disabled={disabled || loading || !stripe || !elements}
+      className="w-full mt-6"
+    >
+      {loading ? 'Processing...' : 'Checkout'}
+    </Button>
   );
 };
 

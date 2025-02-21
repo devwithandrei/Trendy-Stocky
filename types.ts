@@ -93,21 +93,46 @@ export interface ProductQuery {
   storeId?: string;
 }
 
+export interface Address {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+}
+
+export interface PaymentMethod {
+  type: string;
+  card?: {
+    brand?: string;
+    last4?: string;
+  };
+  wallet?: string;
+}
+
 export interface Order {
   id: string;
   storeId: string;
   isPaid: boolean;
-  customerName: string;
-  customerEmail: string;
-  phone: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  status: string;
-  shippingMethod?: string;
-  trackingNumber?: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  amount: number;
+  currency: string;
+  paymentIntentId: string;
+  paymentMethod: PaymentMethod;
+  customerDetails: {
+    name: string;
+    email: string;
+    phone: string;
+    address: Address;
+  };
+  shippingDetails?: {
+    name: string;
+    phone: string;
+    address: Address;
+  };
   orderItems: OrderItem[];
+  trackingNumber?: string;
   createdAt: string;
   updatedAt: string;
 }

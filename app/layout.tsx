@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import ModalProvider from "@/providers/modal-provider";
 import ToastProvider from "@/providers/toast-provider";
 import { StoreProvider } from "@/contexts/store-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -28,12 +29,14 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       <html lang="en">
         <body className={font.className}>
           <StoreProvider>
-            <ToastProvider />
-            <ModalProvider />
-            <Navbar />
-            {children}
-            <Footer />
-            <SpeedInsights />
+            <WishlistProvider>
+              <ToastProvider />
+              <ModalProvider />
+              <Navbar />
+              {children}
+              <Footer />
+              <SpeedInsights />
+            </WishlistProvider>
           </StoreProvider>
         </body>
       </html>

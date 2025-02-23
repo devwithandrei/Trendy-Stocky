@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Menu, X, User } from "lucide-react"; // Modern icons
+import { Search, Menu, X, User, Heart } from "lucide-react"; // Modern icons
 import Container from "@/components/ui/container";
 import NavbarActions from "@/components/navbar-actions";
 import ProductSearchBar from "./ProductSearchBar";
@@ -253,6 +253,9 @@ const Navbar = () => {
             <MainNav storeId={storeId} categories={categories} />
             <NavbarActions />
             
+            {/* Wishlist Link */}
+            
+
             {/* User/Sign In Button */}
             {user ? (
               <UserButton
@@ -265,13 +268,7 @@ const Navbar = () => {
                 }}
               />
             ) : (
-              <button
-                onClick={() => openSignIn()}
-                className="text-[#3A5795] hover:bg-gray-100 p-2 rounded-full transition-colors duration-300"
-                aria-label="Sign In"
-              >
-                <User size={20} />
-              </button>
+              <UserButton afterSignOutUrl="/" />
             )}
           </div>
 

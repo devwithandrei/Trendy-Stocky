@@ -1,4 +1,5 @@
 import { authMiddleware } from "@clerk/nextjs";
+import prismadb from "@/lib/prismadb";
 
 export default authMiddleware({
   publicRoutes: [
@@ -14,9 +15,7 @@ export default authMiddleware({
     "/cart/(.*)",
     "/api/products(.*)",
     "/api/categories(.*)",
-    "/api/webhook",
     "/api/create-payment-intent(.*)",
-    "/api/users(.*)",
     "/orders",
     "/orders/(.*)",
     "/api/stripe/(.*)",
@@ -29,18 +28,9 @@ export default authMiddleware({
   ],
   afterAuth(auth, req) {
     // Handle auth state
-    if (!auth.userId && !auth.isPublicRoute) {
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return Response.redirect(signInUrl);
-    }
   },
 });
 
 export const config = {
-  matcher: [
-    "/((?!.*\\..*|_next).*)",
-    "/",
-    "/(api|trpc)(.*)"
-  ]
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };

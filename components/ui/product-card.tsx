@@ -1,29 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import { MouseEventHandler, useState } from "react";
+import { MouseEventHandler, useState, useCallback, useEffect } from "react";
 import { Expand, ShoppingCart, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types";
 import usePreviewModal from "@/hooks/use-preview-modal";
 import useCart from "@/hooks/use-cart";
-import { useUser } from "@clerk/nextjs";
-import axios from "axios";
-import { Select } from "./select";
-import { Button } from "./button";
+import { useWishlist } from "@/lib/wishlist-context";
 import { toast } from "react-hot-toast";
+import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ProductCardProps {
   data: Product;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
   const router = useRouter();
   const previewModal = usePreviewModal();
   const cart = useCart();
-  const { user } = useUser();
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { toggleWishlist, wishlist } = useWishlist();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -87,33 +84,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
     toast.success("Added to cart");
   };
 
-  const toggleWishlist: MouseEventHandler<HTMLButtonElement> = async (event) => {
-    event.stopPropagation();
-    if (!user) {
-      router.push('/sign-in');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      if (isInWishlist) {
-        await axios.delete(`/api/users/${user.id}/wishlist/${data.id}`);
-        toast.success("Removed from wishlist");
-      } else {
-        await axios.post(`/api/users/${user.id}/wishlist`, { productId: data.id });
-        toast.success("Added to wishlist");
-      }
-      setIsInWishlist(!isInWishlist);
-    } catch (error) {
-      console.error('Error toggling wishlist:', error);
-      toast.error("Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const hasSizes = data.sizes && data.sizes.length > 0;
   const hasColors = data.colors && data.colors.length > 0;
+  const isInWishlist = wishlist.some((item) => item.id === data.id);
 
   return (
     <div className="bg-white group rounded-xl border p-3 space-y-4">
@@ -137,8 +110,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
               <Expand size={20} className="text-gray-600" />
             </button>
             <button
-              onClick={toggleWishlist}
-              disabled={isLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleWishlist(data.id);
+              }}
               className="rounded-full flex items-center justify-center bg-white border shadow-md p-2 hover:scale-110 transition"
             >
               <Heart 
@@ -197,5 +172,3 @@ const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
     </div>
   );
 };
-
-export default ProductCard;

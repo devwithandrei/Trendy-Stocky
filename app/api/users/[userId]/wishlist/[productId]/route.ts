@@ -1,33 +1,45 @@
-import { getAuth } from "@clerk/nextjs/server";
-import { NextResponse, NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
-// Remove product from wishlist
+// Delete product from wishlist
 export async function DELETE(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { userId: string; productId: string } }
 ) {
   try {
-    const { userId } = getAuth(req);
+    const { userId } = await auth();
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    if (!params.productId) {
+      return new NextResponse("Product ID is required", { status: 400 });
+    }
+
     // Ensure the authenticated user is only modifying their own wishlist
-    if (userId !== params.userId) {
+    if (userId !== decodeURIComponent(params.userId)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const productExists = await prismadb.product.findUnique({
+      where: { id: decodeURIComponent(params.productId) }
+    });
+
+    if (!productExists) {
+      return new NextResponse('Product does not exist', { status: 404 });
+    }
+
     const user = await prismadb.user.update({
-      where: { id: params.userId },
+      where: { id: decodeURIComponent(params.userId) },
       data: {
         wishlistProducts: {
-          disconnect: { id: params.productId }
+          disconnect: { id: decodeURIComponent(params.productId) }
         }
       },
       include: {
-        wishlistProducts: true
+        wishlistProducts: true,
       }
     });
 

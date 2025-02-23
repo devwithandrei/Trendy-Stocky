@@ -1,8 +1,8 @@
 "use client"
 
-import ProductCard from "@/components/ui/product-card";
 import { Product } from "@/types";
 import NoResults from "@/components/ui/no-results";
+import { ProductCard } from "@/components/ui/product-card";
 
 interface ProductListProps {
   title?: string;

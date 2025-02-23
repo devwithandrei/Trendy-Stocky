@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import getProducts from "@/actions/get-products";
 import Container from "@/components/ui/container";
-import ProductCard from "@/components/ui/product-card";
+import { ProductCard } from "@/components/ui/product-card";
 import NoResults from "@/components/ui/no-results";
 import { Product } from "@/types";
 

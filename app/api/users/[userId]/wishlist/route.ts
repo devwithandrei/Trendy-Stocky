@@ -15,12 +15,12 @@ export async function GET(
     }
 
     // Ensure the authenticated user is only accessing their own wishlist
-    if (userId !== params.userId) {
+    if (userId !== decodeURIComponent(params.userId)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const user = await prismadb.user.findUnique({
-      where: { id: params.userId },
+      where: { id: decodeURIComponent(params.userId) },
       include: {
         wishlistProducts: {
           include: {
@@ -45,47 +45,55 @@ export async function GET(
 
 // Add product to wishlist
 export async function POST(
-  req: Request,
-  { params }: { params: { userId: string } }
-) {
-  try {
-    const { userId } = await auth();
-    const { productId } = await req.json();
+    req: Request,
+    { params }: { params: { userId: string } }
+  ) {
+    try {
+      const { userId } = await auth();
+      const { productId } = await req.json();
 
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+      if (!userId) {
+        return new NextResponse("Unauthorized", { status: 401 });
+      }
 
-    if (!productId) {
-      return new NextResponse("Product ID is required", { status: 400 });
-    }
+      if (!productId) {
+        return new NextResponse("Product ID is required", { status: 400 });
+      }
 
-    // Ensure the authenticated user is only modifying their own wishlist
-    if (userId !== params.userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+      // Ensure the authenticated user is only modifying their own wishlist
+      if (userId !== decodeURIComponent(params.userId)) {
+        return new NextResponse("Unauthorized", { status: 401 });
+      }
 
-    const user = await prismadb.user.update({
-      where: { id: params.userId },
-      data: {
-        wishlistProducts: {
-          connect: { id: productId }
-        }
-      },
-      include: {
-        wishlistProducts: {
-           include: {
-            images: true,
-            category: true,
-            brand: true,
+      const productExists = await prismadb.product.findUnique({
+        where: { id: productId }
+      });
+
+      if (!productExists) {
+        return new NextResponse('Product does not exist', { status: 404 });
+      }
+
+      const user = await prismadb.user.update({
+        where: { id: decodeURIComponent(params.userId) },
+        data: {
+          wishlistProducts: {
+            connect: { id: productId }
+          }
+        },
+        include: {
+          wishlistProducts: {
+             include: {
+              images: true,
+              category: true,
+              brand: true,
+            }
           }
         }
-      }
-    });
-
-    return NextResponse.json(user.wishlistProducts);
-  } catch (error) {
-    console.log('[WISHLIST_POST]', error);
-    return new NextResponse("Internal error", { status: 500 });
+      });
+  
+      return NextResponse.json(user.wishlistProducts);
+    } catch (error) {
+      console.log('[WISHLIST_POST]', error);
+      return new NextResponse("Internal error", { status: 500 });
+    }
   }
-}

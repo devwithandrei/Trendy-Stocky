@@ -2,153 +2,197 @@
 
 import Image from "next/image";
 import { MouseEventHandler, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { Expand, ShoppingCart, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { Product } from "@/types";
+import usePreviewModal from "@/hooks/use-preview-modal";
 import useCart from "@/hooks/use-cart";
-import Currency from "@/components/ui/currency";
-import { Product, Size, Color } from "@/types";
+import { useUser } from "@clerk/nextjs";
+import axios from "axios";
+import { Select } from "./select";
+import { Button } from "./button";
+import { toast } from "react-hot-toast";
 
-interface ProductCard {
-  data: Product
+interface ProductCardProps {
+  data: Product;
 }
 
-const ProductCard: React.FC<ProductCard> = ({
-  data
-}) => {
-  const cart = useCart();
+const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
   const router = useRouter();
-  const [selectedSize, setSelectedSize] = useState<Size | undefined>();
-  const [selectedColor, setSelectedColor] = useState<Color | undefined>();
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const previewModal = usePreviewModal();
+  const cart = useCart();
+  const { user } = useUser();
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  const getAvailableStock = () => {
+    if (selectedSize) {
+      const size = data.sizes?.find(s => s.id === selectedSize);
+      return size?.stock ?? data.stock;
+    }
+    if (selectedColor) {
+      const color = data.colors?.find(c => c.id === selectedColor);
+      return color?.stock ?? data.stock;
+    }
+    return data.stock;
+  };
 
   const handleClick = () => {
     router.push(`/product/${data?.id}`);
   };
 
+  const onPreview: MouseEventHandler<HTMLButtonElement> = (event) => {
+    event.stopPropagation();
+    previewModal.onOpen(data);
+  };
+
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
 
-    if (data.sizes?.length > 0 && !selectedSize) {
+    const hasSizes = data.sizes && data.sizes.length > 0;
+    const hasColors = data.colors && data.colors.length > 0;
+
+    // Validate size selection if product has sizes
+    if (hasSizes && !selectedSize) {
       toast.error("Please select a size");
       return;
     }
 
-    if (data.colors?.length > 0 && !selectedColor) {
+    // Validate color selection if product has colors
+    if (hasColors && !selectedColor) {
       toast.error("Please select a color");
       return;
     }
 
-    setIsAddingToCart(true);
+    const selectedSizeObj = selectedSize ? data.sizes?.find(s => s.id === selectedSize) : undefined;
+    const selectedColorObj = selectedColor ? data.colors?.find(c => c.id === selectedColor) : undefined;
     
-    const cartItem = {
+    cart.addItem({
       ...data,
-      selectedSize,
-      selectedColor,
-      quantity: 1
-    };
+      quantity: quantity,
+      stock: getAvailableStock(),
+      selectedSize: selectedSizeObj ? {
+        ...selectedSizeObj,
+        stock: selectedSizeObj.stock ?? data.stock
+      } : undefined,
+      selectedColor: selectedColorObj ? {
+        ...selectedColorObj,
+        stock: selectedColorObj.stock ?? data.stock
+      } : undefined
+    });
 
-    cart.addItem(cartItem);
-    
-    setTimeout(() => {
-      setIsAddingToCart(false);
-    }, 1000);
+    toast.success("Added to cart");
   };
 
+  const toggleWishlist: MouseEventHandler<HTMLButtonElement> = async (event) => {
+    event.stopPropagation();
+    if (!user) {
+      router.push('/sign-in');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      if (isInWishlist) {
+        await axios.delete(`/api/users/${user.id}/wishlist/${data.id}`);
+        toast.success("Removed from wishlist");
+      } else {
+        await axios.post(`/api/users/${user.id}/wishlist`, { productId: data.id });
+        toast.success("Added to wishlist");
+      }
+      setIsInWishlist(!isInWishlist);
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const hasSizes = data.sizes && data.sizes.length > 0;
+  const hasColors = data.colors && data.colors.length > 0;
+
   return (
-    <div 
-      onClick={handleClick}
-      className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden cursor-pointer"
-    >
-      {/* Product Image Container */}
-      <div className="relative aspect-[3/4] sm:aspect-square overflow-hidden rounded-t-xl">
-        <Image 
-          src={data.images?.[0]?.url} 
+    <div className="bg-white group rounded-xl border p-3 space-y-4">
+      {/* Image & actions */}
+      <div 
+        onClick={handleClick}
+        className="aspect-square rounded-xl bg-gray-100 relative cursor-pointer"
+      >
+        <Image
+          src={data?.images?.[0]?.url}
           alt={data.name}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transform transition-transform duration-300 group-hover:scale-105"
-          priority
+          className="aspect-square object-cover rounded-md"
         />
-        
-        {/* Cart Icon */}
-        <button
-          onClick={onAddToCart}
-          className={`
-            absolute top-4 right-4
-            p-2 rounded-full
-            shadow-md
-            transition-all duration-300
-            ${isAddingToCart 
-              ? 'bg-red-500 text-white scale-110' 
-              : 'bg-white/90 text-gray-700 hover:bg-white'
-            }
-          `}
-        >
-          <ShoppingCart size={20} />
-        </button>
-      </div>
-
-      {/* Product Info */}
-      <div className="p-4 space-y-4">
-        <div>
-          <h3 className="font-medium text-lg text-gray-800 line-clamp-1">{data.name}</h3>
-          <div className="mt-1">
-            <Currency value={data.price} />
+        <div className="opacity-0 group-hover:opacity-100 transition absolute w-full px-6 bottom-5">
+          <div className="flex gap-x-6 justify-center">
+            <button
+              onClick={onPreview}
+              className="rounded-full flex items-center justify-center bg-white border shadow-md p-2 hover:scale-110 transition"
+            >
+              <Expand size={20} className="text-gray-600" />
+            </button>
+            <button
+              onClick={toggleWishlist}
+              disabled={isLoading}
+              className="rounded-full flex items-center justify-center bg-white border shadow-md p-2 hover:scale-110 transition"
+            >
+              <Heart 
+                size={20} 
+                className={isInWishlist ? "text-red-500 fill-red-500" : "text-gray-600"} 
+              />
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Size Selection */}
-        {data.sizes?.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {data.sizes.map((size) => (
-                <button
-                  key={size.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedSize(size);
-                  }}
-                  className={`
-                    min-w-[2.5rem] h-[2.5rem] rounded-lg
-                    flex items-center justify-center
-                    text-sm font-medium transition-all
-                    ${selectedSize?.id === size.id
-                      ? 'bg-black text-white scale-105'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }
-                  `}
-                >
-                  {size.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Description */}
+      <div>
+        <p className="font-semibold text-lg">{data.name}</p>
+        <p className="text-sm text-gray-500">{data.category?.name}</p>
+      </div>
 
-        {/* Color Selection */}
-        {data.colors?.length > 0 && (
-          <div className="flex flex-wrap gap-3">
-            {data.colors.map((color) => (
-              <button
-                key={color.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedColor(color);
-                }}
-                title={color.name}
-                className={`
-                  w-8 h-8 rounded-full transition-all
-                  ${selectedColor?.id === color.id
-                    ? 'ring-2 ring-black ring-offset-2 scale-110'
-                    : 'ring-1 ring-gray-300 hover:scale-110'
-                  }
-                `}
-                style={{ backgroundColor: color.value }}
-              />
-            ))}
-          </div>
-        )}
+      {/* Size Selector */}
+      {hasSizes && (
+        <Select
+          value={selectedSize}
+          onChange={(value) => setSelectedSize(value)}
+          options={data.sizes.map((size) => ({
+            value: size.id,
+            label: size.name,
+          }))}
+        />
+      )}
+
+      {/* Color Selector */}
+      {hasColors && (
+        <Select
+          value={selectedColor}
+          onChange={(value) => setSelectedColor(value)}
+          options={data.colors.map((color) => ({
+            value: color.id,
+            label: color.name,
+          }))}
+        />
+      )}
+
+      {/* Price & Add to Cart */}
+      <div className="flex items-center justify-between mt-4">
+        <p className="font-semibold text-lg">
+         €{Number(data.price).toFixed(2)}
+        </p>
+        <Button
+          onClick={onAddToCart}
+          className="flex items-center gap-x-2"
+          disabled={!data.stock || data.stock <= 0}
+        >
+          Add To Cart
+          <ShoppingCart size={20} />
+        </Button>
       </div>
     </div>
   );

@@ -1,93 +1,121 @@
-import { NextResponse } from "next/server";
-import { getStoreId } from "@/lib/utils";
+import { NextResponse, NextRequest } from 'next/server';
+import Stripe from 'stripe';
+import { getAuth } from "@clerk/nextjs/server";
+import prismadb from '@/lib/prismadb';
 
-interface CustomerDetails {
-  name: string;
-  email?: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
-  postalCode: string;
-}
+const stripe = new Stripe(process.env.STRIPE_API_KEY!, {});
 
-interface CreatePaymentIntentPayload {
-  productIds: string[];
-  sizes: (string | null)[];
-  colors: (string | null)[];
-  quantities: number[];
-  customerDetails: CustomerDetails;
-}
-
-export async function POST(
-  req: Request
-) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json() as CreatePaymentIntentPayload;
-    const { productIds, sizes, colors, quantities, customerDetails } = body;
+    const { userId } = getAuth(request);
+    const { amount, items, customerInfo } = await request.json();
 
-    // Input validation
-    if (!productIds?.length) {
-      return new NextResponse("Product ids are required", { status: 400 });
+    if (!amount || amount < 1) {
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    if (!quantities?.length || quantities.some(q => q < 1)) {
-      return new NextResponse("Valid quantities are required", { status: 400 });
-    }
-
-    if (!customerDetails?.name || !customerDetails?.phone) {
-      return new NextResponse("Customer details are required", { status: 400 });
-    }
-
-    // Get store ID
-    const storeId = getStoreId();
-
-    // Create order and payment intent in CMS dashboard
-    const response = await fetch(`${process.env.BACKEND_API_URL}/api/${storeId}/checkout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        items: productIds.map((id, index) => ({
-          productId: id,
-          quantity: quantities[index],
-          sizeId: sizes[index] || undefined,
-          colorId: colors[index] || undefined
-        })),
-        customerDetails: {
-          name: customerDetails.name,
-          email: customerDetails.email || '',
-          phone: customerDetails.phone,
-          address: customerDetails.address,
-          city: customerDetails.city,
-          country: customerDetails.country,
-          postalCode: customerDetails.postalCode
+    // Validate stock availability
+    for (const item of items) {
+      const product = await prismadb.product.findUnique({
+        where: { id: item.id },
+        include: {
+          productSizes: true,
+          productColors: true
         }
-      }),
+      });
+
+      if (!product) {
+        return NextResponse.json({ error: `Product ${item.id} not found` }, { status: 404 });
+      }
+
+      // Check total product stock
+      if (!product.stock || product.stock < item.quantity) {
+        return NextResponse.json({
+          error: `Insufficient stock for product ${product.name}`
+        }, { status: 400 });
+      }
+    }
+
+    // Get storeId from the first product
+    const firstProduct = await prismadb.product.findUnique({
+      where: { id: items[0].id },
+      select: { storeId: true }
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || 'Failed to create order');
+    if (!firstProduct) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const orderData = await response.json();
-    const { clientSecret, orderId } = orderData;
+    // Create order in database
+    const order = await prismadb.order.create({
+      data: {
+        userId: userId || 'guest',
+        storeId: firstProduct.storeId,
+        amount: amount / 100, // Convert cents to dollars for DB
+        status: 'PENDING',
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        phone: customerInfo.phone,
+        address: customerInfo.address,
+        city: customerInfo.city,
+        country: customerInfo.country,
+        postalCode: customerInfo.postalCode,
+        orderItems: {
+          create: items.map((item: any) => ({
+            productId: item.id,
+            quantity: item.quantity,
+            sizeId: item.selectedSize?.id,
+            colorId: item.selectedColor?.id,
+            price: item.price
+          }))
+        }
+      },
+      include: {
+        orderItems: true
+      }
+    });
 
-    if (!clientSecret || !orderId) {
-      throw new Error('Invalid response from server: missing clientSecret or orderId');
-    }
+    // Prepare variations metadata for the webhook
+    const variations = items.reduce((acc: any, item: any) => {
+      if (item.selectedSize || item.selectedColor) {
+        acc[item.id] = {
+          sizeId: item.selectedSize?.id,
+          colorId: item.selectedColor?.id
+        };
+      }
+      return acc;
+    }, {});
+
+    // Create Stripe payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      payment_method_types: ['card', 'link'],
+      payment_method_options: {
+        card: {
+          setup_future_usage: 'off_session'
+        }
+      },
+      metadata: {
+        orderId: order.id,
+        userId: userId || 'guest',
+        variations: JSON.stringify(variations)
+      }
+    });
+
+    // Update order with payment intent ID
+    await prismadb.order.update({
+      where: { id: order.id },
+      data: { paymentIntentId: paymentIntent.id }
+    });
 
     return NextResponse.json({ 
-      clientSecret,
-      orderId
+      clientSecret: paymentIntent.client_secret,
+      orderId: order.id,
+      paymentIntentId: paymentIntent.id
     });
-  } catch (error) {
-    console.error('[PAYMENT_INTENT_ERROR]', error);
-    return new NextResponse(
-      error instanceof Error ? error.message : 'Internal error', 
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error("PAYMENT_INTENT_ERROR", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }

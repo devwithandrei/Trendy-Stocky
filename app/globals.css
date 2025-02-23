@@ -132,4 +132,18 @@ body {
   background: transparent;
 }
 
+.payment-element {
+  /* Add your modern Stripe Element theme styles here */
+  /* Example styles: */
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
 
+.payment-element .StripeElement {
+  /* Style the individual Stripe Element components */
+  /* Example styles: */
+  padding: 8px;
+  font-size: 16px;
+}

@@ -2,7 +2,7 @@
 
 import { MouseEventHandler } from "react";
 import { Button } from "@/components/ui/button";
-import { Product, Size, Color } from "@/types";
+import { Product, Size, Color, CartProduct } from "@/types";
 import Currency from "@/components/ui/currency";
 import { ShoppingCart } from "lucide-react";
 import useCart from "@/hooks/use-cart";
@@ -19,6 +19,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const [selectedColor, setSelectedColor] = useState<Color | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
 
+  const getAvailableStock = () => {
+    return data.stock;
+  };
+
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
 
@@ -32,19 +36,35 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       return;
     }
 
-    if (quantity > data.stock) {
-      toast.error("Not enough stock available");
+    const availableStock = getAvailableStock();
+    if (!availableStock) {
+      toast.error("Product is out of stock");
       return;
     }
 
-    cart.addItem({
-      ...data,
-      selectedSize,
-      selectedColor,
-      quantity
-    });
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} items available in stock`);
+      return;
+    }
 
-    toast.success("Item added to cart");
+    const cartItem: CartProduct = {
+      id: data.id,
+      name: data.name,
+      price: data.price,
+      images: data.images,
+      stock: data.stock,
+      quantity: quantity,
+      selectedSize: selectedSize ? {
+        ...selectedSize,
+        stock: data.stock
+      } : undefined,
+      selectedColor: selectedColor ? {
+        ...selectedColor,
+        stock: data.stock
+      } : undefined
+    };
+
+    cart.addItem(cartItem);
   };
 
   return (
@@ -135,7 +155,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               {quantity}
             </span>
             <button
-              onClick={() => setQuantity(Math.min(data.stock || 1, quantity + 1))}
+              onClick={() => {
+                const availableStock = getAvailableStock();
+                setQuantity(Math.min(availableStock || 1, quantity + 1));
+              }}
               className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl font-medium hover:bg-gray-200 transition"
             >
               +

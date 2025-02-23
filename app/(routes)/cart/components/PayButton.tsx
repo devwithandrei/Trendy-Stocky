@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { useStripe, useElements } from '@stripe/react-stripe-js';
 import useCart from '@/hooks/use-cart';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -10,9 +10,10 @@ import { Button } from '@/components/ui/button';
 interface PayButtonProps {
   disabled: boolean;
   formData: any;
+  onPaymentIntent: (clientSecret: string) => void;
 }
 
-const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
+const PayButton: React.FC<PayButtonProps> = ({ disabled, formData, onPaymentIntent }) => {
   const stripe = useStripe();
   const elements = useElements();
   const cart = useCart();
@@ -28,6 +29,11 @@ const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
         return;
       }
 
+      // Calculate total amount in cents
+      const totalAmount = cart.items.reduce((total, item) => {
+        return total + (Number(item.price) * 100 * (item.quantity || 1));
+      }, 0);
+
       // Create payment intent
       const response = await fetch('/api/create-payment-intent', {
         method: 'POST',
@@ -35,18 +41,22 @@ const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          productIds: cart.items.map(item => item.id),
-          sizes: cart.items.map(item => item.selectedSize?.id || null),
-          colors: cart.items.map(item => item.selectedColor?.id || null),
-          quantities: cart.items.map(item => item.quantity || 1),
-          customerDetails: {
-            name: formData.cardholderName,
-            email: formData.email || '',
+          amount: totalAmount,
+          items: cart.items.map(item => ({
+            id: item.id,
+            price: Number(item.price),
+            quantity: item.quantity || 1,
+            selectedSize: item.selectedSize,
+            selectedColor: item.selectedColor
+          })),
+          customerInfo: {
+            name: formData.name,
+            email: formData.email,
             phone: formData.phone,
             address: formData.address,
             city: formData.city,
             country: formData.country,
-            postalCode: formData.zip
+            postalCode: formData.postalCode
           }
         }),
       });
@@ -56,58 +66,27 @@ const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
         throw new Error(errorData.message || 'Failed to create payment intent');
       }
 
-      const { clientSecret, orderId } = await response.json();
+      const { clientSecret } = await response.json();
 
-      if (!clientSecret || !orderId) {
+      if (!clientSecret) {
         throw new Error('Invalid response from server');
       }
 
-      let paymentResult;
-
-      // Handle payment based on payment method type
-      if (formData.paymentMethodId) {
-        // For Google Pay / Apple Pay
-        paymentResult = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: formData.paymentMethodId,
-        });
-      } else {
-        // For regular card payments
-        const cardElement = elements.getElement(CardElement);
-        if (!cardElement) {
-          throw new Error('Card element not found');
-        }
-
-        paymentResult = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: cardElement,
-            billing_details: {
-              name: formData.cardholderName,
-              email: formData.email,
-              phone: formData.phone,
-              address: {
-                line1: formData.address,
-                city: formData.city,
-                country: formData.country,
-                postal_code: formData.zip,
-              },
-            },
-          },
-        });
-      }
-
-      if (paymentResult.error) {
-        throw new Error(paymentResult.error.message || 'Payment failed');
-      }
-
-      // Payment successful
-      toast.success('Payment successful!');
-      cart.removeAll();
-      router.push(`/orders/${orderId}`);
+      // Pass the client secret to parent component to initialize Elements
+      onPaymentIntent(clientSecret);
 
     } catch (error: any) {
       console.error('[PAYMENT_ERROR]', error);
-      toast.error(error.message || 'Something went wrong with the payment');
-    } finally {
+      
+      // Show specific error messages
+      if (error.message.includes('insufficient stock')) {
+        toast.error('Some items are no longer in stock. Please review your cart.');
+      } else if (error.message.includes('network')) {
+        toast.error('Network error. Please check your connection and try again.');
+      } else {
+        toast.error(error.message || 'Something went wrong. Please try again.');
+      }
+      
       setLoading(false);
     }
   };
@@ -118,7 +97,7 @@ const PayButton: React.FC<PayButtonProps> = ({ disabled, formData }) => {
       disabled={disabled || loading || !stripe || !elements}
       className="w-full mt-6"
     >
-      {loading ? 'Processing...' : 'Checkout'}
+      {loading ? 'Processing...' : 'Pay Now'}
     </Button>
   );
 };

@@ -164,23 +164,52 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="px-4 py-2 border-b">
-          {userMenuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                onClick={() => handleNavigate(item.href)}
-              >
-                <Icon size={20} className="text-gray-500" />
-                <span className="text-gray-700">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
+        {/* User Menu */}
+        {user ? (
+          <div className="mt-6 space-y-4">
+            <Link
+              href="/orders"
+              className="flex items-center gap-x-2 text-neutral-500 hover:text-black transition"
+              onClick={toggleMenu}
+            >
+              <ShoppingBag size={20} />
+              <span>My Orders</span>
+            </Link>
+            <Link
+              href="/wishlist"
+              className="flex items-center gap-x-2 text-neutral-500 hover:text-black transition"
+              onClick={toggleMenu}
+            >
+              <Heart size={20} />
+              <span>Wishlist</span>
+            </Link>
+            <div className="flex items-center gap-x-2">
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-10 h-10",
+                    userButtonTrigger: "focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full",
+                    userButtonPopoverCard: "!z-[60] !mt-2 !absolute !right-0 !w-[280px]",
+                    userButtonPopoverActions: "!z-[60]",
+                    userButtonPopoverFooter: "!z-[60]"
+                  }
+                }}
+              />
+              <span className="text-sm font-medium">
+                {user.firstName || user.emailAddresses[0].emailAddress}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => openSignIn()}
+            className="mt-6 flex items-center gap-x-2 text-neutral-500 hover:text-black transition"
+          >
+            <User size={20} />
+            <span>Sign In</span>
+          </button>
+        )}
 
         {/* Navigation Links */}
         <nav className="mt-4 px-4">

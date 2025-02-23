@@ -13,13 +13,20 @@ interface NavbarActionsProps {
 
 const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const router = useRouter();
+  const cart = useCart();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const router = useRouter();
-  const cart = useCart();
+  useEffect(() => {
+    if (isMounted) {
+      const count = cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
+      setItemCount(count);
+    }
+  }, [cart.items, isMounted]);
 
   if (!isMounted) {
     return null;
@@ -42,7 +49,7 @@ const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
           size={22}
           className="text-gray-600 transition-colors"
         />
-        {cart.items.length > 0 && (
+        {itemCount > 0 && (
           <span className="
             absolute -top-1 -right-1
             flex items-center justify-center
@@ -58,7 +65,7 @@ const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
             fade-in
             duration-200
           ">
-            {cart.items.length}
+            {itemCount}
           </span>
         )}
       </button>

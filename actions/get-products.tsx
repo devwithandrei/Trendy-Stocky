@@ -54,8 +54,8 @@ const getProducts = async (query: Query = {}): Promise<Product[]> => {
     }
 
     return products;
-  } catch (error) {
-    console.error('[getProducts] Error:', error);
+  } catch (error: any) {
+    console.error('[getProducts] Error:', error.message);
     return [];
   }
 };

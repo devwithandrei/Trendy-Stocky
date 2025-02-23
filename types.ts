@@ -51,12 +51,14 @@ export interface Size {
   id: string;
   name: string;
   value: string;
+  stock: number;
 }
 
 export interface Color {
   id: string;
   name: string;
   value: string;
+  stock: number;
 }
 
 export interface Product {
@@ -76,7 +78,12 @@ export interface Product {
   updatedAt: string;
 }
 
-export interface CartProduct extends Product {
+export interface CartProduct {
+  id: string;
+  name: string;
+  price: string;
+  images: Image[];
+  stock: number;
   quantity: number;
   selectedColor?: Color;
   selectedSize?: Size;
@@ -111,11 +118,21 @@ export interface PaymentMethod {
   wallet?: string;
 }
 
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
+export const OrderStatusColors = {
+  pending: 'bg-yellow-500/10 text-yellow-500',
+  processing: 'bg-blue-500/10 text-blue-500',
+  shipped: 'bg-purple-500/10 text-purple-500',
+  delivered: 'bg-green-500/10 text-green-500',
+  cancelled: 'bg-red-500/10 text-red-500',
+};
+
 export interface Order {
   id: string;
   storeId: string;
   isPaid: boolean;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: OrderStatus;
   amount: number;
   currency: string;
   paymentIntentId: string;
@@ -131,6 +148,11 @@ export interface Order {
     phone: string;
     address: Address;
   };
+  phone: string;
+  address: string;
+  userId: string;
+  total: number;
+  formattedTotal: string;
   orderItems: OrderItem[];
   trackingNumber?: string;
   createdAt: string;
@@ -145,7 +167,26 @@ export interface OrderItem {
   colorId?: string;
   quantity: number;
   price: string;
-  product: Product;
+  product: {
+    id: string;
+    name: string;
+    price: string;
+    images: Image[];
+    category?: {
+      id: string;
+      name: string;
+    };
+    size?: {
+      id: string;
+      name: string;
+    };
+    color?: {
+      id: string;
+      name: string;
+    };
+    selectedSize?: Size;
+    selectedColor?: Color;
+  };
   size?: Size;
   color?: Color;
 }

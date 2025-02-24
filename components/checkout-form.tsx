@@ -7,7 +7,6 @@ import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import Currency from '@/components/ui/currency';
 import useCart from '@/hooks/use-cart';
-import { Product } from '@/types';
 
 const CheckoutForm = () => {
   const router = useRouter();
@@ -58,16 +57,19 @@ const CheckoutForm = () => {
         return orderItem;
       });
 
-      // Create order
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+      // Create order with pending status
+      const orderResponse = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
         ...formData,
-        orderItems
+        orderItems,
+        amount: totalPrice,
+        status: 'PENDING',
+        isPaid: false
       });
 
       // Clear cart and show success message
       cart.removeAll();
       toast.success('Order placed successfully!');
-      router.push('/orders/' + response.data.id);
+      router.push('/orders/' + orderResponse.data.id);
 
     } catch (error) {
       toast.error('Something went wrong. Please try again.');
@@ -249,11 +251,11 @@ const CheckoutForm = () => {
 
         <div className="mt-6">
           <Button
-            onClick={() => {}}
+            type="submit"
             className="w-full"
             disabled={loading || cart.items.length === 0}
           >
-            {loading ? 'Processing...' : 'Place Order'}
+            {loading ? 'Processing...' : 'Continue to Payment'}
           </Button>
         </div>
       </form>

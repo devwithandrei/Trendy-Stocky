@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
@@ -7,7 +7,7 @@ export async function GET(
   req: Request,
 ) {
     try {
-      const { userId, user } = auth(); // Get user object
+      const { userId } = await auth(); // Get user object
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -16,8 +16,14 @@ export async function GET(
     const decodedUserId = decodeURIComponent(userId);
     console.log('Decoded User ID (GET):', decodedUserId);
 
-    // Check if user exists and create if not
-    let existingUser = await prismadb.user.findFirst({ // Use findFirst instead of findUnique
+    // Get current user from Clerk
+    const user = await currentUser();
+    if (!user) {
+      return new NextResponse(JSON.stringify({ error: 'Clerk user not found.' }), { status: 404 });
+    }
+
+    // Check if user exists in our database
+    let existingUser = await prismadb.user.findFirst({
       where: { id: decodedUserId },
       include: {
         wishlistProducts: {
@@ -28,15 +34,43 @@ export async function GET(
           }
         }
       },
-    }); // Remove extra curly brace
-
-    console.log('User object (GET):', existingUser);
+    });
 
     if (!existingUser) {
-      return new NextResponse("User not found", { status: 404 });
+      // Create user with Clerk data
+      existingUser = await prismadb.user.create({
+        data: {
+          id: decodedUserId,
+          email: user.emailAddresses[0].emailAddress,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        },
+        include: {
+          wishlistProducts: {
+            include: {
+              images: true,
+              category: true,
+              brand: true,
+            }
+          }
+        }
+      });
     }
 
-    return NextResponse.json(existingUser.wishlistProducts);
+    // Get user's wishlist with related data
+    const userWithWishlist = await prismadb.user.findUnique({
+      where: { id: decodedUserId },
+      include: {
+        wishlistProducts: {
+          include: {
+            images: true,
+            category: true,
+            brand: true,
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(userWithWishlist?.wishlistProducts || []);
   } catch (error: any) {
     console.log('[WISHLIST_GET]', error.message);
     return new NextResponse("Internal error", { status: 500 });
@@ -48,7 +82,7 @@ export async function POST(
     req: Request,
   ) {
     try {
-      const { userId, user } = auth(); // Get user object
+      const { userId } = await auth(); // Get user object
       const body = await req.json();
       console.log('Request Body:', body);
       const productId = body.productId;
@@ -68,25 +102,35 @@ export async function POST(
       console.log('Decoded User ID (POST):', decodedUserId);
 
       // Check if user exists and create if not
-      let userExists = await prismadb.user.findFirst({ // Use findFirst instead of findUnique
+      // Get current user from Clerk
+      const user = await currentUser();
+      if (!user) {
+        return new NextResponse(JSON.stringify({ error: 'Clerk user not found.' }), { status: 404 });
+      }
+
+      // Check if user exists in our database
+      let userExists = await prismadb.user.findFirst({
         where: { id: decodedUserId },
       });
 
       if (!userExists) {
-        await prismadb.user.create({
+        // Create user with Clerk data
+        userExists = await prismadb.user.create({
           data: {
             id: decodedUserId,
-            email: user?.emailAddresses[0]?.emailAddress || '', // Get email from Clerk
-            name: user?.firstName || '',
+            email: user.emailAddresses[0].emailAddress,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
           },
+          include: {
+            wishlistProducts: {
+              include: {
+                images: true,
+                category: true,
+                brand: true,
+              }
+            }
+          }
         });
-      }
-
-      console.log('User exists (POST):', userExists);
-
-      if (!userExists) {
-        console.error('User does not exist.');
-        return new NextResponse(JSON.stringify({ error: 'User does not exist.' }), { status: 404 });
       }
 
       // Check if the product exists
@@ -127,7 +171,7 @@ export async function POST(
 // Remove product from wishlist
 export async function DELETE(req: Request) {
     try {
-        const { userId, user } = auth(); // Get user object
+        const { userId } = await auth(); // Get user object
         const { searchParams } = new URL(req.url);
         const productId = searchParams.get('productId');
 

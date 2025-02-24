@@ -8,7 +8,7 @@ export async function DELETE(
   { params }: { params: { productId: string } }
 ) {
     try {
-      const { userId } = auth();
+      const userId = await auth().then((session) => session.userId);
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });

@@ -1,163 +1,141 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import Container from "@/components/ui/container";
-import { Order, OrderStatus, OrderStatusColors } from "@/types";
 import axios from "axios";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { OrderStatus } from "@prisma/client";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { formatCurrency } from "@/lib/currency";
+
+interface Order {
+  id: string;
+  status: OrderStatus;
+  isPaid: boolean;
+  phone: string;
+  address: string;
+  customerName: string;
+  customerEmail: string;
+  amount: number;
+  createdAt: string;
+  orderItems: {
+    id: string;
+    product: {
+      name: string;
+      price: number;
+    };
+    quantity: number;
+  }[];
+}
 
 const OrdersPage = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) {
+      router.push("/sign-in");
+      return;
+    }
+
     const fetchOrders = async () => {
-      if (!user) return;
-      
       try {
-        const response = await axios.get(`/api/users/${user.id}/orders`);
-        setOrders(response.data);
+        const response = await axios.get("/api/users/orders");
+        // Only show paid orders
+        const paidOrders = response.data.filter((order: Order) => order.isPaid);
+        setOrders(paidOrders);
       } catch (error) {
-        console.error('Error fetching orders:', error);
-        toast.error("Failed to load orders. Please try again.");
+        console.error("Error fetching orders:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [user]);
+  }, [user, isLoaded, router]);
+
+  if (!isLoaded || loading) {
+    return <div>Loading...</div>;
+  }
 
   if (!user) {
-    return (
-      <Container>
-        <div className="flex items-center justify-center h-96">
-          <p className="text-neutral-500">Please sign in to view your orders.</p>
-        </div>
-      </Container>
-    );
+    return null;
   }
 
-  if (loading) {
-    return (
-      <Container>
-        <div className="flex items-center justify-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-black" />
-        </div>
-      </Container>
-    );
-  }
+  const getStatusColor = (status: OrderStatus) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-500";
+      case "PAID":
+        return "bg-blue-500";
+      case "SHIPPED":
+        return "bg-purple-500";
+      case "DELIVERED":
+        return "bg-green-500";
+      case "CANCELLED":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
 
   return (
-    <div className="bg-white">
-      <Container>
-        <div className="px-4 py-16 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-black">Order History</h1>
-          <div className="mt-8">
-            {orders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <p className="text-neutral-500">No orders found.</p>
-                <a 
-                  href="/"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Continue Shopping
-                </a>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-3xl font-bold mb-8">My Orders</h1>
+      <div className="space-y-6">
+        {orders.length === 0 ? (
+          <p className="text-gray-500">No orders found.</p>
+        ) : (
+          orders.map((order: Order) => (
+            <Card key={order.id} className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-sm text-gray-500">Order #{order.id.slice(0, 8)}</p>
+                  <p className="text-sm text-gray-500">
+                    {format(new Date(order.createdAt), "MMMM d, yyyy 'at' HH:mm")}
+                  </p>
+                </div>
+                <Badge className={getStatusColor(order.status)}>
+                  {order.status}
+                </Badge>
               </div>
-            ) : (
-              <div className="space-y-8">
-                {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="border rounded-lg p-6 bg-gray-50 hover:shadow-md transition"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          Order placed on {format(new Date(order.createdAt), 'MMMM d, yyyy')}
-                        </p>
-                        <p className="text-sm text-gray-600">Order #{order.id}</p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs ${OrderStatusColors[order.status]}`}
-                        >
-                          {order.status}
-                        </span>
-                          <p className="text-lg font-semibold">
-                            {order.formattedTotal}
-                          </p>
-                      </div>
+              <Separator className="my-4" />
+              <div className="space-y-4">
+                {order.orderItems.map((item: Order['orderItems'][0]) => (
+                  <div key={item.id} className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{item.product.name}</p>
+                      <p className="text-sm text-gray-500">
+                        Quantity: {item.quantity}
+                      </p>
                     </div>
-                    <div className="divide-y divide-gray-200">
-                      {order.orderItems.map((item) => (
-                        <div key={item.id} className="py-4 flex items-center">
-                          <img
-                            src={item.product.images[0].url}
-                            alt={item.product.name}
-                            className="h-20 w-20 object-cover rounded"
-                          />
-                          <div className="ml-4 flex-1">
-                            <h3 className="text-sm font-medium text-gray-900">
-                              {item.product.name}
-                            </h3>
-                            <div className="mt-1 text-sm text-gray-500 space-y-1">
-                              <p>Quantity: {item.quantity}</p>
-                              {item.product.selectedSize && (
-                                <p>Size: {item.product.selectedSize.name}</p>
-                              )}
-                              {item.product.selectedColor && (
-                                <p>Color: {item.product.selectedColor.name}</p>
-                              )}
-                              {item.product.category && (
-                                <p>Category: {item.product.category.name}</p>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-sm font-medium text-gray-900">
-                            ${Number(item.product.price).toFixed(2)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-6 border-t border-gray-200 pt-4 space-y-2">
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <p className="font-medium">Shipping Details</p>
-                        <div className="text-right">
-                          <p>{order.customerDetails.name}</p>
-                          <p>{order.customerDetails.address.line1}</p>
-                          <p>{order.customerDetails.address.city}, {order.customerDetails.address.postal_code}</p>
-                          <p>{order.customerDetails.address.country}</p>
-                          <p>{order.customerDetails.phone}</p>
-                          <p>{order.customerDetails.email}</p>
-                        </div>
-                      </div>
-                      {order.trackingNumber && (
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <p className="font-medium">Tracking Number</p>
-                          <p>{order.trackingNumber}</p>
-                        </div>
-                      )}
-                      
-                      {order.status === ('SHIPPED' as OrderStatus) && !order.trackingNumber && (
-                        <div className="text-sm text-gray-600 italic">
-                          Tracking information will be available soon
-                        </div>
-                      )}
-                    </div>
+                    <p className="font-medium">
+                      {formatCurrency(item.product.price * item.quantity)}
+                    </p>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-      </Container>
+              <Separator className="my-4" />
+              <div className="flex justify-between items-center">
+                <p className="font-medium">Total</p>
+                <p className="font-bold">{formatCurrency(order.amount)}</p>
+              </div>
+              <div className="mt-4 text-sm text-gray-500">
+                <p>Shipping Address: {order.address}</p>
+                <p>Contact: {order.phone}</p>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default OrdersPage;

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/lib/currency';
 
 interface CardPaymentFormProps {
   setFormData: (data: FormData) => void;
@@ -130,7 +131,7 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
               Processing...
             </div>
           ) : (
-            'Complete Payment'
+            `Pay ${formatCurrency(amount)}`
           )}
         </Button>
       </div>

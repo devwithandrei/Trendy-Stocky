@@ -41,7 +41,7 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
     try {
       const isInWishlist = wishlist.some(item => item.id === productId);
       if (isInWishlist) {
-        await axios.delete(`/api/users/${user.id}/wishlist/${productId}`);
+        await axios.delete(`/api/users/wishlist?productId=${productId}`);
       } else {
         await axios.post(`/api/users/wishlist`, { productId });
       }

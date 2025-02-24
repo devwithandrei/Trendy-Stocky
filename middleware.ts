@@ -1,36 +1,22 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { NextResponse } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 
-export default authMiddleware({
-  publicRoutes: [
-    "/",
-    "/sign-in",
-    "/sign-up",
-    "/products",
-    "/products/(.*)",
-    "/product/(.*)",
-    "/category",
-    "/category/(.*)",
-    "/cart",
-    "/cart/(.*)",
-    "/api/products(.*)",
-    "/api/categories(.*)",
-    "/api/create-payment-intent(.*)",
-    "/orders",
-    "/orders/(.*)",
-    "/api/stripe/(.*)",
-    "/api/stripe-webhook",
-    "/api/payment/(.*)",
-    "/api/stripe/payment_intents(.*)",
-    "/api/stripe/setup_intents(.*)",
-    "/api/stripe/elements/(.*)",
-    "/api/create-payment-intent"
-  ],
-  afterAuth(auth, req) {
-    // Handle auth state
-  },
+// Define protected routes
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)']);
+
+export default clerkMiddleware(async (auth, req) => {
+  // Protect routes based on authentication
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
 };

@@ -12,6 +12,29 @@ import axios from "axios";
 const WishlistPage = () => {
   const { user } = useUser();
   const [wishlist, setWishlist] = useState<Product[]>([]);
+  
+  // Transform product data to include sizes and colors in the format expected by ProductCard
+  const transformProductData = (product: any): Product => {
+    const sizes = product.productSizes?.map((ps: any) => ({
+      id: ps.size.id,
+      name: ps.size.name,
+      value: ps.size.value,
+      stock: ps.stock
+    })) || [];
+
+    const colors = product.productColors?.map((pc: any) => ({
+      id: pc.color.id,
+      name: pc.color.name,
+      value: pc.color.value,
+      stock: pc.stock
+    })) || [];
+
+    return {
+      ...product,
+      sizes,
+      colors
+    };
+  };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +43,8 @@ const WishlistPage = () => {
       if (user && user.id) {
         try {
           const response = await axios.get(`/api/users/wishlist`);
-          setWishlist(response.data);
+          const transformedProducts = response.data.map(transformProductData);
+          setWishlist(transformedProducts);
         } catch (error: any) {
           toast.error('Error fetching wishlist. Please try again.');
           console.error('Error fetching wishlist:', error);
@@ -54,8 +78,8 @@ const WishlistPage = () => {
     try {
       await axios.post(`/api/users/wishlist`, { productId });
       const productResponse = await axios.get(`/api/products/${productId}`);
-      const product = productResponse.data;
-      setWishlist(current => [...current, product]);
+      const transformedProduct = transformProductData(productResponse.data);
+      setWishlist(current => [...current, transformedProduct]);
     } catch (error) {
       toast.error('Error adding to wishlist. Please try again.');
       console.error('Error adding to wishlist:', error);

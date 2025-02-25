@@ -30,6 +30,16 @@ export async function GET(
             category: true,
             brand: true,
             description: true,
+            productSizes: {
+              include: {
+                size: true
+              }
+            },
+            productColors: {
+              include: {
+                color: true
+              }
+            }
           }
         }
       },
@@ -49,6 +59,16 @@ export async function GET(
               category: true,
               brand: true,
               description: true,
+              productSizes: {
+                include: {
+                  size: true
+                }
+              },
+              productColors: {
+                include: {
+                  color: true
+                }
+              }
             }
           }
         }
@@ -109,6 +129,16 @@ export async function POST(
                 category: true,
                 brand: true,
                 description: true,
+                productSizes: {
+                  include: {
+                    size: true
+                  }
+                },
+                productColors: {
+                  include: {
+                    color: true
+                  }
+                }
               }
             }
           }
@@ -138,6 +168,16 @@ export async function POST(
               category: true,
               brand: true,
               description: true,
+              productSizes: {
+                include: {
+                  size: true
+                }
+              },
+              productColors: {
+                include: {
+                  color: true
+                }
+              }
             }
           }
         }

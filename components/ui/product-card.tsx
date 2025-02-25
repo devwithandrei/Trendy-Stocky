@@ -26,14 +26,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
   const [quantity, setQuantity] = useState(1);
 
   const getAvailableStock = () => {
-    if (selectedSize) {
-      const size = data.sizes?.find(s => s.id === selectedSize);
-      return size?.stock ?? data.stock;
-    }
-    if (selectedColor) {
-      const color = data.colors?.find(c => c.id === selectedColor);
-      return color?.stock ?? data.stock;
-    }
     return data.stock;
   };
 
@@ -73,11 +65,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ data }) => {
       stock: getAvailableStock(),
       selectedSize: selectedSizeObj ? {
         ...selectedSizeObj,
-        stock: selectedSizeObj.stock ?? data.stock
+        stock: data.stock
       } : undefined,
       selectedColor: selectedColorObj ? {
         ...selectedColorObj,
-        stock: selectedColorObj.stock ?? data.stock
+        stock: data.stock
       } : undefined
     });
 

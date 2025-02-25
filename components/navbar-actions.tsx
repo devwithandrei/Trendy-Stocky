@@ -1,21 +1,23 @@
 "use client";
 
-import { ShoppingBag, Heart } from "lucide-react";
+import { ShoppingBag, Heart, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import axios from "axios";
 import { useWishlist } from "@/lib/wishlist-context";
 import useCart from "@/hooks/use-cart";
+import { toast } from "react-hot-toast";
 
 interface NavbarActionsProps {
   toggleMenu?: () => void;
 }
 
-const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
+const NavbarActions: React.FC<NavbarActionsProps> = () => {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { user } = useUser();
+  const { isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
   const { wishlistItemCount } = useWishlist();
   const cart = useCart();
 
@@ -32,10 +34,19 @@ const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
 
   const [cartItemCount, setCartItemCount] = useState(0);
 
+  const handleProtectedAction = (action: () => void) => {
+    if (!isSignedIn) {
+      toast.error("Please sign in to continue");
+      openSignIn();
+      return;
+    }
+    action();
+  };
+
   return (
-    <div className="ml-auto flex items-center gap-x-4">
+    <div className="flex items-center gap-x-4">
       <button
-        onClick={() => router.push('/cart')}
+        onClick={() => handleProtectedAction(() => router.push('/cart'))}
         className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
         <ShoppingBag
@@ -62,34 +73,46 @@ const NavbarActions: React.FC<NavbarActionsProps> = ({ toggleMenu }) => {
           </span>
         )}
       </button>
-      <button
-        onClick={() => router.push('/wishlist')}
-        className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
-      >
-        <Heart
-          size={22}
-          className="text-gray-600 transition-colors"
-        />
-        {wishlistItemCount > 0 && (
-          <span className="
-            absolute -top-1 -right-1
-            flex items-center justify-center
-            w-5 h-5
-            text-[11px]
-            font-medium
-            text-white
-            bg-red-500
-            rounded-full
-            shadow-sm
-            transition-all
-            animate-in
-            fade-in
-            duration-200
-          ">
-            {wishlistItemCount}
-          </span>
-        )}
-      </button>
+      {isSignedIn ? (
+        <button
+          onClick={() => router.push('/wishlist')}
+          className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <Heart
+            size={22}
+            className="text-gray-600 transition-colors"
+          />
+          {wishlistItemCount > 0 && (
+            <span className="
+              absolute -top-1 -right-1
+              flex items-center justify-center
+              w-5 h-5
+              text-[11px]
+              font-medium
+              text-white
+              bg-red-500
+              rounded-full
+              shadow-sm
+              transition-all
+              animate-in
+              fade-in
+              duration-200
+            ">
+              {wishlistItemCount}
+            </span>
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={() => openSignIn()}
+          className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <User
+            size={22}
+            className="text-gray-600 transition-colors"
+          />
+        </button>
+      )}
     </div>
   );
 };

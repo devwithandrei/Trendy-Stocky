@@ -6,10 +6,8 @@ import { Product, Size, Color, CartProduct } from "@/types";
 import Currency from "@/components/ui/currency";
 import { ShoppingCart } from "lucide-react";
 import useCart from "@/hooks/use-cart";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { useUser } from "@clerk/nextjs";
-import axios from "axios";
 
 interface InfoProps {
   data: Product;
@@ -20,7 +18,6 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const [selectedSize, setSelectedSize] = useState<Size | undefined>(undefined);
   const [selectedColor, setSelectedColor] = useState<Color | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
-  const { user } = useUser();
 
   const getAvailableStock = () => {
     return data.stock;
@@ -70,27 +67,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     cart.addItem(cartItem);
   };
 
-const onAddToFavorites = useCallback(async () => {
-  if (!user || !user.id) {
-    toast.error("You must be signed in to add to favorites");
-    return;
-  }
-
-  try {
-    await axios.post(`/api/users/wishlist`, {
-      productId: data.id,
-    });
-    toast.success("Added to favorites!");
-  } catch (error: any) {
-    console.error("Error adding to favorites:", error);
-    toast.error("Something went wrong");
-  }
-}, [user, data.id]);
-
-return (
-  <div>
-    <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
-    <div className="mt-3 flex items-end justify-between">
+  return (
+    <div>
+      <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
+      <div className="mt-3 flex items-end justify-between">
         <div className="text-2xl text-gray-900">
           <Currency value={data.price} />
         </div>
@@ -197,9 +177,6 @@ return (
           >
             Add To Cart
             <ShoppingCart size={20} />
-          </Button>
-          <Button onClick={onAddToFavorites} className="flex items-center gap-x-2">
-            Add to Favorites
           </Button>
         </div>
       </div>

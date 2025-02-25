@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { X, User, Search, ShoppingBag, Heart, Settings } from "lucide-react";
-import NavbarActions from '@/components/navbar-actions';
-import { useUser, UserButton, useClerk } from "@clerk/nextjs";
+import { X, Search, Heart, Package2, ShoppingBag } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { Product } from '@/types';
 import { useRouter } from 'next/navigation';
 import getProducts from '@/actions/get-products';
 import Link from 'next/link';
 import SearchResults from '@/components/ui/search-results';
+import useCart from "@/hooks/use-cart";
+import { useWishlist } from "@/lib/wishlist-context";
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
@@ -17,14 +18,20 @@ interface MobileMenuContentProps {
 
 const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }) => {
   const { user } = useUser();
-  const { openSignIn } = useClerk();
   const router = useRouter();
+  const cart = useCart();
+  const { wishlistItemCount } = useWishlist();
   const menuRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  useEffect(() => {
+    const count = cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
+    setCartItemCount(count);
+  }, [cart.items]);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -78,12 +85,6 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
     toggleMenu();
   };
 
-  const userMenuItems = [
-    { href: '/orders', label: 'My Orders', icon: ShoppingBag },
-    { href: '/wishlist', label: 'Wishlist', icon: Heart },
-    { href: '/settings', label: 'Settings', icon: Settings },
-  ];
-
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm">
       <div 
@@ -94,7 +95,7 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           WebkitOverflowScrolling: 'touch'
         }}
       >
-        {/* Header with Search */}
+        {/* Header */}
         <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md shadow-sm">
           <div className="flex justify-between items-center p-4">
             <button
@@ -105,34 +106,49 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
               <X size={24} className="text-gray-600" />
             </button>
 
-            <div className="flex items-center gap-4">
-              <NavbarActions toggleMenu={toggleMenu} />
-              {user ? (
-                <div className="relative">
-                  <UserButton
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        userButtonAvatarBox: "w-10 h-10",
-                        userButtonTrigger: "focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full",
-                        userButtonPopoverCard: "!z-[60] !mt-2 !absolute !right-0 !w-[280px]",
-                        userButtonPopoverActions: "!z-[60]",
-                        userButtonPopoverFooter: "!z-[60]"
-                      }
-                    }}
-                  />
-                </div>
-              ) : (
+            {/* User Actions */}
+            {user && (
+              <div className="flex items-center gap-x-2">
                 <button
-                  onClick={() => openSignIn()}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200"
+                  onClick={() => handleNavigate('/cart')}
+                  className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <User size={20} />
-                  <span>Sign In</span>
+                  <ShoppingBag size={22} className="text-gray-600" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                      {cartItemCount}
+                    </span>
+                  )}
                 </button>
-              )}
-            </div>
+                <button
+                  onClick={() => handleNavigate('/orders')}
+                  className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <Package2 size={22} className="text-gray-600" />
+                </button>
+                <button
+                  onClick={() => handleNavigate('/wishlist')}
+                  className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <Heart size={22} className="text-gray-600" />
+                  {wishlistItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                      {wishlistItemCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Welcome Message */}
+          {user && (
+            <div className="px-4 py-3 bg-gray-50">
+              <p className="text-lg font-medium text-gray-900">
+                Welcome back, {user.firstName || user.emailAddresses[0].emailAddress}
+              </p>
+            </div>
+          )}
 
           {/* Search Bar */}
           <div className="px-4 pb-4">
@@ -164,56 +180,9 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           </div>
         </div>
 
-        {/* User Menu */}
-        {user ? (
-          <div className="mt-6 space-y-4">
-            <Link
-              href="/orders"
-              className="flex items-center gap-x-2 text-neutral-500 hover:text-black transition"
-              onClick={toggleMenu}
-            >
-              <ShoppingBag size={20} />
-              <span>My Orders</span>
-            </Link>
-            <Link
-              href="/wishlist"
-              className="flex items-center gap-x-2 text-neutral-500 hover:text-black transition"
-              onClick={toggleMenu}
-            >
-              <Heart size={20} />
-              <span>Wishlist</span>
-            </Link>
-            <div className="flex items-center gap-x-2">
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-10 h-10",
-                    userButtonTrigger: "focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full",
-                    userButtonPopoverCard: "!z-[60] !mt-2 !absolute !right-0 !w-[280px]",
-                    userButtonPopoverActions: "!z-[60]",
-                    userButtonPopoverFooter: "!z-[60]"
-                  }
-                }}
-              />
-              <span className="text-sm font-medium">
-                {user.firstName || user.emailAddresses[0].emailAddress}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => openSignIn()}
-            className="mt-6 flex items-center gap-x-2 text-neutral-500 hover:text-black transition"
-          >
-            <User size={20} />
-            <span>Sign In</span>
-          </button>
-        )}
-
         {/* Navigation Links */}
-        <nav className="mt-4 px-4">
-          <div className="space-y-2">
+        <nav className="mt-6 px-4">
+          <div className="space-y-1">
             {[
               { href: '/about', label: 'About Us' },
               { href: '/privacy-policy', label: 'Privacy Policy' },
@@ -223,7 +192,7 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
               <Link
                 key={link.href}
                 href={link.href}
-                className="block px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
                 onClick={() => handleNavigate(link.href)}
               >
                 {link.label}

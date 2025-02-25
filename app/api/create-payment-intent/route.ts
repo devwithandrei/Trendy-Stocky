@@ -8,10 +8,24 @@ const stripe = new Stripe(process.env.STRIPE_API_KEY!, {});
 export async function POST(request: NextRequest) {
   try {
     const { userId } = getAuth(request);
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized - Login required" }, { status: 401 });
+    }
+
     const { amount, items, customerInfo } = await request.json();
 
     if (!amount || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    }
+
+    // Get user information
+    const user = await prismadb.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Validate stock availability
@@ -49,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Create order in database
     const order = await prismadb.order.create({
       data: {
-        userId: userId || 'guest',
+        userId: userId,
         storeId: firstProduct.storeId,
         amount: amount / 100, // Convert cents to dollars for DB
         status: 'PENDING',
@@ -98,7 +112,7 @@ export async function POST(request: NextRequest) {
       },
       metadata: {
         orderId: order.id,
-        userId: userId || 'guest',
+        userId: userId,
         variations: JSON.stringify(variations)
       }
     });

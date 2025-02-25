@@ -1,25 +1,35 @@
 "use client";
 
 import { createContext, useState, useEffect, useContext } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Product } from "@/types";
+import { toast } from "react-hot-toast";
 
 interface WishlistContextProps {
   wishlist: Product[];
   wishlistItemCount: number;
   toggleWishlist: (productId: string) => Promise<void>;
   fetchWishlist: () => Promise<void>;
+  isInWishlist: (productId: string) => boolean;
 }
 
 const WishlistContext = createContext<WishlistContextProps | undefined>(undefined);
 
 export const WishlistProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [wishlistItemCount, setWishlistItemCount] = useState(0);
 
   const fetchWishlist = async () => {
+    if (!isSignedIn) {
+      setWishlist([]);
+      setWishlistItemCount(0);
+      return;
+    }
+
     try {
       const response = await axios.get(`/api/users/wishlist`);
       setWishlist(response.data);
@@ -32,24 +42,38 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
   };
 
   useEffect(() => {
-    fetchWishlist();
-  }, [user?.id]);
+    if (isSignedIn) {
+      fetchWishlist();
+    } else {
+      setWishlist([]);
+      setWishlistItemCount(0);
+    }
+  }, [isSignedIn]);
+
+  const isInWishlist = (productId: string) => {
+    return wishlist.some(item => item.id === productId);
+  };
 
   const toggleWishlist = async (productId: string) => {
-    if (!user || !user.id) return;
+    if (!isSignedIn) {
+      toast.error("Please sign in to use wishlist");
+      openSignIn();
+      return;
+    }
 
     try {
-      const isInWishlist = wishlist.some(item => item.id === productId);
-      if (isInWishlist) {
+      const isProductInWishlist = isInWishlist(productId);
+      if (isProductInWishlist) {
         await axios.delete(`/api/users/wishlist?productId=${productId}`);
+        toast.success("Removed from wishlist");
       } else {
         await axios.post(`/api/users/wishlist`, { productId });
+        toast.success("Added to wishlist");
       }
       await fetchWishlist();
     } catch (error) {
       console.error("Error toggling wishlist:", error);
-    } finally {
-      fetchWishlist();
+      toast.error("Something went wrong");
     }
   };
 
@@ -58,6 +82,7 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
     wishlistItemCount,
     toggleWishlist,
     fetchWishlist,
+    isInWishlist,
   };
 
   return (

@@ -1,9 +1,31 @@
 import { NextResponse, NextRequest } from 'next/server';
-import Stripe from 'stripe';
 import { getAuth } from "@clerk/nextjs/server";
 import prismadb from '@/lib/prismadb';
+import { stripe } from '@/lib/stripe';
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY!, {});
+interface CartItem {
+  id: string;
+  quantity: number;
+  price: string | number;
+  selectedSize?: {
+    id: string;
+    name: string;
+  };
+  selectedColor?: {
+    id: string;
+    name: string;
+  };
+}
+
+interface CustomerInfo {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  postalCode: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,20 +35,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized - Login required" }, { status: 401 });
     }
 
-    const { amount, items, customerInfo } = await request.json();
+    const { amount, items, customerInfo }: { 
+      amount: number; 
+      items: CartItem[]; 
+      customerInfo: CustomerInfo; 
+    } = await request.json();
 
     if (!amount || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    // Get user information
-    const user = await prismadb.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
 
     // Validate stock availability
     for (const item of items) {
@@ -60,37 +78,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Create order in database
-    const order = await prismadb.order.create({
-      data: {
-        userId: userId,
-        storeId: firstProduct.storeId,
-        amount: amount / 100, // Convert cents to dollars for DB
-        status: 'PENDING',
-        customerName: customerInfo.name,
-        customerEmail: customerInfo.email,
-        phone: customerInfo.phone,
-        address: customerInfo.address,
-        city: customerInfo.city,
-        country: customerInfo.country,
-        postalCode: customerInfo.postalCode,
-        orderItems: {
-          create: items.map((item: any) => ({
-            productId: item.id,
-            quantity: item.quantity,
-            sizeId: item.selectedSize?.id,
-            colorId: item.selectedColor?.id,
-            price: item.price
-          }))
-        }
-      },
-      include: {
-        orderItems: true
-      }
-    });
-
     // Prepare variations metadata for the webhook
-    const variations = items.reduce((acc: any, item: any) => {
+    const variations = items.reduce((acc: Record<string, { sizeId?: string; colorId?: string }>, item: CartItem) => {
       if (item.selectedSize || item.selectedColor) {
         acc[item.id] = {
           sizeId: item.selectedSize?.id,
@@ -100,33 +89,83 @@ export async function POST(request: NextRequest) {
       return acc;
     }, {});
 
-    // Create Stripe payment intent
+    console.log("Creating payment intent with:", {
+      userId,
+      storeId: firstProduct.storeId,
+      amount,
+      customerInfo,
+      items: items.length
+    });
+
+    // Create Stripe payment intent with order details in metadata
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: 'eur',
-      payment_method_types: ['card', 'link'],
-      payment_method_options: {
-        card: {
-          setup_future_usage: 'off_session'
-        }
+      automatic_payment_methods: {
+        enabled: true,
       },
       metadata: {
-        orderId: order.id,
         userId: userId,
-        variations: JSON.stringify(variations)
+        storeId: firstProduct.storeId,
+        // Only store minimal item information
+        items: JSON.stringify(items.map((item: CartItem) => ({
+          id: item.id,
+          quantity: item.quantity,
+          sizeId: item.selectedSize?.id,
+          colorId: item.selectedColor?.id
+        }))),
+        // Only store essential customer info
+        customerEmail: customerInfo.email,
+        orderId: '' // Will be updated after order creation
       }
     });
 
-    // Update order with payment intent ID
-    await prismadb.order.update({
-      where: { id: order.id },
-      data: { paymentIntentId: paymentIntent.id }
+    console.log("Payment intent created:", paymentIntent.id);
+
+    // Create order first
+    const order = await prismadb.order.create({
+      data: {
+        userId,
+        storeId: firstProduct.storeId,
+        amount: Math.round(amount / 100),
+        status: "PENDING",
+        isPaid: false,
+        paymentIntentId: paymentIntent.id,
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        phone: customerInfo.phone,
+        address: customerInfo.address,
+        city: customerInfo.city,
+        country: customerInfo.country,
+        postalCode: customerInfo.postalCode,
+        orderItems: {
+          create: items.map((item: CartItem) => ({
+            productId: item.id,
+            quantity: item.quantity,
+            sizeId: variations[item.id]?.sizeId,
+            colorId: variations[item.id]?.colorId,
+            price: Math.round(Number(item.price))
+          }))
+        }
+      },
+      include: {
+        orderItems: true
+      }
+    });
+
+    console.log("Pending order created:", order.id);
+
+    // Update payment intent with orderId
+    await stripe.paymentIntents.update(paymentIntent.id, {
+      metadata: {
+        orderId: order.id
+      }
     });
 
     return NextResponse.json({ 
       clientSecret: paymentIntent.client_secret,
-      orderId: order.id,
-      paymentIntentId: paymentIntent.id
+      paymentIntentId: paymentIntent.id,
+      orderId: order.id
     });
   } catch (error: any) {
     console.error("PAYMENT_INTENT_ERROR", error);

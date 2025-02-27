@@ -1,29 +1,50 @@
+import prismadb from "@/lib/prismadb";
 import { Category } from "@/types";
 
-const getCategories = async (params?: { isFeatured?: boolean, includeBillboard?: boolean }): Promise<Category[]> => {
-  let query = '';
-  if (params) {
-    const queryParams = [];
-    if (params.isFeatured) {
-      queryParams.push(`isFeatured=${params.isFeatured}`);
-    }
-    if (params.includeBillboard) {
-      queryParams.push(`includeBillboard=true`);
-    }
-    if (queryParams.length > 0) {
-      query = `?${queryParams.join('&')}`;
-    }
-  }
+const getCategories = async (storeId?: string): Promise<Category[]> => {
   try {
-    // Remove categoryId from the fetch URL
-    const res = await fetch(`http://localhost:3000/api/84eeb702-de97-4f9d-a56b-a1050254c564/categories${query}`);
-    if (!res.ok) {
-      throw new Error(`Error fetching categories: ${res.statusText}`);
-    }
-    return res.json();
+    const categories = await prismadb.category.findMany({
+      where: {
+        storeId: storeId
+      },
+      include: {
+        billboard: true,
+        products: {
+          include: {
+            images: true,
+            category: true,
+            brand: true,
+            description: true,
+            productSizes: {
+              include: {
+                size: true
+              }
+            },
+            productColors: {
+              include: {
+                color: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return categories.map(category => ({
+      id: category.id,
+      name: category.name,
+      billboardId: category.billboardId,
+      billboard: {
+        id: category.billboard.id,
+        label: category.billboard.label,
+        imageUrl: category.billboard.imageUrl
+      },
+      createdAt: category.createdAt.toISOString(),
+      updatedAt: category.updatedAt.toISOString()
+    }));
   } catch (error) {
-    console.error('[getCategories]', error);
-    throw error;
+    console.error("❌ Error fetching categories:", error);
+    return [];
   }
 };
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
+import type { StripePaymentElementOptions } from '@stripe/stripe-js';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/currency';
@@ -45,7 +46,7 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
- const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
@@ -59,9 +60,26 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
       const { error: submitError } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/orders`,
+          return_url: `${window.location.origin}/orders?success=true`,
+          payment_method_data: {
+            billing_details: {
+              name: customerInfo.name,
+              email: customerInfo.email,
+              phone: customerInfo.phone,
+              address: {
+                line1: customerInfo.address,
+                city: customerInfo.city,
+                country: customerInfo.country,
+                postal_code: customerInfo.postalCode,
+              },
+            },
+          },
         }
       });
+
+      if (submitError) {
+        window.location.href = `${window.location.origin}/orders?canceled=true`;
+      }
 
       if (submitError) {
         switch (submitError.type) {
@@ -84,35 +102,36 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
     }
   };
 
+  const paymentElementOptions: StripePaymentElementOptions = {
+    layout: {
+      type: 'tabs',
+      defaultCollapsed: false,
+      spacedAccordionItems: true
+    },
+    defaultValues: {
+      billingDetails: {
+        name: customerInfo.name,
+        email: customerInfo.email,
+        phone: customerInfo.phone,
+        address: {
+          line1: customerInfo.address,
+          city: customerInfo.city,
+          country: customerInfo.country,
+          postal_code: customerInfo.postalCode,
+        }
+      }
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
       <div className="space-y-6">
-        <PaymentElement
-          key={openTimestamp}
-          options={{
-            layout: 'tabs',
-            fields: {
-              billingDetails: 'auto'
-            },
-            wallets: {
-              applePay: 'auto',
-              googlePay: 'auto'
-            },
-            defaultValues: {
-              billingDetails: {
-                name: customerInfo.name,
-                email: customerInfo.email,
-                phone: customerInfo.phone,
-                address: {
-                  line1: customerInfo.address,
-                  city: customerInfo.city,
-                  country: customerInfo.country,
-                  postal_code: customerInfo.postalCode,
-                }
-              }
-            }
-          }}
-        />
+        <div className="space-y-4">
+          <PaymentElement
+            key={openTimestamp}
+            options={paymentElementOptions}
+          />
+        </div>
 
         {error && (
           <div className="text-red-500 text-sm mb-4">
@@ -131,7 +150,7 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
               Processing...
             </div>
           ) : (
-            `Pay ${formatCurrency(amount)}`
+            `Pay ${formatCurrency(amount/100)} EUR`
           )}
         </Button>
       </div>

@@ -6,26 +6,38 @@ export async function GET(
   req: Request,
 ) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkUserId } = await auth();
 
-    if (!userId) {
+    if (!clerkUserId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const orders = await prismadb.order.findMany({
       where: {
-        userId: userId,
-        isPaid: true, // Only fetch paid orders
+        userId: clerkUserId,
+        OR: [
+          { status: "PAID" },
+          { status: "SHIPPED" },
+          { status: "DELIVERED" },
+          { AND: [
+            { status: "CANCELLED" },
+            { paymentIntentId: { not: null } }
+          ]}
+        ]
       },
       include: {
         orderItems: {
           include: {
             product: {
               select: {
+                id: true,
                 name: true,
                 price: true,
+                images: true
               }
-            }
+            },
+            size: true,
+            color: true
           }
         }
       },
@@ -46,11 +58,11 @@ export async function PATCH(
   req: Request,
 ) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkUserId } = await auth();
     const body = await req.json();
     const { orderId, status } = body;
 
-    if (!userId) {
+    if (!clerkUserId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -66,7 +78,7 @@ export async function PATCH(
     const order = await prismadb.order.findUnique({
       where: {
         id: orderId,
-        userId: userId,
+        userId: clerkUserId,
       }
     });
 

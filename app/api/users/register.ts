@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
     const body = await req.json();
     const { email, name } = body;
+
+    // Authenticate user
+    const { userId } = await auth();
+    if (!userId) {
+        console.error("Unauthorized access attempt");
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
 
     // Check if user already exists
     const existingUser = await prismadb.user.findFirst({
@@ -18,6 +26,7 @@ export async function POST(req: Request) {
         // Create a new user
         const newUser = await prismadb.user.create({
             data: {
+                id: userId,
                 email,
                 name,
             },

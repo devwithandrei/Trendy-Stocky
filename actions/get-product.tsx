@@ -1,68 +1,93 @@
-import axios from "axios";
-import { Product, Category, Brand } from "@/types";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { Product } from "@/types";
+import prismadb from "@/lib/prismadb";
 
 const getProduct = async (id: string): Promise<Product | null> => {
   try {
-    if (!API_URL) {
-      throw new Error("API_URL is not defined");
-    }
-
-    // The API_URL should already include the store ID, so we just need to append the product endpoint
-    const url = `${API_URL}/products/${id}`;
-    
-    console.log("🔍 Fetching product:", {
-      url,
-      id
-    });
-
-    const response = await axios.get(url, {
-      headers: {
-        'Content-Type': 'application/json',
+    const product = await prismadb.product.findUnique({
+      where: {
+        id: id
+      },
+      include: {
+        images: true,
+        category: {
+          include: {
+            billboard: true
+          }
+        },
+        brand: true,
+        description: true,
+        productSizes: {
+          include: {
+            size: true
+          }
+        },
+        productColors: {
+          include: {
+            color: true
+          }
+        }
       }
     });
 
-    if (!response.data) {
-      console.log("❌ No product found - response.data is empty");
+    if (!product) {
       return null;
     }
 
-    const item = response.data;
-    
-    // Log the raw response data
-    console.log("📦 Raw API Response:", JSON.stringify(item, null, 2));
-
-    // Validate required fields
-    if (!item.id || !item.name || !item.price) {
-      console.error("❌ Missing basic product fields:", {
-        hasId: !!item.id,
-        hasName: !!item.name,
-        hasPrice: !!item.price,
-        receivedFields: Object.keys(item)
-      });
-      return null;
-    }
-
-    // Transform the response into the expected Product type
-    const product: Product = {
-      id: item.id,
-      category: item.category,
-      name: item.name,
-      price: item.price,
-      brand: item.brand,
-      description: item.description,
-      isFeatured: item.isFeatured,
-      isArchived: item.isArchived,
-      sizes: item.sizes || [],
-      colors: item.colors || [],
-      images: item.images || [],
-      stock: item.stock || 0,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt
+    // Transform the data to match the Product interface
+    return {
+      id: product.id,
+      name: product.name,
+      price: String(product.price),
+      brand: {
+        id: product.brand.id,
+        name: product.brand.name,
+        value: product.brand.value,
+        createdAt: product.brand.createdAt.toISOString(),
+        updatedAt: product.brand.updatedAt.toISOString()
+      },
+      category: {
+        id: product.category.id,
+        name: product.category.name,
+        billboardId: product.category.billboardId,
+        billboard: {
+          id: product.category.billboard.id,
+          label: product.category.billboard.label,
+          imageUrl: product.category.billboard.imageUrl
+        },
+        createdAt: product.category.createdAt.toISOString(),
+        updatedAt: product.category.updatedAt.toISOString()
+      },
+      description: product.description ? {
+        id: product.description.id,
+        name: product.description.name,
+        value: product.description.value,
+        createdAt: product.description.createdAt.toISOString(),
+        updatedAt: product.description.updatedAt.toISOString()
+      } : null,
+      sizes: product.productSizes.map(ps => ({
+        id: ps.size.id,
+        name: ps.size.name,
+        value: ps.size.value,
+        stock: ps.stock
+      })),
+      colors: product.productColors.map(pc => ({
+        id: pc.color.id,
+        name: pc.color.name,
+        value: pc.color.value,
+        stock: pc.stock
+      })),
+      images: product.images.map(image => ({
+        id: image.id,
+        url: image.url,
+        createdAt: image.createdAt.toISOString(),
+        updatedAt: image.updatedAt.toISOString()
+      })),
+      stock: product.stock || 0,
+      isFeatured: product.isFeatured,
+      isArchived: product.isArchived,
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString()
     };
-
-    return product;
   } catch (error) {
     console.error("❌ Error fetching product:", error);
     return null;

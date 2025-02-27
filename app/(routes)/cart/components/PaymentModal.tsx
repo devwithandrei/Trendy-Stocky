@@ -40,8 +40,30 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   }, [isOpen, setFormData, setIsFormValid]);
 
   return (
-    <Modal open={isOpen} onClose={() => {
-      setTimeout(onClose, 50); // Delay the onClose call
+    <Modal open={isOpen} onClose={async () => {
+      try {
+        // Get payment intent ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentIntentId = urlParams.get('payment_intent');
+
+        if (paymentIntentId) {
+          // Cancel the payment intent
+          await fetch('/api/cancel-payment-intent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ paymentIntentId }),
+          });
+        }
+
+        // Redirect to canceled state
+        window.location.href = `${window.location.origin}/orders?canceled=true`;
+      } catch (error) {
+        console.error('Error canceling payment:', error);
+        window.location.href = `${window.location.origin}/orders?canceled=true`;
+      }
+      onClose();
     }}>
       <div className="w-full max-w-xl mx-auto bg-white p-8 rounded-lg">
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">Complete Your Payment</h2>

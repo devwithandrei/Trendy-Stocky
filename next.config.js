@@ -88,6 +88,10 @@ const nextConfig = {
       },
     ];
   },
-}
+  publicRuntimeConfig: {
+    CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    CLERK_API_KEY: process.env.CLERK_API_KEY,
+  },
+};
 
 module.exports = nextConfig;

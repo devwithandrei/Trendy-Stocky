@@ -1,9 +1,11 @@
 "use client"
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import NextLink from 'next/link';
 import Image from 'next/image';
 import { Category, Billboard } from '@/types';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface CategoryCardProps {
   category: Category & { billboard: Billboard };
@@ -20,7 +22,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, toggleMenu }) => 
 
   return (
     <div className="category-card rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 ease-in-out">
-      <NextLink href={`/category/${category.id}?storeId=${category.billboard.storeId}`} passHref>
+      <NextLink href={`/category/${category.id}?storeId=${API_URL?.split('/').pop()}`} passHref>
         <div
           className="flex flex-col items-center"
           onClick={handleClick}

@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, name } = body;
 
-    console.log("Incoming request body:", body); // Log incoming request
+    console.log("Incoming request body:", body);
 
     // Authenticate user
     const { userId } = await auth();
@@ -26,11 +26,12 @@ export async function POST(req: Request) {
             console.log("Creating new user with email:", email);
             user = await prismadb.user.create({
                 data: {
-                    email: email || "test@example.com", // Use provided email or a test email
-                    name: name || "Test User", // Use provided name or a test name
+                    id: userId,
+                    email: email ?? "test@example.com",
+                    name: name ?? "Test User",
                 },
             });
-            console.log("User created successfully:", user); // Log the created user
+            console.log("User created successfully:", user);
         } catch (error) {
             console.error("Error creating user:", error);
             if ((error as { code?: string }).code === 'P2002') {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
         }
     } else {
-        console.log("User already exists:", user); // Log existing user
+        console.log("User already exists:", user);
     }
 
     return NextResponse.json(user);

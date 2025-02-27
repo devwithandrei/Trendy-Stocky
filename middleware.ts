@@ -5,6 +5,7 @@ const publicPaths = [
   "/",
   "/api/webhook",
   "/api/products",
+  "/product",
   "/api/categories",
   "/api/sizes",
   "/api/colors",
@@ -12,17 +13,30 @@ const publicPaths = [
   "/api/descriptions",
 ];
 
+// Additional dynamic paths that should be public
+const publicPathPrefixes = [
+  "/product/",
+  "/api/products/"
+];
+
 function isPublic(path: string) {
-  return publicPaths.some(
-    (publicPath) =>
-      path.startsWith(publicPath) ||
-      path.startsWith("/_next") ||
-      path.includes("/static/") ||
-      path.endsWith(".ico") ||
-      path.endsWith(".png") ||
-      path.endsWith(".jpg") ||
-      path.endsWith(".svg")
-  );
+  // Check exact matches
+  if (publicPaths.includes(path)) {
+    return true;
+  }
+
+  // Check prefixes for dynamic routes
+  if (publicPathPrefixes.some(prefix => path.startsWith(prefix))) {
+    return true;
+  }
+
+  // Check static assets
+  return path.startsWith("/_next") ||
+    path.includes("/static/") ||
+    path.endsWith(".ico") ||
+    path.endsWith(".png") ||
+    path.endsWith(".jpg") ||
+    path.endsWith(".svg");
 }
 
 export default clerkMiddleware(async (auth, req) => {
@@ -52,7 +66,13 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    "/((?!.*\\..*|_next).*)",
-    "/(api|trpc)(.*)",
+    /*
+     * Exceptions:
+     * 1. /_next (Next.js internals)
+     * 2. /api/uploadthing (uploadthing route)
+     * 3. /api/cron (server cron route)
+     */
+    '/((?!.+\\..*|_next|api/uploadthing|api/cron).*)',
+    '/(api|trpc)(.*)',
   ],
 };

@@ -12,25 +12,27 @@ export interface Product {
   id: string;
   category: Category;
   name: string;
-  price: number;
+  price: string;
   isFeatured: boolean;
   isArchived: boolean;
-  brandId: string;
   brand: Brand;
-  descriptionId?: string;
-  description?: Description;
+  description: Description | null;
   images: Image[];
-  stock?: number;
-  productSizes?: ProductSize[];
-  productColors?: ProductColor[];
+  stock: number;
+  sizes: Size[];
+  colors: Color[];
   selectedSize?: Size;
   selectedColor?: Color;
   quantity?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Image {
   id: string;
   url: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Billboard {
@@ -42,7 +44,10 @@ export interface Billboard {
 export interface Category {
   id: string;
   name: string;
-  billboard: Billboard;
+  billboardId: string;
+  billboard: Billboard;  // Billboard is required as per dashboard types
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Size {
@@ -76,12 +81,17 @@ export interface ProductColor {
 export interface Brand {
   id: string;
   name: string;
+  value: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Description {
   id: string;
   name: string;
   value: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Order {
@@ -98,8 +108,8 @@ export interface Order {
   amount: number;
   trackingNumber?: string;
   shippingMethod?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   orderItems: OrderItem[];
   userId: string;
   paymentIntentId?: string;
@@ -123,7 +133,7 @@ export interface StockHistory {
   quantity: number;
   type: 'IN' | 'OUT';
   reason?: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface User {
@@ -132,6 +142,6 @@ export interface User {
   name?: string;
   orders: Order[];
   wishlistProducts: Product[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

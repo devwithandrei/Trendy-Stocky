@@ -83,14 +83,18 @@ const Info: React.FC<InfoProps> = ({ data }) => {
             <div>{data.description.value}</div>
           </div>
         )}
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Brand:</h3>
-          <div>{data.brand.name}</div>
-        </div>
-        <div className="flex items-center gap-x-4">
-          <h3 className="font-semibold text-black">Category:</h3>
-          <div>{data.category.name}</div>
-        </div>
+        {data.brand && (
+          <div className="flex items-center gap-x-4">
+            <h3 className="font-semibold text-black">Brand:</h3>
+            <div>{data.brand.name}</div>
+          </div>
+        )}
+        {data.category && (
+          <div className="flex items-center gap-x-4">
+            <h3 className="font-semibold text-black">Category:</h3>
+            <div>{data.category.name}</div>
+          </div>
+        )}
 
         {/* Size Selection */}
         {data.sizes?.length > 0 && (

@@ -44,7 +44,7 @@ const PaymentFormContent = ({
         {
           payment_method: {
             card: elements.getElement(CardElement)!,
-          },
+          }
         }
       );
 
@@ -87,7 +87,7 @@ const PaymentFormContent = ({
         disabled={!stripe || processing}
         className="w-full"
       >
-        {processing ? "Processing..." : `Pay ${amount.toFixed(2)} EUR`}
+        {processing ? "Processing..." : `Pay ${(amount/100).toFixed(2)} EUR`}
       </Button>
     </form>
   );

@@ -7,7 +7,7 @@ import CrispChatScript from '@/components/ui/CrispChatScript';
 import getProducts from '@/actions/get-products';
 import getBillboard from '@/actions/get-billboard';
 import { Category, Product, Billboard as BillboardType } from '@/types';
-import axios from 'axios';
+import getCategories from '@/actions/get-categories';
 
 interface CategoryPageProps {
   params: {
@@ -49,26 +49,24 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams 
     }
 
     // Fetch all categories for the store
-    const allCategoriesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/categories?storeId=${storeId}`);
-    if (allCategoriesRes.status !== 200) {
-      console.error(`Error fetching categories: ${allCategoriesRes.status} ${allCategoriesRes.statusText}`);
-      throw new Error(`Error fetching categories: ${allCategoriesRes.statusText}`);
-    }
-    const allCategories: Category[] = allCategoriesRes.data;
-
-    // Log the response for debugging
-    console.log("Categories response:", {
-      categoryId,
+    const categories = await getCategories(storeId);
+    console.log("Categories fetched for store:", {
       storeId,
-      categoriesCount: allCategories.length,
-      categories: allCategories
+      count: categories.length,
+      names: categories.map(c => c.name)
     });
 
-    // Find the requested category (case-insensitive search by both ID and name)
-    const category = allCategories.find((c) => 
-      c.id.toLowerCase() === categoryId.toLowerCase() || 
+    // Find the requested category by ID or name (case-insensitive)
+    const category = categories.find(c => 
+      c.id === categoryId || 
       c.name.toLowerCase() === categoryId.toLowerCase()
     );
+
+    console.log("Category lookup result:", {
+      searchTerm: categoryId,
+      found: !!category,
+      categoryName: category?.name
+    });
 
     if (!category) {
       console.error(`Category not found. CategoryId: ${categoryId}, StoreId: ${storeId}`);
@@ -80,8 +78,7 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams 
       </div>;
     }
 
-    // Log the API response
-    console.log("Category:", category);
+    console.log("Found category:", category?.name);
 
     // Fetch Products using the actual category ID
     const { colorId, sizeId } = searchParams;
@@ -92,20 +89,15 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams 
       sizeId
     });
 
-    // Fetch Billboard
-    let billboard: BillboardType | null = null;
-    if (category?.billboardId && category) {
-      try {
-        billboard = await getBillboard(category.billboardId);
-        console.log("Billboard fetched successfully:", billboard);
-      } catch (error) {
-        console.error("Error fetching billboard:", error);
-        // Continue without the billboard instead of failing the whole page
-      }
-    }
-
+    // Use billboard from category since it's already included in our query
+    const billboard = category.billboard || null;
+    
+    console.log("Category data:", {
+      name: category.name,
+      billboardId: category.billboardId,
+      billboard: billboard
+    });
     console.log("Products:", products);
-    console.log("Billboard:", billboard);
 
     return (
       <div className="bg-white">

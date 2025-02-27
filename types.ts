@@ -15,12 +15,9 @@ export interface Store {
 
 export interface Billboard {
   id: string;
-  storeId: string;
-  store: Store;
   label: string;
   imageUrl: string;
-  createdAt: Date;
-  updatedAt: Date;
+  storeId?: string;  // Optional since we might get it from API_URL
 }
 
 export interface Brand {
@@ -43,6 +40,7 @@ export interface Category {
   id: string;
   name: string;
   billboardId: string;
+  billboard: Billboard;
   createdAt: string;
   updatedAt: string;
 }

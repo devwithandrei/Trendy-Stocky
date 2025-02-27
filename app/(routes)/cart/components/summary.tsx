@@ -82,12 +82,17 @@ const Summary: React.FC<SummaryProps> = ({ items, isSignedIn }) => {
   const [clientSecret, setClientSecret] = useState<string | undefined>(undefined);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
- const createPaymentIntent = async (formData: any) => {
+  // Calculate total price in EUR
+  const totalPrice = items.reduce((total, item) => {
+    return total + (Number(item.price) * (item.quantity || 1));
+  }, 0);
+
+  // Calculate total amount in cents for Stripe
+  const totalAmountInCents = Math.round(totalPrice * 100);
+
+  const createPaymentIntent = async (formData: any) => {
     try {
       setIsProcessingPayment(true);
-      const totalAmount = items.reduce((total, item) => {
-        return total + (Number(item.price) * 100 * (item.quantity || 1));
-      }, 0);
 
       const response = await fetch('/api/create-payment-intent', {
         method: 'POST',
@@ -95,7 +100,7 @@ const Summary: React.FC<SummaryProps> = ({ items, isSignedIn }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: totalAmount,
+          amount: totalAmountInCents,
           items: items.map(item => ({
             id: item.id,
             price: Number(item.price),
@@ -113,8 +118,12 @@ const Summary: React.FC<SummaryProps> = ({ items, isSignedIn }) => {
         throw new Error(data.error || 'Failed to create payment intent');
       }
 
-      const { clientSecret: secret } = data;
+      const { clientSecret: secret, paymentIntentId } = data;
       setClientSecret(secret);
+      // Add payment intent ID to URL
+      const url = new URL(window.location.href);
+      url.searchParams.set('payment_intent', paymentIntentId);
+      window.history.replaceState({}, '', url.toString());
     } catch (error: any) {
       console.error('[PAYMENT_ERROR]', error);
       toast.error(error.message || 'Something went wrong. Please try again.');
@@ -144,10 +153,6 @@ const Summary: React.FC<SummaryProps> = ({ items, isSignedIn }) => {
       }
     });
   }, [items, cart]);
-
-  const totalPrice = items.reduce((total, item) => {
-    return total + (Number(item.price) * (item.quantity || 1));
-  }, 0);
 
   const getItemVariationKey = (item: CartProduct) => {
     return `${item.id}-${item.selectedSize?.id || 'no-size'}-${item.selectedColor?.id || 'no-color'}`;
@@ -301,7 +306,7 @@ const Summary: React.FC<SummaryProps> = ({ items, isSignedIn }) => {
                     formData={formData}
                     setFormData={setFormData}
                     setIsFormValid={setIsFormValid}
-                    amount={totalPrice * 100}
+                    amount={totalAmountInCents}
                   />
                 </Elements>
               )}

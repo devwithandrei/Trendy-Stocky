@@ -23,10 +23,19 @@ interface ProductPageProps {
 
 const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
   try {
-    // Fetch the specific product
     const product = await getProduct(params.productId);
 
     if (!product) {
+      console.log("Product not found or invalid:", params.productId);
+      return notFound();
+    }
+
+    // Validate required fields
+    if (!product.name || !product.price) {
+      console.error("Missing required product fields:", {
+        name: !!product.name,
+        price: !!product.price
+      });
       return notFound();
     }
 
@@ -46,9 +55,9 @@ const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
         </Container>
         <CrispChatScript />
       </div>
-    )
+    );
   } catch (error) {
-    console.error('Error in ProductPage:', error);
+    console.error("Error loading product:", error);
     return notFound();
   }
 };

@@ -1,7 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Enable compression for faster page loads
+  compress: true,
+  // Improve production performance with SWC minification
+  swcMinify: true,
+  // Reduce bundle size by removing console statements in production
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
   images: {
+    minimumCacheTTL: 60, // Cache images for better performance
     remotePatterns: [
       {
         protocol: 'https',

@@ -1,7 +1,7 @@
 import ProductList from '@/components/product-list'
-import Gallery from '@/components/gallery';
 import Info from '@/components/info';
 import getProduct from '@/actions/get-product';
+import getProducts from '@/actions/get-products';
 import Container from '@/components/ui/container';
 import CrispChatScript from '@/components/ui/CrispChatScript';
 import type { Metadata } from 'next'
@@ -38,19 +38,31 @@ const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
       });
       return notFound();
     }
+    
+    // Fetch related products based on category or brand
+    const relatedProductsQuery = product.category 
+      ? { categoryId: product.category.id }
+      : product.brand 
+        ? { brandId: product.brand.id }
+        : {};
+        
+    const relatedProducts = await getProducts(relatedProductsQuery);
 
     return (
       <div className="bg-white">
         <Container>
           <div className="px-4 py-10 sm:px-6 lg:px-8">
-            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-              <Gallery images={product.images} />
-              <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-                <Info data={product} />
-              </div>
-            </div>
+            {/* Full-width product layout */}
+            <Info data={product} />
             <hr className="my-10" />
-            <ProductList title="Related Items" items={[]} />
+            <ProductList 
+              title={product.category 
+                ? `More from ${product.category.name}` 
+                : product.brand 
+                  ? `More from ${product.brand.name}` 
+                  : "Related Items"} 
+              items={relatedProducts.filter(item => item.id !== product.id).slice(0, 4)} 
+            />
           </div>
         </Container>
         <CrispChatScript />

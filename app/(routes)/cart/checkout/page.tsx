@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Elements } from "@stripe/react-stripe-js";
@@ -19,8 +19,12 @@ const CheckoutPage = () => {
   const router = useRouter();
   const cart = useCart();
   const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  const cartTotal = useMemo(() => {
+    return cart.items.reduce((total, item) => {
+      return total + Number(item.price) * (Number(item.quantity) || 1);
+    }, 0);
+  }, [cart.items]);
   useEffect(() => {
     if (!user) {
       router.push("/sign-in");
@@ -42,24 +46,30 @@ const CheckoutPage = () => {
       } catch (error) {
         console.error("Error creating payment intent:", error);
         toast.error("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
 
     createPaymentIntent();
   }, [cart.items, router, user]);
-
-  const appearance = {
-    theme: "stripe",
+  const appearance: { theme: 'stripe'; variables: { colorPrimary: string } } = {
+    theme: 'stripe',
     variables: {
       colorPrimary: '#0F172A',
     },
   };
-
-  const options: any = {
+  const options = useMemo(() => ({
     clientSecret,
     appearance,
-  };
-
+  }), [clientSecret]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white">
       <Container>
@@ -102,7 +112,7 @@ const CheckoutPage = () => {
                       Order total
                     </div>
                     <div className="text-base font-medium text-gray-900">
-                      ${cart.getTotalPrice().toFixed(2)}
+                      ${cartTotal.toFixed(2)}
                     </div>
                   </div>
                 </div>

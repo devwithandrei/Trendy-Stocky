@@ -30,16 +30,16 @@ const MainNav: React.FC<MainNavProps> = ({ categories, storeId }) => {
   })) || [];
 
   return (
-    <div className="flex items-center">
-      <nav className="mx-6 flex items-center space-x-4 lg:space-x-6">
+    <div className="flex items-center overflow-x-auto scrollbar-hide">
+      <nav className="mx-2 sm:mx-4 md:mx-6 flex items-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 py-2">
         {routes.map((route) => (
           <Link
             key={route.href}
             href={route.href}
             className={cn(
-              'text-sm font-medium transition-colors hover:text-black',
+              'text-xs sm:text-sm font-medium transition-colors hover:text-black whitespace-nowrap',
               route.active ? 'text-black' : 'text-neutral-500',
-              'inline-block px-3 py-1.5 rounded-lg text-black hover:bg-blue-600',
+              'inline-block px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-black hover:bg-blue-600',
               route.colorClass
             )}
           >

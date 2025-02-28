@@ -23,10 +23,32 @@ export async function GET(
       where: { id: decodeURIComponent(params.userId) },
       include: {
         wishlistProducts: {
-          include: {
-            images: true,
-            category: true,
-            brand: true,
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            stock: true,
+            isFeatured: true,
+            isArchived: true,
+            images: {
+              select: {
+                id: true,
+                url: true
+              },
+              take: 1 // Only take the first image for performance
+            },
+            category: {
+              select: {
+                id: true,
+                name: true
+              }
+            },
+            brand: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         }
       }
@@ -82,10 +104,32 @@ export async function POST(
         },
         include: {
           wishlistProducts: {
-             include: {
-              images: true,
-              category: true,
-              brand: true,
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              stock: true,
+              isFeatured: true,
+              isArchived: true,
+              images: {
+                select: {
+                  id: true,
+                  url: true
+                },
+                take: 1 // Only take the first image for performance
+              },
+              category: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              brand: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
             }
           }
         }

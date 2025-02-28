@@ -2,9 +2,8 @@
 
 import { ShoppingBag, Heart, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
-import axios from "axios";
 import { useWishlist } from "@/lib/wishlist-context";
 import useCart from "@/hooks/use-cart";
 import { toast } from "react-hot-toast";
@@ -24,29 +23,36 @@ const NavbarActions: React.FC<NavbarActionsProps> = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      const count = cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
-      setCartItemCount(count);
-    }
+  const cartItemCount = useMemo(() => {
+    if (!isMounted) return 0;
+    return cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
   }, [cart.items, isMounted]);
-
-  const [cartItemCount, setCartItemCount] = useState(0);
-
-  const handleProtectedAction = (action: () => void) => {
+  const handleProtectedAction = useCallback((action: () => void) => {
     if (!isSignedIn) {
       toast.error("Please sign in to continue");
       router.push('/sign-in');
       return;
     }
     action();
-  };
-
+  }, [isSignedIn, router]);
+  const handleCartClick = useCallback(() => {
+    handleProtectedAction(() => router.push('/cart'));
+  }, [handleProtectedAction, router]);
+  const handleWishlistClick = useCallback(() => {
+    if (isSignedIn) {
+      router.push('/wishlist');
+    } else {
+      router.push('/sign-in');
+    }
+  }, [isSignedIn, router]);
+  const handleSignInClick = useCallback(() => {
+    router.push('/sign-in');
+  }, [router]);
+  if (!isMounted) return null;
   return (
     <div className="flex items-center gap-x-4">
       <button
-        onClick={() => handleProtectedAction(() => router.push('/cart'))}
+        onClick={handleCartClick}
         className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
         <ShoppingBag
@@ -75,7 +81,7 @@ const NavbarActions: React.FC<NavbarActionsProps> = () => {
       </button>
       
       <button
-        onClick={() => isSignedIn ? router.push('/wishlist') : router.push('/sign-in')}
+        onClick={handleWishlistClick}
         className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
         <Heart
@@ -103,13 +109,12 @@ const NavbarActions: React.FC<NavbarActionsProps> = () => {
         )}
       </button>
       
-      {/* Authentication Icon */}
       <div className="w-9 h-9 flex items-center justify-center">
         {isSignedIn ? (
           <UserNav />
         ) : (
           <button
-            onClick={() => router.push('/sign-in')}
+            onClick={handleSignInClick}
             className="relative flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
           >
             <User

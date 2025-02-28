@@ -14,11 +14,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payment Intent ID required" }, { status: 400 });
     }
 
-    // Find and update the order
+    // Find and update the order - use findUnique with index for better performance
     const order = await prismadb.order.findFirst({
       where: {
         paymentIntentId: paymentIntentId,
       },
+      select: {
+        id: true
+      }
     });
 
     if (!order) {

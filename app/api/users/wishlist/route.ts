@@ -13,16 +13,21 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const decodedUserId = decodeURIComponent(userId);
-    console.log('Decoded User ID (GET):', decodedUserId);
-
     const user = await currentUser();
     if (!user) {
       return new NextResponse(JSON.stringify({ error: 'Clerk user not found.' }), { status: 404 });
     }
 
-    let existingUser = await prismadb.user.findFirst({
-      where: { id: decodedUserId },
+    const email = user.emailAddresses[0]?.emailAddress;
+    if (!email) {
+      return new NextResponse(JSON.stringify({ error: 'No email address found for user.' }), { status: 400 });
+    }
+
+    const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+
+    // Find user by Clerk ID
+    let existingUser = await prismadb.user.findUnique({
+      where: { id: userId },
       include: {
         wishlistProducts: {
           include: {
@@ -45,34 +50,42 @@ export async function GET(
       },
     });
 
+    // If user doesn't exist, create them
     if (!existingUser) {
-      existingUser = await prismadb.user.create({
-        data: {
-          id: decodedUserId,
-          email: user.emailAddresses[0].emailAddress,
-          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-        },
-        include: {
-          wishlistProducts: {
-            include: {
-              images: true,
-              category: true,
-              brand: true,
-              description: true,
-              productSizes: {
-                include: {
-                  size: true
-                }
-              },
-              productColors: {
-                include: {
-                  color: true
+      try {
+        console.log('Creating new user with Clerk ID:', userId);
+        existingUser = await prismadb.user.create({
+          data: {
+            id: userId,
+            email,
+            name: name || 'User',
+          },
+          include: {
+            wishlistProducts: {
+              include: {
+                images: true,
+                category: true,
+                brand: true,
+                description: true,
+                productSizes: {
+                  include: {
+                    size: true
+                  }
+                },
+                productColors: {
+                  include: {
+                    color: true
+                  }
                 }
               }
             }
           }
-        }
-      });
+        });
+        console.log('User created successfully for wishlist access');
+      } catch (error) {
+        console.error('Error creating user for wishlist:', error);
+        return new NextResponse(JSON.stringify({ error: 'Failed to create user' }), { status: 500 });
+      }
     }
 
     return NextResponse.json(existingUser?.wishlistProducts || []);
@@ -103,46 +116,59 @@ export async function POST(
 
       console.log('Product ID:', productId);
 
-      const decodedUserId = decodeURIComponent(userId);
-      console.log('Decoded User ID (POST):', decodedUserId);
-
       const user = await currentUser();
       if (!user) {
         return new NextResponse(JSON.stringify({ error: 'Clerk user not found.' }), { status: 404 });
       }
 
-      let userExists = await prismadb.user.findFirst({
-        where: { id: decodedUserId },
+      const email = user.emailAddresses[0]?.emailAddress;
+      if (!email) {
+        return new NextResponse(JSON.stringify({ error: 'No email address found for user.' }), { status: 400 });
+      }
+
+      const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+
+      // Find user by Clerk ID
+      let userExists = await prismadb.user.findUnique({
+        where: { id: userId },
       });
 
+      // If user doesn't exist, create them
       if (!userExists) {
-        userExists = await prismadb.user.create({
-          data: {
-            id: decodedUserId,
-            email: user.emailAddresses[0].emailAddress,
-            name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-          },
-          include: {
-            wishlistProducts: {
-              include: {
-                images: true,
-                category: true,
-                brand: true,
-                description: true,
-                productSizes: {
-                  include: {
-                    size: true
-                  }
-                },
-                productColors: {
-                  include: {
-                    color: true
+        try {
+          console.log('Creating new user with Clerk ID:', userId);
+          userExists = await prismadb.user.create({
+            data: {
+              id: userId,
+              email,
+              name: name || 'User',
+            },
+            include: {
+              wishlistProducts: {
+                include: {
+                  images: true,
+                  category: true,
+                  brand: true,
+                  description: true,
+                  productSizes: {
+                    include: {
+                      size: true
+                    }
+                  },
+                  productColors: {
+                    include: {
+                      color: true
+                    }
                   }
                 }
               }
             }
-          }
-        });
+          });
+          console.log('User created successfully for wishlist update');
+        } catch (error) {
+          console.error('Error creating user for wishlist update:', error);
+          return new NextResponse(JSON.stringify({ error: 'Failed to create user' }), { status: 500 });
+        }
       }
 
       const productExists = await prismadb.product.findUnique({
@@ -155,7 +181,7 @@ export async function POST(
       }
 
       const updatedUser = await prismadb.user.update({
-        where: { id: decodedUserId },
+        where: { id: userId },
         data: {
           wishlistProducts: {
             connect: { id: productId.toString() }
@@ -205,10 +231,8 @@ export async function DELETE(req: Request) {
             return new NextResponse('Product ID is required.', { status: 400 });
         }
 
-        const decodedUserId = decodeURIComponent(userId);
-
         const userExists = await prismadb.user.findUnique({
-            where: { id: decodedUserId },
+            where: { id: userId },
         });
 
         if (!userExists) {
@@ -216,7 +240,7 @@ export async function DELETE(req: Request) {
         }
 
         await prismadb.user.update({
-            where: { id: decodedUserId },
+            where: { id: userId },
             data: {
                 wishlistProducts: {
                     disconnect: { id: productId },

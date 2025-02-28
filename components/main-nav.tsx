@@ -30,22 +30,24 @@ const MainNav: React.FC<MainNavProps> = ({ categories, storeId }) => {
   })) || [];
 
   return (
-    <nav className="mx-6 flex items-center space-x-4 lg:space-x-6">
-      {routes.map((route) => (
-        <Link
-          key={route.href}
-          href={route.href}
-          className={cn(
-            'text-sm font-medium transition-colors hover:text-black',
-            route.active ? 'text-black' : 'text-neutral-500',
-            'inline-block px-3 py-1.5 rounded-lg text-black hover:bg-blue-600',
-            route.colorClass
-          )}
-        >
-          {route.label}
-        </Link>
-      ))}
-    </nav>
+    <div className="flex items-center">
+      <nav className="mx-6 flex items-center space-x-4 lg:space-x-6">
+        {routes.map((route) => (
+          <Link
+            key={route.href}
+            href={route.href}
+            className={cn(
+              'text-sm font-medium transition-colors hover:text-black',
+              route.active ? 'text-black' : 'text-neutral-500',
+              'inline-block px-3 py-1.5 rounded-lg text-black hover:bg-blue-600',
+              route.colorClass
+            )}
+          >
+            {route.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 };
 

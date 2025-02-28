@@ -11,12 +11,19 @@ const publicPaths = [
   "/api/colors",
   "/api/brands",
   "/api/descriptions",
+  "/sign-out",
 ];
 
 // Additional dynamic paths that should be public
 const publicPathPrefixes = [
   "/product/",
   "/api/products/"
+];
+
+// Clerk auth paths
+const clerkPublicPaths = [
+  "/sign-in(.*)",
+  "/sign-up(.*)"
 ];
 
 function isPublic(path: string) {
@@ -27,6 +34,14 @@ function isPublic(path: string) {
 
   // Check prefixes for dynamic routes
   if (publicPathPrefixes.some(prefix => path.startsWith(prefix))) {
+    return true;
+  }
+
+  // Check Clerk auth paths with regex patterns
+  if (clerkPublicPaths.some(pattern => {
+    const regex = new RegExp(`^${pattern}$`);
+    return regex.test(path);
+  })) {
     return true;
   }
 

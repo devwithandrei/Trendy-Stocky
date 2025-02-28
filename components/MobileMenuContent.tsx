@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { X, Search, Heart, Package2, ShoppingBag } from "lucide-react";
+import { X, Search, Heart, Package2, ShoppingBag, User, LogOut } from "lucide-react";
+import { SignOutButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { Product } from '@/types';
 import { useRouter } from 'next/navigation';
@@ -10,6 +11,8 @@ import Link from 'next/link';
 import SearchResults from '@/components/ui/search-results';
 import useCart from "@/hooks/use-cart";
 import { useWishlist } from "@/lib/wishlist-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "react-hot-toast";
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
@@ -17,7 +20,7 @@ interface MobileMenuContentProps {
 }
 
 const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }) => {
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
   const router = useRouter();
   const cart = useCart();
   const { wishlistItemCount } = useWishlist();
@@ -141,12 +144,45 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
             )}
           </div>
 
-          {/* Welcome Message */}
-          {user && (
+          {/* User Profile Section */}
+          {isSignedIn ? (
             <div className="px-4 py-3 bg-gray-50">
-              <p className="text-lg font-medium text-gray-900">
-                Welcome back, {user.firstName || user.emailAddresses[0].emailAddress}
-              </p>
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-12 w-12 border border-gray-200">
+                  <AvatarImage 
+                    src={user?.imageUrl} 
+                    alt={user?.firstName || "User"} 
+                  />
+                  <AvatarFallback className="bg-blue-500 text-white">
+                    {user?.firstName && user?.lastName 
+                      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                      : user?.firstName 
+                        ? user.firstName[0].toUpperCase()
+                        : "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-lg font-medium text-gray-900">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {user?.emailAddresses[0]?.emailAddress}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="px-4 py-3 bg-gray-50">
+              <button 
+                onClick={() => {
+                  toggleMenu();
+                  router.push('/sign-in');
+                }}
+                className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Sign In
+              </button>
             </div>
           )}
 
@@ -180,8 +216,41 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           </div>
         </div>
 
+        {/* User Account Options (when signed in) */}
+        {isSignedIn && (
+          <div className="mt-4 px-4">
+            <h3 className="text-sm font-medium text-gray-500 px-4 mb-2">Account</h3>
+            <div className="space-y-1">
+              {[
+                { icon: <User className="h-5 w-5 mr-3 text-gray-500" />, href: '/profile', label: 'Profile' },
+                { icon: <Package2 className="h-5 w-5 mr-3 text-gray-500" />, href: '/orders', label: 'Orders' },
+                { icon: <Heart className="h-5 w-5 mr-3 text-gray-500" />, href: '/wishlist', label: 'Wishlist' },
+              ].map((item) => (
+                <button
+                  key={item.href}
+                  onClick={() => handleNavigate(item.href)}
+                  className="w-full flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+              <SignOutButton>
+                <button
+                  onClick={() => toggleMenu()}
+                  className="w-full flex items-center px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition"
+                >
+                  <LogOut className="h-5 w-5 mr-3 text-red-500" />
+                  Sign Out
+                </button>
+              </SignOutButton>
+            </div>
+          </div>
+        )}
+
         {/* Navigation Links */}
         <nav className="mt-6 px-4">
+          <h3 className="text-sm font-medium text-gray-500 px-4 mb-2">Information</h3>
           <div className="space-y-1">
             {[
               { href: '/about', label: 'About Us' },

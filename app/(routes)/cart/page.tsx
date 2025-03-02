@@ -49,45 +49,41 @@ export default function CartPage() {
     return null;
   }
 
-  return !isMounted ? (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    </div>
-  ) : (
-    <div className="bg-gray-50 min-h-screen py-8">
-      <Container>
-        <div className="px-4 sm:px-6 lg:px-8">
-          {cart.items.length === 0 ? (
-            <div className="text-center py-12">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
-              <p className="text-gray-500 mb-6">Looks like you haven't added anything to your cart yet.</p>
-              <button
-                onClick={() => router.push("/")}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition"
-              >
-                Start Shopping
-              </button>
-            </div>
-          ) : (
-            <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 lg:items-start">
-              <div className="lg:col-span-1 order-2 lg:order-1">
-                <Summary items={cart.items} isSignedIn={isSignedIn} />
+    return (
+      <div className="bg-gray-50 min-h-screen py-8">
+        <Container>
+          <div className="px-4 sm:px-6 lg:px-8">
+            {cart.items.length === 0 ? (
+              <div className="text-center py-12">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
+                <p className="text-gray-500 mb-6">Looks like you haven't added anything to your cart yet.</p>
+                <button
+                  onClick={() => router.push("/")}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  Start Shopping
+                </button>
               </div>
-              <div className="lg:col-span-1 order-1 lg:order-2 hidden lg:block">
-                <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl mb-6">Shopping Cart</h1>
-                <div className="mt-4 bg-white rounded-lg shadow-md p-6 mb-6">
-                  <ul role="list" className="divide-y divide-gray-200">
-                    {cartItems.map((item) => (
-                      <MemoizedCartItem key={item.id} data={item} />
-                    ))}
-                  </ul>
+            ) : (
+              <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 lg:items-start">
+                <div className="lg:col-span-1 order-2 lg:order-1">
+                  <Summary items={cart.items} isSignedIn={isSignedIn} />
                 </div>
-                <RelatedProducts cartItems={cart.items} />
+                <div className="lg:col-span-1 order-1 lg:order-2 hidden lg:block">
+                  <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl mb-6">Shopping Cart</h1>
+                  <div className="mt-4 bg-white rounded-lg shadow-md p-6 mb-6">
+                    <ul role="list" className="divide-y divide-gray-200">
+                      {cartItems.map((item) => (
+                        <MemoizedCartItem key={item.id} data={item} />
+                      ))}
+                    </ul>
+                  </div>
+                  <RelatedProducts cartItems={cart.items} />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </Container>
-    </div>
-  );
+            )}
+          </div>
+        </Container>
+      </div>
+    );
 }

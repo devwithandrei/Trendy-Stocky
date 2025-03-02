@@ -9,6 +9,7 @@ import { StoreProvider } from "@/contexts/store-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import CrispChatScript from "@/components/ui/CrispChatScript";
 
 import "./globals.css";
 
@@ -39,6 +40,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
               <SpeedInsights />
             </WishlistProvider>
           </StoreProvider>
+          <CrispChatScript />
         </body>
       </html>
     </ClerkProvider>

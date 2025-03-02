@@ -1,101 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useEffect } from "react";
 import Container from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { Heart, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
-import { Product } from "@/types";
-import axios from "axios";
+import { useWishlist } from "@/lib/wishlist-context";
 
 const WishlistPage = () => {
-  const { user } = useUser();
-  const [wishlist, setWishlist] = useState<Product[]>([]);
-  
-  // Transform product data to include sizes and colors in the format expected by ProductCard
-  const transformProductData = (product: any): Product => {
-    const sizes = product.productSizes?.map((ps: any) => ({
-      id: ps.size.id,
-      name: ps.size.name,
-      value: ps.size.value,
-      stock: ps.stock
-    })) || [];
+  const { wishlist, toggleWishlist, fetchWishlist, isLoading } = useWishlist();
 
-    const colors = product.productColors?.map((pc: any) => ({
-      id: pc.color.id,
-      name: pc.color.name,
-      value: pc.color.value,
-      stock: pc.stock
-    })) || [];
-
-    return {
-      ...product,
-      sizes,
-      colors
-    };
-  };
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  // Refresh wishlist data when the page loads
   useEffect(() => {
-    const fetchWishlist = async () => {
-      if (user && user.id) {
-        try {
-          const response = await axios.get(`/api/users/wishlist`);
-          const transformedProducts = response.data.map(transformProductData);
-          setWishlist(transformedProducts);
-        } catch (error: any) {
-          toast.error('Error fetching wishlist. Please try again.');
-          console.error('Error fetching wishlist:', error);
-          setError('Error fetching wishlist. Please try again.');
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
     fetchWishlist();
-  }, [user?.id]);
+  }, [fetchWishlist]);
 
-  const removeFromWishlist = async (productId: string) => {
-    if (!user || !user.id) return;
-
-    try {
-      await axios.delete(`/api/users/wishlist`, { params: { productId } });
-      setWishlist(current => current.filter(item => item.id !== productId));
-    } catch (error) {
-      toast.error('Error removing from wishlist. Please try again.');
-      console.error('Error removing from wishlist:', error);
-      setError('Error removing from wishlist. Please try again.');
-      setWishlist(current => current.filter(item => item.id !== productId));
-    }
-  };
-
-  const addToWishlist = async (productId: string) => {
-    if (!user || !user.id) return;
-
-    try {
-      await axios.post(`/api/users/wishlist`, { productId });
-      const productResponse = await axios.get(`/api/products/${productId}`);
-      const transformedProduct = transformProductData(productResponse.data);
-      setWishlist(current => [...current, transformedProduct]);
-    } catch (error) {
-      toast.error('Error adding to wishlist. Please try again.');
-      console.error('Error adding to wishlist:', error);
-      setError('Error adding to wishlist. Please try again.');
-    }
-  };
-
-  const toggleWishlist = async (productId: string) => {
-    if (wishlist.some(item => item.id === productId)) {
-      await removeFromWishlist(productId);
-    } else {
-      await addToWishlist(productId);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Container>
         <div className="flex items-center justify-center h-96">
@@ -115,9 +34,6 @@ const WishlistPage = () => {
             </h1>
             <Heart className="w-6 h-6 text-rose-500" />
           </div>
-          {error && (
-            <div className="text-red-500 text-center mb-4">{error}</div>
-          )}
           <div className="mt-8">
             {wishlist.length === 0 ? (
               <div className="flex flex-col items-center justify-center space-y-4">
@@ -130,14 +46,10 @@ const WishlistPage = () => {
                   <div key={product.id} className="relative group">
                     <ProductCard data={product} />
                     <button
-                      onClick={() => toggleWishlist(product.id)}
+                      onClick={() => toggleWishlist(product.id, product)}
                       className="absolute top-2 right-2 p-2 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-rose-50"
                     >
-                      {wishlist.some(item => item.id === product.id) ? (
-                        <Trash2 className="w-4 h-4 text-rose-500" />
-                      ) : (
-                        <Heart className={`w-6 h-6 ${wishlist.some(item => item.id === product.id) ? 'text-rose-500' : 'text-gray-300'}`} />
-                      )}
+                      <Trash2 className="w-4 h-4 text-rose-500" />
                     </button>
                   </div>
                 ))}

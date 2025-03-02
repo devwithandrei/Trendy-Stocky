@@ -3,7 +3,6 @@ import Info from '@/components/info';
 import getProduct from '@/actions/get-product';
 import getProducts from '@/actions/get-products';
 import Container from '@/components/ui/container';
-import CrispChatScript from '@/components/ui/CrispChatScript';
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation';
 
@@ -19,11 +18,27 @@ interface ProductPageProps {
   params: {
     productId: string;
   },
+  searchParams: {
+    storeId?: string;
+  }
 }
 
-const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
+const ProductPage: React.FC<ProductPageProps> = async ({ params, searchParams }) => {
+  // Use storeId from searchParams or fall back to env variable
+  const storeId = searchParams.storeId || process.env.STORE_ID;
+
+  // Log environment variables for debugging
+  console.log("ProductPage - Environment STORE_ID:", process.env.STORE_ID);
+  console.log("ProductPage - Using storeId:", storeId);
+  console.log("ProductPage - Product ID:", params.productId);
+
   try {
-    const product = await getProduct(params.productId);
+    if (!storeId) {
+      console.error('Store ID is not available');
+      return notFound();
+    }
+
+    const product = await getProduct(params.productId, storeId);
 
     if (!product) {
       console.log("Product not found or invalid:", params.productId);
@@ -39,14 +54,18 @@ const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
       return notFound();
     }
     
+    console.log("ProductPage - Found product:", product.name);
+    
     // Fetch related products based on category or brand
     const relatedProductsQuery = product.category 
-      ? { categoryId: product.category.id }
+      ? { categoryId: product.category.id, storeId }
       : product.brand 
-        ? { brandId: product.brand.id }
-        : {};
+        ? { brandId: product.brand.id, storeId }
+        : { storeId };
         
     const relatedProducts = await getProducts(relatedProductsQuery);
+
+    console.log(`ProductPage - Found ${relatedProducts.length} related products`);
 
     return (
       <div className="bg-white">
@@ -65,7 +84,6 @@ const ProductPage: React.FC<ProductPageProps> = async ({ params }) => {
             />
           </div>
         </Container>
-        <CrispChatScript />
       </div>
     );
   } catch (error) {

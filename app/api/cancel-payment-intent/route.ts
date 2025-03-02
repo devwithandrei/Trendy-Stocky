@@ -4,6 +4,9 @@ import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import { stripe } from "@/lib/stripe";
 
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+
 type PaymentIntent = Stripe.PaymentIntent;
 
 export async function POST(req: NextRequest) {

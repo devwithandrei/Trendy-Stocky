@@ -2,8 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Extract store ID from the API URL
+// Get the store ID from environment variables
 const getDefaultStoreId = () => {
+  // First try to get it from the STORE_ID environment variable
+  const envStoreId = process.env.STORE_ID;
+  if (envStoreId) return envStoreId;
+  
+  // Fallback to extracting from API URL if needed
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
   const match = apiUrl.match(/\/api\/([^/]+)/);
   return match ? match[1] : '';
@@ -20,11 +25,16 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [storeId, setStoreId] = useState(getDefaultStoreId());
 
   useEffect(() => {
-    // Update storeId if API URL changes
+    // Update storeId if it's not set
     const defaultId = getDefaultStoreId();
     if (defaultId && !storeId) {
       setStoreId(defaultId);
     }
+    
+    // Log the store ID for debugging
+    console.log("Store Context - Using store ID:", storeId || defaultId);
+    console.log("Store Context - Environment STORE_ID:", process.env.STORE_ID);
+    console.log("Store Context - API URL:", process.env.NEXT_PUBLIC_API_URL);
   }, [storeId]);
 
   return (

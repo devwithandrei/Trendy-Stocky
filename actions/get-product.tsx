@@ -1,11 +1,25 @@
 import { Product } from "@/types";
 import prismadb from "@/lib/prismadb";
 
-const getProduct = async (id: string): Promise<Product | null> => {
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const getProduct = async (id: string, storeId: string = process.env.STORE_ID || ''): Promise<Product | null> => {
   try {
-    const product = await prismadb.product.findUnique({
+    console.log("getProduct - Fetching product with ID:", id);
+    console.log("getProduct - Using storeId:", storeId);
+
+    // Make sure we have a valid storeId
+    if (!storeId) {
+      console.error("No storeId provided and no STORE_ID environment variable found");
+      return null;
+    }
+
+    const product = await prismadb.product.findFirst({
       where: {
-        id: id
+        id: id,
+        storeId: storeId
       },
       include: {
         images: true,
@@ -30,8 +44,11 @@ const getProduct = async (id: string): Promise<Product | null> => {
     });
 
     if (!product) {
+      console.error(`Product with ID ${id} not found in store ${storeId}`);
       return null;
     }
+
+    console.log("getProduct - Found product:", product.name);
 
     // Transform the data to match the Product interface
     return {

@@ -2,12 +2,14 @@ import Container from '@/components/ui/container';
 import Billboard from '@/components/ui/billboard';
 import { ProductCard } from '@/components/ui/product-card';
 import NoResults from '@/components/ui/no-results';
-import CrispChatScript from '@/components/ui/CrispChatScript';
 
 import getProducts from '@/actions/get-products';
-import getBillboard from '@/actions/get-billboard';
-import { Category, Product, Billboard as BillboardType } from '@/types';
-import getCategories from '@/actions/get-categories';
+import getCategory from '@/actions/get-category';
+import { Product } from '@/types';
+
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface CategoryPageProps {
   params: {
@@ -22,65 +24,45 @@ interface CategoryPageProps {
 
 const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams }) => {
   const categoryId = params.categoryId;
-  let storeId = searchParams.storeId;
-  const queryParams = [];
-  if (searchParams.colorId) queryParams.push(`colorId=${searchParams.colorId}`);
-  if (searchParams.sizeId) queryParams.push(`sizeId=${searchParams.sizeId}`);
-  const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : ``;
+  // Use storeId from searchParams or fall back to env variable
+  const storeId = searchParams.storeId || process.env.STORE_ID;
+
+  // Log environment variables for debugging
+  console.log("CategoryPage - Environment STORE_ID:", process.env.STORE_ID);
+  console.log("CategoryPage - Using storeId:", storeId);
+  console.log("CategoryPage - Category ID:", categoryId);
 
   try {
     if (!storeId) {
-      // Extract store ID from API URL if not provided in query params
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const match = apiUrl.match(/\/api\/([^/]+)/);
-      if (match) {
-        storeId = match[1];
-      } else {
-        console.error('Store ID is not available');
-        return (
-          <div className="flex items-center justify-center min-h-[400px] text-neutral-500">
-            <div className="text-center">
-              <h2 className="text-lg font-medium mb-2">Store Not Found</h2>
-              <p>Please make sure you have selected a valid store.</p>
-            </div>
+      console.error('Store ID is not available');
+      return (
+        <div className="flex items-center justify-center min-h-[400px] text-neutral-500">
+          <div className="text-center">
+            <h2 className="text-lg font-medium mb-2">Store Not Found</h2>
+            <p>Please make sure you have selected a valid store.</p>
           </div>
-        );
-      }
+        </div>
+      );
     }
 
-    // Fetch all categories for the store
-    const categories = await getCategories(storeId);
-    console.log("Categories fetched for store:", {
-      storeId,
-      count: categories.length,
-      names: categories.map(c => c.name)
-    });
-
-    // Find the requested category by ID or name (case-insensitive)
-    const category = categories.find(c => 
-      c.id === categoryId || 
-      c.name.toLowerCase() === categoryId.toLowerCase()
-    );
-
-    console.log("Category lookup result:", {
-      searchTerm: categoryId,
-      found: !!category,
-      categoryName: category?.name
-    });
+    // Fetch the category directly by ID or name
+    const category = await getCategory(categoryId, storeId);
 
     if (!category) {
       console.error(`Category not found. CategoryId: ${categoryId}, StoreId: ${storeId}`);
-      return <div className="flex items-center justify-center min-h-[400px] text-neutral-500">
-        <div className="text-center">
-          <h2 className="text-lg font-medium mb-2">Category Not Found</h2>
-          <p>The requested category could not be found.</p>
+      return (
+        <div className="flex items-center justify-center min-h-[400px] text-neutral-500">
+          <div className="text-center">
+            <h2 className="text-lg font-medium mb-2">Category Not Found</h2>
+            <p>The requested category could not be found.</p>
+          </div>
         </div>
-      </div>;
+      );
     }
 
-    console.log("Found category:", category?.name);
+    console.log("CategoryPage - Found category:", category.name);
 
-    // Fetch Products using the actual category ID
+    // Fetch Products using the category ID
     const { colorId, sizeId } = searchParams;
     const products: Product[] = await getProducts({ 
       categoryId: category.id,
@@ -89,16 +71,11 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams 
       sizeId
     });
 
-    // Use billboard from category since it's already included in our query
-    const billboard = category.billboard || null;
-    
-    console.log("Category data:", {
-      name: category.name,
-      billboardId: category.billboardId,
-      billboard: billboard
-    });
-    console.log("Products:", products);
+    console.log(`CategoryPage - Found ${products.length} products in category ${category.name}`);
 
+    // Use billboard from category
+    const billboard = category.billboard;
+    
     return (
       <div className="bg-white">
         <Container>
@@ -108,7 +85,6 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams 
             )}
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="lg:grid lg:grid-cols-5 lg:gap-x-8">
-                {/* Add filters here if needed */}
                 <div className="mt-6 lg:col-span-5">
                   {products.length === 0 ? (
                     <NoResults />
@@ -129,12 +105,14 @@ const CategoryPage: React.FC<CategoryPageProps> = async ({ params, searchParams 
 
   } catch (error) {
     console.error('Error:', error);
-    return <div className="flex items-center justify-center min-h-[400px] text-neutral-500">
-      <div className="text-center">
-        <h2 className="text-lg font-medium mb-2">Error</h2>
-        <p>Something went wrong. Please try again later.</p>
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-neutral-500">
+        <div className="text-center">
+          <h2 className="text-lg font-medium mb-2">Error</h2>
+          <p>Something went wrong. Please try again later.</p>
+        </div>
       </div>
-    </div>;
+    );
   }
 };
 

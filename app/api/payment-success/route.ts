@@ -2,6 +2,9 @@ import { NextResponse, NextRequest } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { userId: clerkUserId } = getAuth(req);

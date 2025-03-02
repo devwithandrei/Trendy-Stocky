@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   title: 'Outly.Shop',
 }
 
+// Add this to prevent caching
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface HomePageProps {
   searchParams: {
@@ -20,6 +22,10 @@ interface HomePageProps {
 
 const HomePage = async ({ searchParams }: HomePageProps) => {
   const { categoryId, brandId, colorId, sizeId } = searchParams;
+
+  // Log environment variables for debugging
+  console.log("HomePage - Environment STORE_ID:", process.env.STORE_ID);
+  console.log("HomePage - API URL:", process.env.NEXT_PUBLIC_API_URL);
 
   const query = {
     ...(categoryId && { categoryId }),

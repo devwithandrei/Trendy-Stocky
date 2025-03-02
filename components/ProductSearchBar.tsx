@@ -6,6 +6,7 @@ import ProductSearchResult from './ProductSearchResult';
 import { Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import getProducts from '@/actions/get-products';
+import { useStore } from '@/contexts/store-context';
 
 interface ProductSearchBarProps {
   onProductSelect?: () => void;
@@ -20,6 +21,7 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect, pr
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
+  const { storeId } = useStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,7 +55,15 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect, pr
     // Debounce the search
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const results = await getProducts({ search: searchText });
+        console.log("ProductSearchBar - Searching with term:", searchText);
+        console.log("ProductSearchBar - Using storeId for search:", storeId);
+        
+        const results = await getProducts({ 
+          search: searchText,
+          storeId
+        });
+        
+        console.log(`ProductSearchBar - Found ${results.length} search results`);
         setSearchResults(results);
       } catch (error) {
         console.error('Search error:', error);
@@ -67,7 +77,7 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect, pr
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}&storeId=${storeId}`);
       setSearchResults([]);
       setIsFocused(false);
       onProductSelect?.();

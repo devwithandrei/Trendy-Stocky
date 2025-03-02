@@ -1,34 +1,33 @@
 import prismadb from "@/lib/prismadb";
 import { Category } from "@/types";
 
-const getCategories = async (storeId?: string): Promise<Category[]> => {
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const getCategories = async (storeId: string = process.env.STORE_ID || ''): Promise<Category[]> => {
   try {
+    console.log("getCategories - Fetching categories for store:", storeId);
+
+    // Make sure we have a valid storeId
+    if (!storeId) {
+      console.error("No storeId provided and no STORE_ID environment variable found");
+      return [];
+    }
+
     const categories = await prismadb.category.findMany({
       where: {
         storeId: storeId
       },
       include: {
-        billboard: true,
-        products: {
-          include: {
-            images: true,
-            category: true,
-            brand: true,
-            description: true,
-            productSizes: {
-              include: {
-                size: true
-              }
-            },
-            productColors: {
-              include: {
-                color: true
-              }
-            }
-          }
-        }
+        billboard: true
+      },
+      orderBy: {
+        name: 'asc'
       }
     });
+
+    console.log(`getCategories - Found ${categories.length} categories`);
 
     return categories.map(category => ({
       id: category.id,

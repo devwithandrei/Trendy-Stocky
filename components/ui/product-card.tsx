@@ -131,7 +131,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ data, compact = false 
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleWishlist(data.id);
+                // Pass product data for optimistic UI updates
+                toggleWishlist(data.id, {
+                  name: data.name,
+                  price: data.price,
+                  images: data.images,
+                  category: data.category
+                });
               }}
               className="rounded-full flex items-center justify-center bg-white border shadow-md p-1.5 sm:p-2 hover:scale-110 transition"
             >
@@ -181,7 +187,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ data, compact = false 
         </p>
         <Button
           onClick={onAddToCart}
-          className="flex items-center gap-x-2 bg-black text-white hover:bg-gray-800 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden animate-in slide-in-from-right-2 duration-300 text-sm py-1.5 px-3"
+          className="flex items-center gap-x-2 bg-black text-white hover:bg-gray-800 transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden animate-in slide-in-from-right-2 duration-300 text-sm py-1.5 px-3"
           disabled={!data.stock || data.stock <= 0}
         >
           <span className="relative z-10 flex items-center gap-x-2 transition-transform group-hover:translate-x-1 group-active:translate-x-0">

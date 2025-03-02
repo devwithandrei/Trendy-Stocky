@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { stripe } from "@/lib/stripe";
 
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+
 const findOrderByPaymentIntent = async (paymentIntentId: string) => {
   const order = await prismadb.order.findFirst({
     where: {

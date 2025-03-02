@@ -1,17 +1,44 @@
 import { Billboard } from "@/types";
+import prismadb from "@/lib/prismadb";
 
-const URL=`${process.env.NEXT_PUBLIC_API_URL}/billboards`;
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const getBillboard = async (id: string): Promise<Billboard> => {
+const getBillboard = async (id: string, storeId: string = process.env.STORE_ID || ''): Promise<Billboard | null> => {
   try {
-    const res = await fetch(`${URL}/${id}`);
-    if (!res.ok) {
-      throw new Error(`Error fetching billboard: ${res.statusText}`);
+    console.log("getBillboard - Fetching billboard with ID:", id);
+    console.log("getBillboard - Using storeId:", storeId);
+
+    // Make sure we have a valid storeId
+    if (!storeId) {
+      console.error("No storeId provided and no STORE_ID environment variable found");
+      return null;
     }
-    return res.json();
+
+    const billboard = await prismadb.billboard.findFirst({
+      where: {
+        id,
+        storeId
+      }
+    });
+
+    if (!billboard) {
+      console.error(`Billboard with ID ${id} not found in store ${storeId}`);
+      return null;
+    }
+
+    console.log("getBillboard - Found billboard:", billboard.label);
+
+    return {
+      id: billboard.id,
+      label: billboard.label,
+      imageUrl: billboard.imageUrl,
+      storeId: billboard.storeId
+    };
   } catch (error) {
-    console.error('[getBillboard]', error);
-    throw error;
+    console.error("❌ Error fetching billboard:", error);
+    return null;
   }
 };
 

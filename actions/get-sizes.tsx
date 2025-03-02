@@ -1,11 +1,34 @@
 import { Size } from "@/types";
+import prismadb from "@/lib/prismadb";
 
-const URL=`${process.env.NEXT_PUBLIC_API_URL}/sizes`;
+const getSizes = async (storeId?: string): Promise<Size[]> => {
+  try {
+    const sizes = await prismadb.size.findMany({
+      where: {
+        storeId: storeId || process.env.STORE_ID
+      },
+      include: {
+        productSizes: true
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
 
-const getSizes = async (): Promise<Size[]> => {
-  const res = await fetch(URL);
-
-  return res.json();
+    return sizes.map(size => ({
+      id: size.id,
+      name: size.name,
+      value: size.value,
+      // For the frontend, we'll set a default stock value
+      // The actual stock is managed per product-size combination
+      stock: 0,
+      createdAt: size.createdAt.toISOString(),
+      updatedAt: size.updatedAt.toISOString()
+    }));
+  } catch (error) {
+    console.error("❌ Error fetching sizes:", error);
+    return [];
+  }
 };
 
 export default getSizes;

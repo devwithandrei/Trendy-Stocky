@@ -13,7 +13,7 @@ import { useUser } from "@clerk/nextjs";
 import { Product, Category } from '@/types';
 import { useStore } from "@/contexts/store-context";
 import getProducts from "@/actions/get-products";
-import axios from "axios";
+import getCategories from "@/actions/get-categories";
 import SearchResults from "@/components/ui/search-results";
 
 const Navbar = () => {
@@ -37,16 +37,16 @@ const Navbar = () => {
       }
 
       try {
-        const [featuredProducts, categoriesRes] = await Promise.all([
-          getProducts({ isFeatured: true }),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/categories?storeId=${storeId}`)
+        console.log("Navbar - Fetching data with storeId:", storeId);
+        
+        const [featuredProducts, categoriesData] = await Promise.all([
+          getProducts({ isFeatured: true, storeId }),
+          getCategories(storeId)
         ]);
         
         setProducts(featuredProducts);
-        if (categoriesRes.data) {
-          console.log('Categories loaded:', categoriesRes.data.length);
-          setCategories(categoriesRes.data);
-        }
+        console.log('Categories loaded:', categoriesData.length);
+        setCategories(categoriesData);
       } catch (error) {
         console.error('Error fetching data:', error);
         setCategories([]);
@@ -76,12 +76,15 @@ const Navbar = () => {
       setIsLoading(true);
       searchTimeoutRef.current = setTimeout(async () => {
         try {
+          console.log("Navbar - Searching with term:", mobileSearchTerm);
+          console.log("Navbar - Using storeId for search:", storeId);
+          
           const results = await getProducts({
-            categoryId: '',
-            colorId: '',
-            sizeId: '',
-            search: mobileSearchTerm
+            search: mobileSearchTerm,
+            storeId
           });
+          
+          console.log(`Navbar - Found ${results.length} search results`);
           setMobileSearchResults(results);
         } catch (error) {
           console.error('Search error:', error);
@@ -100,7 +103,7 @@ const Navbar = () => {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [mobileSearchTerm]);
+  }, [mobileSearchTerm, storeId]);
 
   const handleNavigate = (productId: string) => {
     setShowMobileSearch(false);

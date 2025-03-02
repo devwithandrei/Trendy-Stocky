@@ -3,6 +3,9 @@ import { getAuth } from "@clerk/nextjs/server";
 import prismadb from '@/lib/prismadb';
 import { stripe } from '@/lib/stripe';
 
+// Add this to prevent caching
+export const dynamic = 'force-dynamic';
+
 interface CartItem {
   id: string;
   quantity: number;

@@ -12,7 +12,6 @@ import MainNav from "@/components/main-nav";
 import { useUser } from "@clerk/nextjs";
 import { Product, Category } from '@/types';
 import { useStore } from "@/contexts/store-context";
-import getProducts from "@/actions/get-products";
 import getCategories from "@/actions/get-categories";
 import SearchResults from "@/components/ui/search-results";
 
@@ -20,8 +19,6 @@ const Navbar = () => {
   const { user } = useUser();
   const { storeId } = useStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [mobileSearchTerm, setMobileSearchTerm] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Product[]>([]);
@@ -29,7 +26,7 @@ const Navbar = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchData = async () => {
       if (!storeId) {
         console.error('Store ID is not available');
@@ -37,19 +34,17 @@ const Navbar = () => {
       }
 
       try {
-        console.log("Navbar - Fetching data with storeId:", storeId);
+        console.log("Navbar - Fetching categories with storeId:", storeId);
         
-        const [featuredProducts, categoriesData] = await Promise.all([
-          getProducts({ isFeatured: true, storeId }),
-          getCategories(storeId)
-        ]);
-        
-        setProducts(featuredProducts);
+        const response = await fetch(`/api/categories?storeId=${storeId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const categoriesData: Category[] = await response.json();
+
         console.log('Categories loaded:', categoriesData.length);
-        setCategories(categoriesData);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setCategories([]);
+        console.error('Error fetching categories:', error);
       }
     };
     
@@ -79,10 +74,12 @@ const Navbar = () => {
           console.log("Navbar - Searching with term:", mobileSearchTerm);
           console.log("Navbar - Using storeId for search:", storeId);
           
-          const results = await getProducts({
-            search: mobileSearchTerm,
-            storeId
-          });
+          const response = await fetch(`/api/products/search?search=${mobileSearchTerm}&storeId=${storeId}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const results: Product[] = await response.json();
+
           
           console.log(`Navbar - Found ${results.length} search results`);
           setMobileSearchResults(results);
@@ -145,9 +142,8 @@ const Navbar = () => {
 
           {/* Search Bar and User Profile (Desktop) */}
           <div className="hidden sm:flex items-center justify-center flex-grow mr-4">
-            <ProductSearchBar 
-              products={products} 
-              onProductSelect={() => {}} 
+            <ProductSearchBar
+              onProductSelect={() => {}}
             />
           </div>
           
@@ -161,9 +157,8 @@ const Navbar = () => {
               <Search size={20} className="text-[#3A5795]" />
             </button>
 
-            <MainNav storeId={storeId} categories={categories} />
             <NavbarActions />
-            
+
             {/* Menu Toggle (visible on all screens) */}
             <button
               onClick={toggleMenu}
@@ -223,7 +218,7 @@ const Navbar = () => {
           {/* Menu Content */}
           {isMenuOpen && (
             <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-end">
-              <MobileMenuContent toggleMenu={toggleMenu} products={products} />
+              <MobileMenuContent toggleMenu={toggleMenu} />
             </div>
           )}
         </div>

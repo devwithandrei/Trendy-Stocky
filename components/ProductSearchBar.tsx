@@ -10,10 +10,9 @@ import { useStore } from '@/contexts/store-context';
 
 interface ProductSearchBarProps {
   onProductSelect?: () => void;
-  products: Product[];
 }
 
-const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect, products }) => {
+const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,12 +56,12 @@ const ProductSearchBar: React.FC<ProductSearchBarProps> = ({ onProductSelect, pr
       try {
         console.log("ProductSearchBar - Searching with term:", searchText);
         console.log("ProductSearchBar - Using storeId for search:", storeId);
-        
-        const results = await getProducts({ 
-          search: searchText,
-          storeId
-        });
-        
+
+        const response = await fetch(`/api/products/search?search=${searchText}&storeId=${storeId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const results: Product[] = await response.json();
         console.log(`ProductSearchBar - Found ${results.length} search results`);
         setSearchResults(results);
       } catch (error) {

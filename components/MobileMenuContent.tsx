@@ -4,23 +4,23 @@ import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { X, Search, Heart, Package2, ShoppingBag, User, LogOut } from "lucide-react";
 import { SignOutButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
-import { Product } from '@/types';
+import { Product, Category } from '@/types';
 import { useRouter } from 'next/navigation';
-import getProducts from '@/actions/get-products';
 import Link from 'next/link';
 import SearchResults from '@/components/ui/search-results';
 import useCart from "@/hooks/use-cart";
 import { useWishlist } from "@/lib/wishlist-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "react-hot-toast";
+import { useStore } from '@/contexts/store-context';
 
 interface MobileMenuContentProps {
   toggleMenu: () => void;
-  products: Product[];
 }
 
-const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, products }) => {
+const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu }) => {
   const { user, isSignedIn } = useUser();
+  const { storeId } = useStore();
   const router = useRouter();
   const cart = useCart();
   const { wishlistItemCount } = useWishlist();
@@ -29,7 +29,48 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isInfoDropdownOpen, setIsInfoDropdownOpen] = useState(false);
+
+    useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+        setIsInfoDropdownOpen(false);
+      }
+    };
+    
+        document.addEventListener('mousedown', handleDocumentClick);
+    
+        return () => {
+          document.removeEventListener('mousedown', handleDocumentClick);
+        };
+      }, []);
+
+    useEffect(() => {
+    const fetchData = async () => {
+      if (!storeId) {
+        console.error('Store ID is not available');
+        return;
+      }
+
+      try {
+        console.log("MobileMenuContent - Fetching categories with storeId:", storeId);
+        const response = await fetch(`/api/categories?storeId=${storeId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const categoriesData: Category[] = await response.json();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchData();
+    console.log("MobileMenuContent - Categories state after fetch:", categories);
+  }, [storeId]);
 
   useEffect(() => {
     const count = cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
@@ -58,12 +99,11 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
       setIsLoading(true);
       searchTimeoutRef.current = setTimeout(async () => {
         try {
-          const results = await getProducts({
-            categoryId: '',
-            colorId: '',
-            sizeId: '',
-            search: searchTerm
-          });
+          const response = await fetch(`/api/products/search?search=${searchTerm}&storeId=${storeId}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const results: Product[] = await response.json();
           setSearchResults(results);
         } catch (error) {
           console.error('Search error:', error);
@@ -81,7 +121,7 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm]);
+  }, [searchTerm, storeId]);
 
   const handleNavigate = (url: string) => {
     router.push(url);
@@ -147,18 +187,18 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
           {/* User Profile Section */}
           {isSignedIn ? (
             <div className="px-4 py-3 bg-gray-50">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 relative">
                 <Avatar className="h-12 w-12 border border-gray-200">
-                  <AvatarImage 
-                    src={user?.imageUrl} 
-                    alt={user?.firstName || "User"} 
+                  <AvatarImage
+                    src={user?.imageUrl}
+                    alt={user?.firstName || 'User'}
                   />
                   <AvatarFallback className="bg-blue-500 text-white">
-                    {user?.firstName && user?.lastName 
+                    {user?.firstName && user?.lastName
                       ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
-                      : user?.firstName 
-                        ? user.firstName[0].toUpperCase()
-                        : "U"}
+                      : user?.firstName
+                      ? user.firstName[0].toUpperCase()
+                      : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -169,11 +209,75 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
                     {user?.emailAddresses[0]?.emailAddress}
                   </p>
                 </div>
+
+                {/* User Account Options (when signed in) */}
+                <div className="ml-auto">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="text-sm font-medium text-gray-500 px-4  flex items-center justify-between "
+                  >
+                    Account
+                    <svg
+                      className={`w-4 h-4 transition-transform transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {isDropdownOpen && (
+                    <div
+                      className="absolute right-0  bg-white rounded-md shadow-lg z-10"
+                      style={{ top: '100%', width: 'calc(100% - 1rem)' }}
+                    >
+                      <div className="py-1" role="none">
+                        {[
+                          { icon: <User className="h-5 w-5 mr-3 text-gray-500" />, href: '/profile', label: 'Profile' },
+                          { icon: <Package2 className="h-5 w-5 mr-3 text-gray-500" />, href: '/orders', label: 'Orders' },
+                          { icon: <Heart className="h-5 w-5 mr-3 text-gray-500" />, href: '/wishlist', label: 'Wishlist' },
+                        ].map((item) => (
+                          <button
+                            key={item.href}
+                            onClick={() => {
+                              handleNavigate(item.href);
+                              setIsDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                            role="menuitem"
+                          >
+                            {item.icon}
+                            {item.label}
+                          </button>
+                        ))}
+                        <SignOutButton>
+                          <button
+                            onClick={() => {
+                              toggleMenu();
+                              setIsDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-900"
+                            role="menuitem"
+                          >
+                            <LogOut className="h-5 w-5 mr-3 text-red-500" />
+                            Sign Out
+                          </button>
+                        </SignOutButton>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
             <div className="px-4 py-3 bg-gray-50">
-              <button 
+              <button
                 onClick={() => {
                   toggleMenu();
                   router.push('/sign-in');
@@ -214,66 +318,82 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({ toggleMenu, produ
               </div>
             )}
           </div>
+
+                  {/* Categories */}
+          <nav className="mt-4 px-4">
+            <h3 className="text-sm font-medium text-gray-500 px-4 mb-2">Categories</h3>
+            <div className="space-y-1">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/category/${category.id}`}
+                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                  onClick={() => {
+                      console.log("MobileMenuContent - Navigating to category:", category.id);
+                    handleNavigate(`/category/${category.id}`);
+                  }}
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </div>
+          </nav>
         </div>
 
-        {/* User Account Options (when signed in) */}
-        {isSignedIn && (
-          <div className="mt-4 px-4">
-            <h3 className="text-sm font-medium text-gray-500 px-4 mb-2">Account</h3>
-            <div className="space-y-1">
-              {[
-                { icon: <User className="h-5 w-5 mr-3 text-gray-500" />, href: '/profile', label: 'Profile' },
-                { icon: <Package2 className="h-5 w-5 mr-3 text-gray-500" />, href: '/orders', label: 'Orders' },
-                { icon: <Heart className="h-5 w-5 mr-3 text-gray-500" />, href: '/wishlist', label: 'Wishlist' },
-              ].map((item) => (
-                <button
-                  key={item.href}
-                  onClick={() => handleNavigate(item.href)}
-                  className="w-full flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              ))}
-              <SignOutButton>
-                <button
-                  onClick={() => toggleMenu()}
-                  className="w-full flex items-center px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition"
-                >
-                  <LogOut className="h-5 w-5 mr-3 text-red-500" />
-                  Sign Out
-                </button>
-              </SignOutButton>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation Links */}
+       {/* Navigation Links */}
         <nav className="mt-6 px-4">
-          <h3 className="text-sm font-medium text-gray-500 px-4 mb-2">Information</h3>
-          <div className="space-y-1">
-            {[
-              { href: '/about', label: 'About Us' },
-              { href: '/privacy-policy', label: 'Privacy Policy' },
-              { href: '/terms', label: 'Terms of Service' },
-              { href: '/contact', label: 'Contact Us' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                onClick={() => handleNavigate(link.href)}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          <button
+            onClick={() => setIsInfoDropdownOpen(!isInfoDropdownOpen)}
+            className="text-sm font-medium text-gray-500 px-4 mb-2 flex items-center justify-between w-full"
+          >
+            Information
+            <svg
+              className={`w-4 h-4 transition-transform transform ${isInfoDropdownOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          {isInfoDropdownOpen && (
+            <div className="absolute left-0 w-full bg-white rounded-md shadow-lg z-10">
+              <div className="py-1" role="none">
+                {[
+                  { href: '/about', label: 'About Us' },
+                  { href: '/privacy-policy', label: 'Privacy Policy' },
+                  { href: '/terms', label: 'Terms of Service' },
+                  { href: '/contact', label: 'Contact Us' },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    onClick={() => {
+                      handleNavigate(link.href);
+                      setIsInfoDropdownOpen(false);
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
 
+        
+
         {/* Footer */}
-        <div className="mt-8 px-4 py-6 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Outly.Shop. All rights reserved.
-        </div>
+        <div className="mt-8 px-4 py-6 text-sm text-gray-500 flex justify-center items-center">
+          <span>&copy; {new Date().getFullYear()} Outly.Shop. All rights reserved.</span>
+</div>
       </div>
 
       <style jsx>{`

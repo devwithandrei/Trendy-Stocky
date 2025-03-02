@@ -32,7 +32,6 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <body className={font.className}>
           <StoreProvider>
             <WishlistProvider>
-              <ToastProvider />
               <ModalProvider />
               <Navbar />
               {children}

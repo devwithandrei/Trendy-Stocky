@@ -6,10 +6,8 @@ import { Product, Size, Color, CartProduct } from "@/types";
 import Currency from "@/components/ui/currency";
 import { ShoppingCart, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import useCart from "@/hooks/use-cart";
-import { toast } from "react-hot-toast";
 import Image from "next/image";
 import { useSwipeable } from "react-swipeable";
-import { Tab } from "@headlessui/react";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/lib/wishlist-context";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,11 +20,31 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const cart = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedSize, setSelectedSize] = useState<Size | undefined>(undefined);
-  const [selectedColor, setSelectedColor] = useState<Color | undefined>(undefined);
+  const [selectedColor, setSelectedColor] = useState<Color | undefined>(
+    undefined,
+  );
   const [quantity, setQuantity] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  
+  const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkIsMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        // Initial check
+        checkIsMobile();
+
+        // Add event listener for window resize
+        window.addEventListener('resize', checkIsMobile);
+
+        // Clean up event listener on component unmount
+        return () => {
+            window.removeEventListener('resize', checkIsMobile);
+        };
+    }, []);
+
   const getAvailableStock = () => {
     return data.stock;
   };
@@ -39,13 +57,17 @@ const Info: React.FC<InfoProps> = ({ data }) => {
 
   const nextImage = () => {
     if (data?.images?.length > 1 && !isAnimating) {
-      handleTabChange((selectedTab === data.images.length - 1) ? 0 : selectedTab + 1);
+      handleTabChange(
+        selectedTab === data.images.length - 1 ? 0 : selectedTab + 1,
+      );
     }
   };
 
   const prevImage = () => {
     if (data?.images?.length > 1 && !isAnimating) {
-      handleTabChange((selectedTab === 0) ? data.images.length - 1 : selectedTab - 1);
+      handleTabChange(
+        selectedTab === 0 ? data.images.length - 1 : selectedTab - 1,
+      );
     }
   };
 
@@ -53,23 +75,23 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     event.stopPropagation();
 
     if (data.sizes?.length > 0 && !selectedSize) {
-      toast.error("Please select a size");
+      // toast.error("Please select a size");
       return;
     }
 
     if (data.colors?.length > 0 && !selectedColor) {
-      toast.error("Please select a color");
+      // toast.error("Please select a color");
       return;
     }
 
     const availableStock = getAvailableStock();
     if (!availableStock) {
-      toast.error("Product is out of stock");
+      // toast.error("Product is out of stock");
       return;
     }
 
     if (quantity > availableStock) {
-      toast.error(`Only ${availableStock} items available in stock`);
+      // toast.error(`Only ${availableStock} items available in stock`);
       return;
     }
 
@@ -80,18 +102,22 @@ const Info: React.FC<InfoProps> = ({ data }) => {
       images: data.images,
       stock: data.stock,
       quantity: quantity,
-      selectedSize: selectedSize ? {
-        ...selectedSize,
-        stock: data.stock
-      } : undefined,
-      selectedColor: selectedColor ? {
-        ...selectedColor,
-        stock: data.stock
-      } : undefined
+      selectedSize: selectedSize
+        ? {
+            ...selectedSize,
+            stock: data.stock,
+          }
+        : undefined,
+      selectedColor: selectedColor
+        ? {
+            ...selectedColor,
+            stock: data.stock,
+          }
+        : undefined,
     };
 
     cart.addItem(cartItem);
-    toast.success("Added to cart");
+    // toast.success("Added to cart");
   };
 
   return (
@@ -110,6 +136,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.3 }}
+                style={{ display: isMobile ? 'none' : 'block' }}
               >
                 <ChevronLeft size={24} />
               </motion.button>
@@ -122,6 +149,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.3 }}
+                style={{ display: isMobile ? 'none' : 'block' }}
               >
                 <ChevronRight size={24} />
               </motion.button>
@@ -149,18 +177,18 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                     initial={{ opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
                   >
                     <Image
                       src={image.url}
                       alt="Product image"
                       fill
                       className="object-cover object-center"
-                      priority
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
-                      quality={90}
+                      quality={95}
                       placeholder="blur"
                       blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+                      loading="eager"
                     />
                   </motion.div>
                 ) : null,
@@ -177,10 +205,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 key={image.id}
                 onClick={() => setSelectedTab(index)}
                 className={cn(
-                  "relative aspect-square cursor-pointer overflow-hidden rounded-lg transition-all duration-200",
+                  'relative aspect-square cursor-pointer overflow-hidden rounded-lg transition-all duration-200',
                   selectedTab === index
-                    ? "ring-2 ring-offset-2 ring-black shadow-md transform scale-105"
-                    : "hover:ring-1 ring-offset-1 ring-gray-400 hover:shadow-md",
+                    ? 'ring-2 ring-offset-2 ring-black shadow-md transform scale-105'
+                    : 'hover:ring-1 ring-offset-1 ring-gray-400 hover:shadow-md',
                 )}
               >
                 <div className="relative h-full w-full">

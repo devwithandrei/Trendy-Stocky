@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/types";
 import Image from "next/image";
 import Currency from "@/components/ui/currency";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSwipeable } from "react-swipeable";
 import { Heart } from "lucide-react";
@@ -23,50 +23,44 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
   data,
 }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
+  
+  // Move the useSwipeable hook to the top level of the component
+  const swipeHandlers = useSwipeable({
+    onSwiping: ({ deltaY }) => {
+      const element = document.querySelector('.description-content');
+      if (element) {
+        element.scrollTop -= deltaY;
+      }
+    },
+    preventScrollOnSwipe: true,
+    trackTouch: true
+  });
+
+  if (!isOpen) return null;
+
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
-        <>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div 
-            initial={{ 
-              opacity: 0, 
-              scale: 0,
-              x: '-50%',
-              y: 0
-            }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1,
-              x: '-50%',
-              y: 10
-            }}
-            exit={{ 
-              opacity: 0, 
-              scale: 0,
-              x: '-50%',
-              y: 0
-            }}
-            transition={{ 
-              type: "spring", 
-              damping: 25, 
-              stiffness: 300,
-              duration: 0.3
-            }}
-            className="fixed left-1/2 top-[60px] z-50 bg-white rounded-xl shadow-2xl p-6 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative bg-white rounded-xl shadow-2xl p-6 w-[90vw] sm:w-[420px] max-h-[90vh] overflow-y-auto m-4"
             style={{
               background: "linear-gradient(white, white) padding-box, linear-gradient(to right, #4f46e5, #3b82f6, #0ea5e9) border-box",
               border: "2px solid transparent",
               boxShadow: "0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 10px 15px -5px rgba(0, 0, 0, 0.1), 0 0 10px rgba(79, 70, 229, 0.1)",
-              backgroundImage: "radial-gradient(circle at top center, rgba(255, 255, 255, 1) 70%, rgba(249, 250, 251, 1) 100%)",
-              transform: "translateX(-50%)"
+              backgroundImage: "radial-gradient(circle at top center, rgba(255, 255, 255, 1) 70%, rgba(249, 250, 251, 1) 100%)"
             }}
           >
             <motion.button 
@@ -171,29 +165,22 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
               
               {data.description && (
                 <motion.div 
-                  className="mt-4 bg-gray-50 p-4 rounded-lg max-h-[200px] overflow-y-auto hide-scrollbar touch-pan-y"
+                  className="mt-4 bg-gray-50 p-4 rounded-lg max-h-[40vh] overflow-y-auto scrollbar-thin touch-pan-y"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.3 }}
-                  {...useSwipeable({
-                    onSwiping: ({ deltaY }) => {
-                      const element = document.querySelector('.description-content');
-                      if (element) {
-                        element.scrollTop -= deltaY;
-                      }
-                    },
-                    preventScrollOnSwipe: true,
-                    trackTouch: true
-                  })}
+                  {...swipeHandlers}
                 >
                   <div className="description-content relative">
-                    <p className="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent text-sm leading-relaxed">{data.description.value}</p>
+                    <p className="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent text-sm leading-relaxed">
+                      {typeof data.description === 'object' && 'value' in data.description ? data.description.value : String(data.description)}
+                    </p>
                   </div>
                 </motion.div>
               )}
             </motion.div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

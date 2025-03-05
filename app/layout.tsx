@@ -7,6 +7,7 @@ import ModalProvider from "@/providers/modal-provider";
 import ToastProvider from "@/providers/toast-provider";
 import { StoreProvider } from "@/contexts/store-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
+import { PopupProvider } from "@/contexts/popup-context";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import CrispChatScript from "@/components/ui/CrispChatScript";
@@ -33,11 +34,13 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <body className={font.className}>
           <StoreProvider>
             <WishlistProvider>
-              <ModalProvider />
-              <Navbar />
-              {children}
-              <Footer />
-              <SpeedInsights />
+              <PopupProvider>
+                <ModalProvider />
+                <Navbar />
+                {children}
+                <Footer />
+                <SpeedInsights />
+              </PopupProvider>
             </WishlistProvider>
           </StoreProvider>
           <CrispChatScript />

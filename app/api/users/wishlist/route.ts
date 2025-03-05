@@ -63,12 +63,13 @@ export async function GET(req: Request) {
         id: true,
         name: true,
         price: true,
+        stock: true,
+        description: true,
         images: {
           select: {
             id: true,
             url: true
-          },
-          take: 1 // Only get the first image for performance
+          }
         },
         category: {
           select: {
@@ -81,6 +82,28 @@ export async function GET(req: Request) {
             id: true,
             name: true
           }
+        },
+        productSizes: {
+          select: {
+            size: {
+              select: {
+                id: true,
+                name: true,
+                value: true
+              }
+            }
+          }
+        },
+        productColors: {
+          select: {
+            color: {
+              select: {
+                id: true,
+                name: true,
+                value: true
+              }
+            }
+          }
         }
       }
     });
@@ -89,6 +112,8 @@ export async function GET(req: Request) {
     const formattedProducts = wishlistProducts.map(product => ({
       ...product,
       price: product.price.toString(),
+      sizes: product.productSizes.map(ps => ps.size),
+      colors: product.productColors.map(pc => pc.color),
       images: product.images
     }));
 

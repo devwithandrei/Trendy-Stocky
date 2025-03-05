@@ -44,9 +44,23 @@ const WishlistPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {wishlist.map((product) => (
                   <div key={product.id} className="relative group">
-                    <ProductCard data={product} />
+                    <ProductCard 
+                      data={product}
+                      // The ProductCard component already handles size selection internally
+                      // No additional props needed as it checks for product.sizes automatically
+                    />
                     <button
-                      onClick={() => toggleWishlist(product.id, product)}
+                      onClick={() => toggleWishlist(product.id, {
+                        name: product.name,
+                        price: product.price,
+                        images: product.images,
+                        category: product.category,
+                        brand: product.brand,
+                        description: product.description,
+                        sizes: product.sizes,
+                        colors: product.colors,
+                        stock: product.stock
+                      })}
                       className="absolute top-2 right-2 p-2 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-rose-50"
                     >
                       <Trash2 className="w-4 h-4 text-rose-500" />

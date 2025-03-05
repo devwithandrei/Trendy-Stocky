@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useWishlist } from "@/lib/wishlist-context";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductDetailsPopup from "./ProductDetailsPopup";
+import SocialSharingProduct from "./SocialSharingProduct";
 
 interface InfoProps {
   data: Product;
@@ -367,6 +368,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 )}
               />
             </button>
+            <SocialSharingProduct productId={data.id} productName={data.name} />
           </div>
         </div>
       </div>

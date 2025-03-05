@@ -8,6 +8,27 @@ body,
 :root {
   height: 100%;
 }
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1s ease-in-out;
+}
 
 /* Define border-border class within @layer utilities */
 @layer utilities {

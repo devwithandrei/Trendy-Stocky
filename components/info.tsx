@@ -11,6 +11,7 @@ import { useSwipeable } from "react-swipeable";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/lib/wishlist-context";
 import { motion, AnimatePresence } from "framer-motion";
+import ProductDetailsPopup from "./ProductDetailsPopup";
 
 interface InfoProps {
   data: Product;
@@ -27,6 +28,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
 
     useEffect(() => {
         const checkIsMobile = () => {
@@ -69,6 +71,10 @@ const Info: React.FC<InfoProps> = ({ data }) => {
         selectedTab === 0 ? data.images.length - 1 : selectedTab - 1,
       );
     }
+  };
+
+  const toggleDetailsPopup = () => {
+    setShowDetailsPopup(!showDetailsPopup);
   };
 
   const onAddToCart: MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -124,149 +130,166 @@ const Info: React.FC<InfoProps> = ({ data }) => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Gallery Section - Left side on desktop */}
       <div className="mb-8 lg:mb-0 lg:col-span-7 xl:col-span-8">
-        <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden shadow-xl">
-          {data?.images?.length > 1 && (
-            <>
-              <motion.button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-3 z-10 shadow-lg opacity-80 hover:opacity-100 transition-all duration-300 hover:bg-white"
-                aria-label="Previous image"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                style={{ display: isMobile ? 'none' : 'block' }}
-              >
-                <ChevronLeft size={24} />
-              </motion.button>
-              <motion.button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-3 z-10 shadow-lg opacity-80 hover:opacity-100 transition-all duration-300 hover:bg-white"
-                aria-label="Next image"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                style={{ display: isMobile ? 'none' : 'block' }}
-              >
-                <ChevronRight size={24} />
-              </motion.button>
-            </>
-          )}
-
-          <div
-            {...useSwipeable({
-              onSwipedLeft: nextImage,
-              onSwipedRight: prevImage,
-              preventScrollOnSwipe: true,
-              trackMouse: true,
-              swipeDuration: 500,
-              delta: 10,
-              trackTouch: true,
-            })}
-            className="h-full w-full touch-pan-y"
-          >
-            <AnimatePresence mode="wait">
-              {data?.images?.map((image, index) =>
-                index === selectedTab ? (
-                  <motion.div
-                    key={image.id}
-                    className="relative h-full w-full"
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                  >
-                    <Image
-                      src={image.url}
-                      alt="Product image"
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
-                      quality={95}
-                      placeholder="blur"
-                      blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
-                      loading="eager"
-                    />
-                  </motion.div>
-                ) : null,
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Thumbnail Navigation */}
-        {data?.images?.length > 1 && (
-          <div className="mt-6 grid grid-cols-5 sm:grid-cols-6 gap-4">
-            {data?.images?.map((image, index) => (
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Thumbnail Navigation - Independent thumbnails */}
+          <div className="order-2 lg:order-1 lg:w-20 mt-4 lg:mt-0 flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto lg:max-h-[500px] hide-scrollbar">
+            {data?.images?.length > 1 && data?.images?.map((image, index) => (
               <button
                 key={image.id}
                 onClick={() => setSelectedTab(index)}
+                onMouseEnter={() => setSelectedTab(index)}
                 className={cn(
-                  'relative aspect-square cursor-pointer overflow-hidden rounded-lg transition-all duration-200',
+                  'relative aspect-square cursor-pointer overflow-hidden rounded-lg transition-all duration-200 min-w-[80px] w-20 h-20 border',
                   selectedTab === index
-                    ? 'ring-2 ring-offset-2 ring-black shadow-md transform scale-105'
-                    : 'hover:ring-1 ring-offset-1 ring-gray-400 hover:shadow-md',
+                    ? 'border-black shadow-md'
+                    : 'border-gray-200 hover:border-gray-400 hover:shadow-md',
                 )}
               >
-                <div className="relative h-full w-full">
-                  <Image
-                    src={image.url}
-                    alt="Thumbnail"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 20vw, 10vw"
-                    quality={80}
-                    loading="eager"
-                  />
-                </div>
+                <Image
+                  src={image.url}
+                  alt="Thumbnail"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 20vw, 10vw"
+                  quality={80}
+                  loading="eager"
+                />
               </button>
             ))}
           </div>
-        )}
+
+          {/* Main Image - Left side on desktop */}
+          <div className="order-1 lg:order-2 lg:flex-1">
+            <div className="relative aspect-square sm:aspect-square lg:aspect-square rounded-2xl overflow-hidden shadow-xl bg-gray-100 group">
+              {/* Navigation arrows for desktop */}
+              {!isMobile && data?.images?.length > 1 && (
+                <>
+                  <button 
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    disabled={isAnimating}
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button 
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    disabled={isAnimating}
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </>
+              )}
+
+              <div
+                {...useSwipeable({
+                  onSwipedLeft: nextImage,
+                  onSwipedRight: prevImage,
+                  preventScrollOnSwipe: true,
+                  trackMouse: true,
+                  swipeDuration: 500,
+                  delta: 10,
+                  trackTouch: true,
+                })}
+                className="h-full w-full touch-pan-y overflow-hidden"
+              >
+                <AnimatePresence mode="wait">
+                  {data?.images?.map((image, index) =>
+                    index === selectedTab ? (
+                      <motion.div
+                        key={image.id}
+                        className="relative h-full w-full overflow-hidden"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.4, ease: 'easeInOut' }}
+                      >
+                        <div className="relative h-full w-full transform transition-transform duration-500 ease-out group-hover:scale-110">
+                          <Image
+                            src={image.url}
+                            alt={`${data.name} - Product image`}
+                            fill
+                            className="object-cover object-center"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                            quality={100}
+                            priority
+                            placeholder="blur"
+                            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+                          />
+                        </div>
+                        {/* Zoom indicator that appears on hover */}
+                        <div className="absolute bottom-4 right-4 bg-white/80 rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                          </svg>
+                        </div>
+                      </motion.div>
+                    ) : null,
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Add custom CSS for hiding scrollbar */}
+        <style jsx global>{`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </div>
 
       {/* Product Information Section - Right side on desktop */}
       <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 lg:self-start">
         <div className="bg-white p-8 rounded-xl shadow-sm">
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">{data.name}</h1>
-          <div className="flex items-center justify-between mb-8 border-b pb-6">
+          <div className="relative">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-6 truncate overflow-hidden whitespace-nowrap h-8 leading-8">{data.name}</h1>
+              <motion.button 
+                onClick={toggleDetailsPopup}
+                className="ml-2 mb-6 p-1.5 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 relative z-50"
+                aria-label="Show product details"
+                whileHover={{ scale: 1.1, backgroundColor: "#dbeafe" }}
+                whileTap={{ scale: 0.95 }}
+                id="info-button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </motion.button>
+            </div>
+            
+            {/* Product Details Popup */}
+            <ProductDetailsPopup 
+              isOpen={showDetailsPopup}
+              onClose={toggleDetailsPopup}
+              data={data}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between mb-4 border-b pb-4">
             <p className="text-3xl font-semibold text-gray-900">
               <Currency value={data.price} />
             </p>
           </div>
           
-          <div className="space-y-10">
-            {/* Description */}
-            <div className="space-y-3 border-b pb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Description</h3>
-              <p className="text-gray-700 leading-relaxed text-base">{data.description?.value}</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-b pb-6">
-              {/* Brand */}
-              {data.brand && (
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500">Brand</h3>
-                  <p className="font-medium text-gray-900">{data.brand.name}</p>
-                </div>
-              )}
-              
-              {/* Category */}
-              {data.category && (
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500">Category</h3>
-                  <p className="font-medium text-gray-900">{data.category.name}</p>
-                </div>
-              )}
-            </div>
-
+          <div className="space-y-6">
             {/* Size Selection */}
             {data.sizes?.length > 0 && (
               <div className="space-y-4 border-b pb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Size</h3>
+                <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent animate-gradient">
+                  Available Sizes:
+                </h3>
                 <div className="flex flex-wrap gap-3">
                   {data.sizes.map((size) => (
                     <button
@@ -275,7 +298,7 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                       className={cn(
                         "transition-all duration-200",
                         selectedSize?.id === size.id
-                          ? "bg-black text-white ring-black shadow-md transform scale-105"
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white ring-black shadow-md transform scale-105"
                           : "bg-white text-gray-900 ring-gray-300 hover:bg-gray-50",
                         "min-w-[3rem] h-10 rounded-lg border px-4 py-2 text-sm font-medium flex items-center justify-center",
                       )}
@@ -316,56 +339,32 @@ const Info: React.FC<InfoProps> = ({ data }) => {
                 </div>
               </div>
             )}
-
-            {/* Quantity Selection */}
-            <div className="space-y-4 border-b pb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Quantity</h3>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="h-10 w-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
-                    disabled={quantity <= 1}
-                  >
-                    <span className="text-xl font-medium">-</span>
-                  </button>
-                  <span className="w-10 text-center font-medium">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="h-10 w-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
-                    disabled={quantity >= (data.stock || 0)}
-                  >
-                    <span className="text-xl font-medium">+</span>
-                  </button>
-                </div>
-                <span className="text-sm text-gray-500">
-                  {data.stock} available
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Add to Cart and Wishlist Buttons */}
           <div className="mt-10 flex items-center space-x-4">
             <Button
               onClick={onAddToCart}
-              className="flex-1 rounded-lg bg-black px-6 py-3 text-base font-medium text-white transition hover:bg-gray-800 flex items-center justify-center gap-2"
+              className="flex-1 min-w-[180px] rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-4 text-base font-medium text-white transition-all duration-300 hover:from-indigo-600 hover:to-blue-700 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center border border-transparent relative overflow-hidden group"
             >
-              <ShoppingCart size={20} />
-              {data.sizes?.length > 0 && !selectedSize ? "Select Size" : "Add To Bag"}
+              <span className="relative z-10 whitespace-nowrap text-center transition-transform group-hover:translate-x-1 group-active:translate-x-0">
+                {data.sizes?.length > 0 && !selectedSize ? "Select Size" : "Add To Bag"}
+              </span>
+              <span className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0"></span>
             </Button>
             <button
               onClick={() => toggleWishlist(data.id)}
-              className={cn(
-                "rounded-lg p-3 text-sm font-medium transition flex items-center justify-center",
-                isInWishlist(data.id)
-                  ? "bg-red-500 text-white shadow-md"
-                  : "border border-gray-300 hover:bg-gray-100",
-              )}
+              className="relative p-3 text-sm font-medium transition-all duration-300 flex items-center justify-center rounded-full hover:scale-110 active:scale-90"
+              aria-label="Add to wishlist"
             >
               <Heart
-                size={20}
-                className={isInWishlist(data.id) ? "fill-current" : ""}
+                size={24}
+                className={cn(
+                  "transition-all duration-300",
+                  isInWishlist(data.id) 
+                    ? "text-red-500 fill-red-500 filter drop-shadow-md animate-heartbeat" 
+                    : "text-gray-400 hover:text-red-500"
+                )}
               />
             </button>
           </div>

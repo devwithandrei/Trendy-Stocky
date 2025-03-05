@@ -7,6 +7,9 @@ import Currency from "@/components/ui/currency";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useSwipeable } from "react-swipeable";
+import { Heart } from "lucide-react";
+import { useWishlist } from "@/lib/wishlist-context";
+import SocialSharingProduct from "./SocialSharingProduct";
 
 interface ProductDetailsPopupProps {
   isOpen: boolean;
@@ -19,6 +22,7 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
   onClose,
   data,
 }) => {
+  const { toggleWishlist, isInWishlist } = useWishlist();
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
@@ -78,7 +82,7 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
             </motion.button>
             
             <motion.div
-              className="flex flex-col space-y-4"
+              className="flex flex-col space-y-4 pt-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
@@ -134,6 +138,35 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
                   )}
                 </div>
                 <Currency value={data.price} className="text-sm bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent font-semibold" />
+              </div>
+              
+              {/* Social sharing and wishlist buttons */}
+              <div className="flex items-center justify-end space-x-2 mt-2">
+                <motion.button
+                  onClick={() => toggleWishlist(data.id, {
+                    name: data.name,
+                    price: data.price,
+                    images: data.images,
+                    category: data.category,
+                    brand: data.brand,
+                    description: data.description
+                  })}
+                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Add to wishlist"
+                >
+                  <Heart
+                    size={18}
+                    className={cn(
+                      "transition-all duration-300",
+                      isInWishlist(data.id) 
+                        ? "text-red-500 fill-red-500" 
+                        : "text-gray-600 hover:text-red-500"
+                    )}
+                  />
+                </motion.button>
+                <SocialSharingProduct productId={data.id} productName={data.name} />
               </div>
               
               {data.description && (

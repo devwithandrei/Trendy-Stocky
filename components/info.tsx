@@ -354,7 +354,17 @@ const Info: React.FC<InfoProps> = ({ data }) => {
               <span className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0"></span>
             </Button>
             <button
-              onClick={() => toggleWishlist(data.id)}
+              onClick={() => toggleWishlist(data.id, {
+                name: data.name,
+                price: data.price,
+                images: data.images,
+                category: data.category,
+                brand: data.brand,
+                description: data.description,
+                sizes: data.sizes,
+                colors: data.colors,
+                stock: data.stock
+              })}
               className="relative p-3 text-sm font-medium transition-all duration-300 flex items-center justify-center rounded-full hover:scale-110 active:scale-90"
               aria-label="Add to wishlist"
             >

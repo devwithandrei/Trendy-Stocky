@@ -223,9 +223,9 @@ const Summary: React.FC<SummaryProps> = ({ items, isSignedIn }) => {
   };
 
   return (
-    <div className="lg:col-span-5">
+    <div className="w-full max-w-xl mx-auto">
       {items.length > 0 ? (
-        <div className="mt-0 rounded-lg bg-white shadow-lg px-6 py-8 sm:p-8 lg:p-10">
+        <div className="mt-0 rounded-lg bg-white shadow-lg px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
           <h2 className="text-xl font-semibold text-gray-900 border-b pb-4">Order Summary</h2>
 
           {/* Cart Items List */}

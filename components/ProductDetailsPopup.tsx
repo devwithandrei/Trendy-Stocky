@@ -4,12 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/types";
 import Image from "next/image";
 import Currency from "@/components/ui/currency";
-import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
-import { useSwipeable } from "react-swipeable";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/lib/wishlist-context";
 import SocialSharingProduct from "./SocialSharingProduct";
+import { cn } from "@/lib/utils";
 
 interface ProductDetailsPopupProps {
   isOpen: boolean;
@@ -23,18 +21,6 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
   data,
 }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
-  
-  // Move the useSwipeable hook to the top level of the component
-  const swipeHandlers = useSwipeable({
-    onSwiping: ({ deltaY }) => {
-      const element = document.querySelector('.description-content');
-      if (element) {
-        element.scrollTop -= deltaY;
-      }
-    },
-    preventScrollOnSwipe: true,
-    trackTouch: true
-  });
 
   if (!isOpen) return null;
 
@@ -55,7 +41,7 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative bg-white rounded-xl shadow-2xl p-6 w-[90vw] sm:w-[420px] max-h-[90vh] overflow-y-auto m-4"
+            className="relative bg-white rounded-xl shadow-2xl p-6 w-[90vw] sm:w-[420px] m-4"
             style={{
               background: "linear-gradient(white, white) padding-box, linear-gradient(to right, #4f46e5, #3b82f6, #0ea5e9) border-box",
               border: "2px solid transparent",
@@ -130,53 +116,45 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
                       {data.category.name}
                     </span>
                   )}
+                  
+                  <div className="flex items-center space-x-2">
+                    <motion.button
+                      onClick={() => toggleWishlist(data.id, {
+                        name: data.name,
+                        price: data.price,
+                        images: data.images,
+                        category: data.category,
+                        brand: data.brand,
+                        description: data.description
+                      })}
+                      className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label="Add to wishlist"
+                    >
+                      <Heart
+                        size={16}
+                        className={cn(
+                          "transition-all duration-300",
+                          isInWishlist(data.id) 
+                            ? "text-red-500 fill-red-500" 
+                            : "text-gray-600 hover:text-red-500"
+                        )}
+                      />
+                    </motion.button>
+                    <div className="scale-90">
+                      <SocialSharingProduct productId={data.id} productName={data.name} />
+                    </div>
+                  </div>
                 </div>
                 <Currency value={data.price} className="text-sm bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent font-semibold" />
               </div>
               
-              {/* Social sharing and wishlist buttons */}
-              <div className="flex items-center justify-end space-x-2 mt-2">
-                <motion.button
-                  onClick={() => toggleWishlist(data.id, {
-                    name: data.name,
-                    price: data.price,
-                    images: data.images,
-                    category: data.category,
-                    brand: data.brand,
-                    description: data.description
-                  })}
-                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label="Add to wishlist"
-                >
-                  <Heart
-                    size={18}
-                    className={cn(
-                      "transition-all duration-300",
-                      isInWishlist(data.id) 
-                        ? "text-red-500 fill-red-500" 
-                        : "text-gray-600 hover:text-red-500"
-                    )}
-                  />
-                </motion.button>
-                <SocialSharingProduct productId={data.id} productName={data.name} />
-              </div>
-              
+              {/* Description */}
               {data.description && (
-                <motion.div 
-                  className="mt-4 bg-gray-50 p-4 rounded-lg max-h-[40vh] overflow-y-auto scrollbar-thin touch-pan-y"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
-                  {...swipeHandlers}
-                >
-                  <div className="description-content relative">
-                    <p className="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent text-sm leading-relaxed">
-                      {typeof data.description === 'object' && 'value' in data.description ? data.description.value : String(data.description)}
-                    </p>
-                  </div>
-                </motion.div>
+                <p className="text-xs text-gray-600">
+                  {typeof data.description === 'object' && 'value' in data.description ? data.description.value : String(data.description)}
+                </p>
               )}
             </motion.div>
           </motion.div>
@@ -196,21 +174,5 @@ export default ProductDetailsPopup;
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-  
-  /* Custom scrollbar for the popup */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 5px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 10px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
   }
 `}</style>

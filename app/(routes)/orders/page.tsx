@@ -96,6 +96,7 @@ const OrdersPage = () => {
         try {
           await axios.post("/api/payment-success", { paymentIntentId: paymentIntent });
           toast.success("Payment completed successfully!");
+          cart.removeAll(); // Clear the cart after successful payment
         } catch (error) {
           console.error("Error updating order status:", error);
           toast.error("Error updating order status");

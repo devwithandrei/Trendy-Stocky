@@ -246,6 +246,17 @@ const { openProductDetails } = popupContext;
           />
         </motion.div>
       )}
+      {/* Placeholder div to maintain consistent card height */}
+      {!hasSizes && !hasColors && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="h-[38px] flex items-center"
+        >
+          <div className="w-full h-[38px]"></div>
+        </motion.div>
+      )}
       {/* Price & Add to Cart */}
       <motion.div 
         className="flex items-center justify-between mt-4"
